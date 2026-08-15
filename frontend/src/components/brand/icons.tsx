@@ -3,13 +3,21 @@ interface IconProps {
   className?: string
 }
 
-/** HealthNexus heart-shield mark. */
+/**
+ * HealthNexus mark — a flat shield with an ECG heartbeat, on-brand and crisp at any
+ * size. The shield uses currentColor (set by the container); the heartbeat is teal.
+ */
 export function Logo({ size = 22, className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" />
       <path
-        d="M12 21.593c-5.63-5.539-11-10.297-11-14.402C1 4.022 3.998 2 7 2c1.981 0 3.93.788 5 2.021C13.07 2.788 15.019 2 17 2c3.002 0 6 2.022 6 5.191 0 4.105-5.37 8.863-11 14.402z"
-        fill="currentColor"
+        d="M7 12.4h2l1.1-3 1.9 5.4 1.6-3.8 1.1 1.4H17"
+        fill="none"
+        stroke="#0FA3A3"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   )

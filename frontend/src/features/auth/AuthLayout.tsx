@@ -24,7 +24,7 @@ function BrandPanel() {
 
       <div className="relative z-10 flex flex-1 flex-col justify-between p-12 text-white">
         <Link to="/" className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-white/15 text-teal">
+          <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-white/15 text-white">
             <Logo />
           </span>
           <span className="text-[17px] font-extrabold tracking-tight">
@@ -73,7 +73,7 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
         {/* Mobile top bar */}
         <header className="flex items-center justify-between px-6 py-5 lg:hidden">
           <Link to="/" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-brand text-teal">
+            <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-brand text-white">
               <Logo size={18} />
             </span>
             <span className="text-[15px] font-extrabold tracking-tight text-brand">

@@ -41,7 +41,7 @@ export function AppHome() {
       <header className="border-b border-line bg-white">
         <Container className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-brand text-teal">
+            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-brand text-white">
               <Logo />
             </span>
             <span className="text-[17px] font-extrabold tracking-tight text-brand">

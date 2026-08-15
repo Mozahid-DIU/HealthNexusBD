@@ -24,7 +24,7 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 border-b border-brand/[0.09] bg-white/95 shadow-card backdrop-blur-md">
       <Container className="flex h-[66px] items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-brand text-teal shadow-brand">
+          <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-brand text-white shadow-brand">
             <Logo />
           </span>
           <span className="text-[17px] font-extrabold tracking-tight text-brand">
