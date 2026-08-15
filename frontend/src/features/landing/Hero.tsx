@@ -79,16 +79,16 @@ function HeroCard() {
           </span>
           <span className="rounded-md bg-white/15 px-2 py-0.5 text-[10px] font-bold">BD</span>
         </div>
-        <p className="mb-1 text-[10px] uppercase tracking-widest text-white/60">UHID</p>
-        <p className="mb-8 font-mono text-2xl font-bold tracking-wide">BD-2026-01234</p>
+        <p className="mb-1 text-[10px] uppercase tracking-widest text-white/60">UHID format</p>
+        <p className="mb-8 font-mono text-2xl font-bold tracking-wide">BD-YYYY-XXXXX</p>
         <div className="flex items-end justify-between">
           <div>
             <p className="text-[10px] uppercase tracking-widest text-white/60">Holder</p>
-            <p className="text-sm font-semibold">Rahim Uddin</p>
+            <p className="text-sm font-semibold">Your lifelong identity</p>
           </div>
           <div className="text-right">
-            <p className="text-[10px] uppercase tracking-widest text-white/60">Blood</p>
-            <p className="text-sm font-semibold">B+</p>
+            <p className="text-[10px] uppercase tracking-widest text-white/60">Issued by</p>
+            <p className="text-sm font-semibold">HealthNexus BD</p>
           </div>
         </div>
       </div>
