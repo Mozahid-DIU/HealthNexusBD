@@ -1,0 +1,258 @@
+// ============================================================
+// HealthNexus BD — Prisma Schema (v1.0)
+// AI-Powered Unified Patient Health Record System
+// Datasource: PostgreSQL
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------- ENUMS ----------------------
+
+enum UserRole {
+  patient
+  doctor
+  lab
+  admin
+}
+
+enum UserStatus {
+  active
+  pending
+  suspended
+}
+
+enum SessionStatus {
+  active
+  expired
+  revoked
+}
+
+enum AuditAction {
+  view
+  create
+  update
+  grant
+  revoke
+  login
+}
+
+enum AdminLevel {
+  super
+  staff
+}
+
+// ---------------------- IDENTITY ----------------------
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  email        String     @unique
+  phone        String     @unique
+  passwordHash String     @map("password_hash")
+  role         UserRole
+  status       UserStatus @default(pending)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // 1-to-1 role profiles
+  patient Patient?
+  doctor  Doctor?
+  lab     DiagnosticLab?
+  admin   Admin?
+
+  // audit (as actor)
+  auditActions AuditLog[] @relation("ActorLogs")
+
+  @@map("users")
+}
+
+model Patient {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @unique @map("user_id") @db.Uuid
+  uhid            String   @unique // BD-YYYY-XXXXX
+  nid             String   @unique
+  fullName        String   @map("full_name")
+  dateOfBirth     DateTime? @map("date_of_birth") @db.Date
+  gender          String?
+  bloodGroup      String?  @map("blood_group")
+  allergies       Json     @default("[]")
+  chronicDiseases Json     @default("[]") @map("chronic_diseases")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  medicalRecords MedicalRecord[]
+  accessSessions AccessSession[]
+  otpTokens      OtpToken[]
+  labReports     LabReport[]
+  auditSubjects  AuditLog[]      @relation("SubjectLogs")
+
+  @@map("patients")
+}
+
+model Doctor {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @unique @map("user_id") @db.Uuid
+  bmdcNumber      String    @unique @map("bmdc_number")
+  fullName        String    @map("full_name")
+  specialization  String?
+  isBmdcVerified  Boolean   @default(false) @map("is_bmdc_verified")
+  approvedAt      DateTime? @map("approved_at") @db.Timestamptz(6)
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  medicalRecords MedicalRecord[]
+  accessSessions AccessSession[]
+
+  @@map("doctors")
+}
+
+model DiagnosticLab {
+  id            String  @id @default(uuid()) @db.Uuid
+  userId        String  @unique @map("user_id") @db.Uuid
+  licenseNumber String  @unique @map("license_number")
+  centerName    String  @map("center_name")
+  address       String?
+  isApproved    Boolean @default(false) @map("is_approved")
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  labReports LabReport[]
+
+  @@map("diagnostic_labs")
+}
+
+model Admin {
+  id         String     @id @default(uuid()) @db.Uuid
+  userId     String     @unique @map("user_id") @db.Uuid
+  fullName   String     @map("full_name")
+  adminLevel AdminLevel @default(staff) @map("admin_level")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admins")
+}
+
+// ---------------------- CLINICAL ----------------------
+
+model MedicalRecord {
+  id               String   @id @default(uuid()) @db.Uuid
+  patientId        String   @map("patient_id") @db.Uuid
+  doctorId         String?  @map("doctor_id") @db.Uuid
+  contentEncrypted String   @map("content_encrypted") // AES-256
+  symptoms         Json     @default("[]")
+  diagnosis        String?
+  isVerified       Boolean  @default(true) @map("is_verified")
+  followUpDate     DateTime? @map("follow_up_date") @db.Date
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  patient       Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor        Doctor?        @relation(fields: [doctorId], references: [id])
+  prescriptions Prescription[]
+  aiSummaries   AiSummary[]
+  labReports    LabReport[]
+
+  @@index([patientId])
+  @@map("medical_records")
+}
+
+model Prescription {
+  id               String   @id @default(uuid()) @db.Uuid
+  recordId         String   @map("record_id") @db.Uuid
+  medications      Json     @default("[]")
+  recommendedTests Json     @default("[]") @map("recommended_tests")
+  notes            String?
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // The prescribing doctor is derived through the linked medical_record (record.doctorId),
+  // avoiding a redundant/transitive foreign key.
+  record MedicalRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@map("prescriptions")
+}
+
+model LabReport {
+  id               String   @id @default(uuid()) @db.Uuid
+  patientId        String   @map("patient_id") @db.Uuid
+  labId            String   @map("lab_id") @db.Uuid
+  recordId         String?  @map("record_id") @db.Uuid
+  testName         String   @map("test_name")
+  fileRefEncrypted String   @map("file_ref_encrypted") // PDF, AES-256
+  isVerified       Boolean  @default(true) @map("is_verified")
+  uploadedAt       DateTime @default(now()) @map("uploaded_at") @db.Timestamptz(6)
+
+  patient Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  lab     DiagnosticLab  @relation(fields: [labId], references: [id])
+  record  MedicalRecord? @relation(fields: [recordId], references: [id])
+
+  @@map("lab_reports")
+}
+
+// ---------------------- CONSENT ENGINE ----------------------
+
+model AccessSession {
+  id        String        @id @default(uuid()) @db.Uuid
+  patientId String        @map("patient_id") @db.Uuid
+  doctorId  String        @map("doctor_id") @db.Uuid
+  status    SessionStatus @default(active)
+  grantedAt DateTime      @default(now()) @map("granted_at") @db.Timestamptz(6)
+  expiresAt DateTime      @map("expires_at") @db.Timestamptz(6)
+
+  patient  Patient    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor   Doctor     @relation(fields: [doctorId], references: [id])
+  otpToken OtpToken?
+
+  @@index([doctorId, status])
+  @@map("access_sessions")
+}
+
+model OtpToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  patientId String   @map("patient_id") @db.Uuid
+  sessionId String?  @unique @map("session_id") @db.Uuid
+  codeHash  String   @map("code_hash")
+  attempts  Int      @default(0) @db.SmallInt
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  isUsed    Boolean  @default(false) @map("is_used")
+
+  patient Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  session AccessSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([patientId, isUsed])
+  @@map("otp_tokens")
+}
+
+// ---------------------- AI + AUDIT ----------------------
+
+model AiSummary {
+  id                String   @id @default(uuid()) @db.Uuid
+  recordId          String   @map("record_id") @db.Uuid
+  summary           String
+  interactionAlerts Json     @default("[]") @map("interaction_alerts")
+  allergyAlerts     Json     @default("[]") @map("allergy_alerts")
+  model             String   @default("gemini")
+  generatedAt       DateTime @default(now()) @map("generated_at") @db.Timestamptz(6)
+
+  record MedicalRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@map("ai_summaries")
+}
+
+model AuditLog {
+  id          String      @id @default(uuid()) @db.Uuid
+  actorUserId String      @map("actor_user_id") @db.Uuid
+  patientId   String?     @map("patient_id") @db.Uuid
+  action      AuditAction
+  resource    String?
+  ipAddress   String?     @map("ip_address") @db.Inet
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  actor   User     @relation("ActorLogs", fields: [actorUserId], references: [id])
+  patient Patient? @relation("SubjectLogs", fields: [patientId], references: [id])
+
+  @@index([patientId, createdAt])
+  @@map("audit_logs")
+}

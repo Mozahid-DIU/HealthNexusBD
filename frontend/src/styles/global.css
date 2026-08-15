@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import 'tailwindcss';
+
+/* ── Design tokens (from the HealthNexus BD design language) ───────────── */
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+
+  --color-brand: #0b5cad;
+  --color-brand-dark: #0a4f99;
+  --color-teal: #0fa3a3;
+  --color-navy: #0f1b2d;
+
+  --color-ink: #0c1a2e;
+  --color-body: #1e293b;
+  --color-muted: #4a6380;
+  --color-slate: #475569;
+  --color-faint: #94a3b8;
+
+  --color-surface: #ffffff;
+  --color-surface-soft: #f6f9fd;
+  --color-line: #e6eef7;
+
+  --radius-card: 12px;
+
+  --shadow-soft: 0 4px 22px rgba(11, 92, 173, 0.1);
+  --shadow-card: 0 1px 16px rgba(11, 92, 173, 0.07);
+  --shadow-brand: 0 4px 22px rgba(11, 92, 173, 0.34);
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
+* {
+  font-family: var(--font-sans);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--color-surface);
+  color: var(--color-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c7d8ed;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand);
+}
+
+/* Respect reduced-motion preferences. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

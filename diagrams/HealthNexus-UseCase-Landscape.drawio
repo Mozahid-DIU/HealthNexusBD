@@ -1,0 +1,136 @@
+<mxfile host="65bd71144e">
+    <diagram id="usecase-landscape" name="UseCase">
+        <mxGraphModel dx="268" dy="195" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="950" background="#ffffff" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="sys" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=2;verticalAlign=top;fontStyle=1;fontSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="250" y="40" width="1120" height="890" as="geometry"/>
+                </mxCell>
+                <mxCell id="syslabel" value="HealthNexus BD — Unified Patient Health Record System" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="250" y="52" width="1120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="aPatient" value="Patient" style="shape=mxgraph.uml.actor;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#000000;fontSize=15;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="230" width="48" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="aDoctor" value="Doctor" style="shape=mxgraph.uml.actor;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontColor=#000000;fontSize=15;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="690" width="48" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="aAdmin" value="System Admin" style="shape=mxgraph.uml.actor;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#000000;fontSize=15;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="1500" y="280" width="48" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="aLab" value="Diagnostic Lab" style="shape=mxgraph.uml.actor;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#000000;fontSize=15;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="1500" y="700" width="48" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc1" value="Register &amp;amp; Login" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="330" y="110" width="240" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc2" value="Receive Unique&#xa;Health ID (UHID)" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;strokeColor=#000000;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="620" y="108" width="220" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc3" value="Manage Profile &amp;amp;&#xa;Basic Health Info" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;strokeColor=#000000;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="330" y="200" width="240" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc4" value="View Medical History&#xa;&amp;amp; Lab Reports" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;strokeColor=#000000;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="330" y="290" width="240" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc5" value="Grant / Revoke Doctor&#xa;Access Consent" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;strokeColor=#000000;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="330" y="380" width="240" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc6" value="View System Access&#xa;Audit Log" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;strokeColor=#000000;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="330" y="470" width="240" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc10" value="Register with&#xa;BMDC Number" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;strokeColor=#000000;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="330" y="585" width="240" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc11" value="Search Patient by UHID" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;strokeColor=#000000;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="330" y="675" width="240" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc12" value="View Patient Health Record&#xa;(After OTP Verification)" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="330" y="765" width="240" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc13" value="View AI Insights &amp;amp;&#xa;Clinical Summary" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;strokeColor=#000000;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="620" y="763" width="220" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc14" value="Generate Digital&#xa;Prescription &amp;amp; Diagnosis" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;strokeColor=#000000;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="330" y="855" width="240" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc7" value="Manage Users &amp;amp;&#xa;Portal Access" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="1040" y="230" width="240" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc8" value="Approve Doctor &amp;amp;&#xa;Lab Registrations" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;strokeColor=#000000;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="1040" y="320" width="240" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc9" value="Monitor Platform&#xa;Audit Logs" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;strokeColor=#000000;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="1040" y="410" width="240" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc15" value="Search Patient &amp;amp;&#xa;View Prescribed Tests" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;strokeColor=#000000;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="1040" y="675" width="240" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc16" value="Upload &amp;amp; Verify&#xa;Test Reports" style="ellipse;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;strokeColor=#000000;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="1040" y="765" width="240" height="66" as="geometry"/>
+                </mxCell>
+                <mxCell id="e1" style="endArrow=none;html=1;strokeColor=#000000;fontStyle=1;fontSize=15;" parent="1" source="aPatient" target="uc1" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" style="endArrow=none;html=1;strokeColor=#000000;fontStyle=1;fontSize=15;" parent="1" source="aPatient" target="uc3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e3" style="endArrow=none;html=1;strokeColor=#000000;fontStyle=1;fontSize=15;" parent="1" source="aPatient" target="uc4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" style="endArrow=none;html=1;strokeColor=#000000;fontStyle=1;fontSize=15;" parent="1" source="aPatient" target="uc5" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e5" style="endArrow=none;html=1;strokeColor=#000000;fontStyle=1;fontSize=15;" parent="1" source="aPatient" target="uc6" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="inc1" value="&amp;lt;&amp;gt;" style="endArrow=open;html=1;dashed=1;strokeColor=#000000;fontSize=15;fontStyle=3;" parent="1" source="uc1" target="uc2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e6" style="endArrow=none;html=1;strokeColor=#000000;fontStyle=1;fontSize=15;" parent="1" source="aDoctor" target="uc10" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e7" style="endArrow=none;html=1;strokeColor=#000000;fontStyle=1;fontSize=15;" parent="1" source="aDoctor" target="uc11" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e8" style="endArrow=none;html=1;strokeColor=#000000;fontStyle=1;fontSize=15;" parent="1" source="aDoctor" target="uc12" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e9" style="endArrow=none;html=1;strokeColor=#000000;fontStyle=1;fontSize=15;" parent="1" source="aDoctor" target="uc14" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ext1" value="&amp;lt;&amp;gt;" style="endArrow=open;html=1;dashed=1;strokeColor=#000000;fontSize=15;fontStyle=3;" parent="1" source="uc13" target="uc12" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e10" style="endArrow=none;html=1;strokeColor=#000000;fontStyle=1;fontSize=15;" parent="1" source="aAdmin" target="uc7" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e11" style="endArrow=none;html=1;strokeColor=#000000;fontStyle=1;fontSize=15;" parent="1" source="aAdmin" target="uc8" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e12" style="endArrow=none;html=1;strokeColor=#000000;fontStyle=1;fontSize=15;" parent="1" source="aAdmin" target="uc9" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e13" style="endArrow=none;html=1;strokeColor=#000000;fontStyle=1;fontSize=15;" parent="1" source="aLab" target="uc15" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e14" style="endArrow=none;html=1;strokeColor=#000000;fontStyle=1;fontSize=15;" parent="1" source="aLab" target="uc16" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+                    <mxGeometry x="78" y="241" width="30" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+                    <mxGeometry x="78" y="700" width="30" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+                    <mxGeometry x="1509" y="290" width="30" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+                    <mxGeometry x="1509" y="710" width="30" height="60" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

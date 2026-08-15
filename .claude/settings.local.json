@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm ls *)",
+      "Bash(npx --yes playwright --version)",
+      "Bash(mkdir -p C:/Users/ROWTECH/AppData/Local/Temp/claude/d--HealthNexus-BD/eddbc510-f04f-4414-b3ef-7c0766113b8b/scratchpad/review2)",
+      "Bash(cd C:/Users/ROWTECH/AppData/Local/Temp/claude/d--HealthNexus-BD/eddbc510-f04f-4414-b3ef-7c0766113b8b/scratchpad)",
+      "Bash(node shoot2.mjs)",
+      "Bash(mkdir -p C:/Users/ROWTECH/AppData/Local/Temp/claude/d--HealthNexus-BD/eddbc510-f04f-4414-b3ef-7c0766113b8b/scratchpad/review3)",
+      "Bash(node shoot4.mjs)",
+      "Bash(node shoot5.mjs)",
+      "Bash(node shoot6.mjs)",
+      "Bash(node -e \"const c=require\\('crypto'\\);console.log\\('AES='+c.randomBytes\\(32\\).toString\\('hex'\\)\\);console.log\\('JWTA='+c.randomBytes\\(48\\).toString\\('hex'\\)\\);console.log\\('JWTR='+c.randomBytes\\(48\\).toString\\('hex'\\)\\);\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" -X POST http://localhost:4000/api/auth/register -H \"Content-Type: application/json\" -d '{\"role\":\"patient\",\"fullName\":\"Another Person\",\"email\":\"rahim@example.com\",\"phone\":\"01700000009\",\"password\":\"Demo@1234\",\"nid\":\"1990123456700\"}')",
+      "Bash(curl -s -X POST http://localhost:4000/api/auth/register -H \"Content-Type: application/json\" -d '{\"role\":\"patient\",\"fullName\":\"Another Person\",\"email\":\"rahim@example.com\",\"phone\":\"01700000009\",\"password\":\"Demo@1234\",\"nid\":\"1990123456700\"}')",
+      "Bash(curl -s -X POST http://localhost:4000/api/auth/login -H \"Content-Type: application/json\" -d '{\"identifier\":\"01700000001\",\"password\":\"Demo@1234\"}')",
+      "Bash(python -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\('login by phone success:',d['success']\\)\")",
+      "Bash(npx prisma *)"
+    ]
+  }
+}

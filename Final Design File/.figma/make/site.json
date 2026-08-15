@@ -1,0 +1,10 @@
+{
+  "description": "Provides Bangladeshi citizens a secure, AI-powered platform to manage lifelong unified health records with patient-controlled access for doctors and labs.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

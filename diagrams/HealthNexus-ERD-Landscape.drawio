@@ -1,0 +1,154 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="erd-landscape" name="ERD">
+    <mxGraphModel dx="1400" dy="820" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1780" pageHeight="1090" math="0" shadow="0" background="#ffffff">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="HealthNexus BD — Entity Relationship Diagram" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;fontColor=#0E1A33;" vertex="1" parent="1">
+          <mxGeometry x="540" y="12" width="700" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- ===================== ROW 1 : IDENTITY ===================== -->
+        <mxCell id="admins" value="admins" style="swimlane;startSize=28;html=1;fontStyle=1;align=center;fontSize=13;fillColor=#f8cecc;swimlaneFillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="70" width="250" height="132" as="geometry" />
+        </mxCell>
+        <mxCell id="admins_b" value="🔑 id : uuid (PK)&#xa;🔗 user_id : uuid (FK)&#xa;full_name : varchar&#xa;admin_level : enum" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=12;fillColor=none;strokeColor=none;" vertex="1" parent="admins">
+          <mxGeometry x="0" y="28" width="250" height="104" as="geometry" />
+        </mxCell>
+
+        <mxCell id="users" value="users" style="swimlane;startSize=28;html=1;fontStyle=1;align=center;fontSize=13;fillColor=#dae8fc;swimlaneFillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="390" y="70" width="250" height="198" as="geometry" />
+        </mxCell>
+        <mxCell id="users_b" value="🔑 id : uuid (PK)&#xa;email : varchar (UK)&#xa;phone : varchar (UK)&#xa;password_hash : varchar&#xa;role : enum&#xa;status : enum&#xa;created_at : timestamptz" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=12;fillColor=none;strokeColor=none;" vertex="1" parent="users">
+          <mxGeometry x="0" y="28" width="250" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="doctors" value="doctors" style="swimlane;startSize=28;html=1;fontStyle=1;align=center;fontSize=13;fillColor=#ffe6cc;swimlaneFillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="770" y="70" width="250" height="198" as="geometry" />
+        </mxCell>
+        <mxCell id="doctors_b" value="🔑 id : uuid (PK)&#xa;🔗 user_id : uuid (FK)&#xa;bmdc_number : varchar (UK)&#xa;full_name : varchar&#xa;specialization : varchar&#xa;is_bmdc_verified : bool&#xa;approved_at : timestamptz" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=12;fillColor=none;strokeColor=none;" vertex="1" parent="doctors">
+          <mxGeometry x="0" y="28" width="250" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="labs" value="diagnostic_labs" style="swimlane;startSize=28;html=1;fontStyle=1;align=center;fontSize=13;fillColor=#e1d5e7;swimlaneFillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="70" width="250" height="176" as="geometry" />
+        </mxCell>
+        <mxCell id="labs_b" value="🔑 id : uuid (PK)&#xa;🔗 user_id : uuid (FK)&#xa;license_number : varchar (UK)&#xa;center_name : varchar&#xa;address : varchar&#xa;is_approved : bool" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=12;fillColor=none;strokeColor=none;" vertex="1" parent="labs">
+          <mxGeometry x="0" y="28" width="250" height="148" as="geometry" />
+        </mxCell>
+
+        <!-- ===================== ROW 2 : CONSENT + CLINICAL ===================== -->
+        <mxCell id="patients" value="patients" style="swimlane;startSize=28;html=1;fontStyle=1;align=center;fontSize=13;fillColor=#d5e8d4;swimlaneFillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="470" width="250" height="286" as="geometry" />
+        </mxCell>
+        <mxCell id="patients_b" value="🔑 id : uuid (PK)&#xa;🔗 user_id : uuid (FK)&#xa;uhid : varchar (UK)&#xa;nid : varchar (UK)&#xa;full_name : varchar&#xa;date_of_birth : date&#xa;gender : varchar&#xa;blood_group : varchar&#xa;allergies : jsonb&#xa;chronic_diseases : jsonb" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=12;fillColor=none;strokeColor=none;" vertex="1" parent="patients">
+          <mxGeometry x="0" y="28" width="250" height="258" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sessions" value="access_sessions" style="swimlane;startSize=28;html=1;fontStyle=1;align=center;fontSize=13;fillColor=#ffe6cc;swimlaneFillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="390" y="470" width="250" height="176" as="geometry" />
+        </mxCell>
+        <mxCell id="sessions_b" value="🔑 id : uuid (PK)&#xa;🔗 patient_id : uuid (FK)&#xa;🔗 doctor_id : uuid (FK)&#xa;status : enum&#xa;granted_at : timestamptz&#xa;expires_at : timestamptz" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=12;fillColor=none;strokeColor=none;" vertex="1" parent="sessions">
+          <mxGeometry x="0" y="28" width="250" height="148" as="geometry" />
+        </mxCell>
+
+        <mxCell id="records" value="medical_records" style="swimlane;startSize=28;html=1;fontStyle=1;align=center;fontSize=13;fillColor=#fff2cc;swimlaneFillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="770" y="470" width="250" height="242" as="geometry" />
+        </mxCell>
+        <mxCell id="records_b" value="🔑 id : uuid (PK)&#xa;🔗 patient_id : uuid (FK)&#xa;🔗 doctor_id : uuid (FK)&#xa;content_encrypted : text&#xa;symptoms : jsonb&#xa;diagnosis : varchar&#xa;is_verified : bool&#xa;follow_up_date : date&#xa;created_at : timestamptz" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=12;fillColor=none;strokeColor=none;" vertex="1" parent="records">
+          <mxGeometry x="0" y="28" width="250" height="214" as="geometry" />
+        </mxCell>
+
+        <mxCell id="prescriptions" value="prescriptions" style="swimlane;startSize=28;html=1;fontStyle=1;align=center;fontSize=13;fillColor=#fff2cc;swimlaneFillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="470" width="250" height="176" as="geometry" />
+        </mxCell>
+        <mxCell id="prescriptions_b" value="🔑 id : uuid (PK)&#xa;🔗 record_id : uuid (FK)&#xa;medications : jsonb&#xa;recommended_tests : jsonb&#xa;notes : text&#xa;created_at : timestamptz" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=12;fillColor=none;strokeColor=none;" vertex="1" parent="prescriptions">
+          <mxGeometry x="0" y="28" width="250" height="148" as="geometry" />
+        </mxCell>
+
+        <mxCell id="labreports" value="lab_reports" style="swimlane;startSize=28;html=1;fontStyle=1;align=center;fontSize=13;fillColor=#fff2cc;swimlaneFillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1470" y="470" width="250" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="labreports_b" value="🔑 id : uuid (PK)&#xa;🔗 patient_id : uuid (FK)&#xa;🔗 lab_id : uuid (FK)&#xa;🔗 record_id : uuid (FK)&#xa;test_name : varchar&#xa;file_ref_encrypted : text&#xa;is_verified : bool&#xa;uploaded_at : timestamptz" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=12;fillColor=none;strokeColor=none;" vertex="1" parent="labreports">
+          <mxGeometry x="0" y="28" width="250" height="192" as="geometry" />
+        </mxCell>
+
+        <!-- ===================== ROW 3 : OTP / AI / AUDIT ===================== -->
+        <mxCell id="otp" value="otp_tokens" style="swimlane;startSize=28;html=1;fontStyle=1;align=center;fontSize=13;fillColor=#ffe6cc;swimlaneFillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="390" y="840" width="250" height="198" as="geometry" />
+        </mxCell>
+        <mxCell id="otp_b" value="🔑 id : uuid (PK)&#xa;🔗 patient_id : uuid (FK)&#xa;🔗 session_id : uuid (FK, UK)&#xa;code_hash : varchar&#xa;attempts : smallint&#xa;expires_at : timestamptz&#xa;is_used : bool" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=12;fillColor=none;strokeColor=none;" vertex="1" parent="otp">
+          <mxGeometry x="0" y="28" width="250" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ai" value="ai_summaries" style="swimlane;startSize=28;html=1;fontStyle=1;align=center;fontSize=13;fillColor=#fff2cc;swimlaneFillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="770" y="840" width="250" height="198" as="geometry" />
+        </mxCell>
+        <mxCell id="ai_b" value="🔑 id : uuid (PK)&#xa;🔗 record_id : uuid (FK)&#xa;summary : text&#xa;interaction_alerts : jsonb&#xa;allergy_alerts : jsonb&#xa;model : varchar&#xa;generated_at : timestamptz" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=12;fillColor=none;strokeColor=none;" vertex="1" parent="ai">
+          <mxGeometry x="0" y="28" width="250" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="audit" value="audit_logs  (append-only)" style="swimlane;startSize=28;html=1;fontStyle=1;align=center;fontSize=13;fillColor=#f5f5f5;swimlaneFillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="840" width="260" height="198" as="geometry" />
+        </mxCell>
+        <mxCell id="audit_b" value="🔑 id : uuid (PK)&#xa;🔗 actor_user_id : uuid (FK)&#xa;🔗 patient_id : uuid (FK)&#xa;action : enum&#xa;resource : varchar&#xa;ip_address : inet&#xa;created_at : timestamptz" style="text;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=12;fillColor=none;strokeColor=none;" vertex="1" parent="audit">
+          <mxGeometry x="0" y="28" width="260" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- ===================== RELATIONSHIPS ===================== -->
+        <!-- users 1:1 role tables -->
+        <mxCell id="r_ua" value="1:1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERone;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=0;exitY=0.4;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="users" target="admins"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r_ud" value="1:1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERone;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=1;exitY=0.4;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="users" target="doctors"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r_ul" value="1:1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERone;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="users" target="labs">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="515" y="40" /><mxPoint x="1275" y="40" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="r_up" value="1:1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERone;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="users" target="patients">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="452" y="410" /><mxPoint x="185" y="410" /></Array></mxGeometry>
+        </mxCell>
+
+        <!-- patients 1:N -->
+        <mxCell id="r_ps" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=1;exitY=0.35;exitDx=0;exitDy=0;entryX=0;entryY=0.4;entryDx=0;entryDy=0;" edge="1" parent="1" source="patients" target="sessions"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r_po" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=0.3;exitY=1;exitDx=0;exitDy=0;entryX=0.35;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="patients" target="otp">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="135" y="800" /><mxPoint x="477" y="800" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="r_pr" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=0.6;exitY=0;exitDx=0;exitDy=0;entryX=0.4;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="patients" target="records">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="210" y="420" /><mxPoint x="870" y="420" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="r_plr" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=0.1;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="patients" target="labreports">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="85" y="795" /><mxPoint x="1595" y="795" /></Array></mxGeometry>
+        </mxCell>
+
+        <!-- doctors 1:N -->
+        <mxCell id="r_dr" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="doctors" target="records"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r_dsx" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=0.1;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="doctors" target="sessions">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="795" y="450" /><mxPoint x="515" y="450" /></Array></mxGeometry>
+        </mxCell>
+
+        <!-- labs 1:N -->
+        <mxCell id="r_llr" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=0.8;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="labs" target="labreports">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1350" y="410" /><mxPoint x="1595" y="410" /></Array></mxGeometry>
+        </mxCell>
+
+        <!-- records 1:N -->
+        <mxCell id="r_rp" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=1;exitY=0.4;exitDx=0;exitDy=0;entryX=0;entryY=0.4;entryDx=0;entryDy=0;" edge="1" parent="1" source="records" target="prescriptions"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r_ra" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="records" target="ai"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r_rlr" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=1;exitY=0.15;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="records" target="labreports">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1055" y="455" /><mxPoint x="1560" y="455" /></Array></mxGeometry>
+        </mxCell>
+
+        <!-- sessions 1:1 otp -->
+        <mxCell id="r_so" value="1:1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERone;startArrow=ERone;strokeColor=#000000;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="sessions" target="otp"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- audit (dashed) -->
+        <mxCell id="r_uaud" value="1:N (actor)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeColor=#000000;fontSize=11;dashed=1;exitX=1;exitY=0.7;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="users" target="audit">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="700" y="205" /><mxPoint x="700" y="770" /><mxPoint x="1280" y="770" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="r_paud" value="1:N (subject)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERmany;startArrow=ERone;strokeColor=#000000;fontSize=11;dashed=1;exitX=0.1;exitY=1;exitDx=0;exitDy=0;entryX=0.85;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="patients" target="audit">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="110" y="815" /><mxPoint x="1371" y="815" /></Array></mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
