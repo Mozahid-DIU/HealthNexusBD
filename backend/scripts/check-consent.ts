@@ -24,7 +24,9 @@ const BASE = `http://localhost:${PORT}/api`
 const uniq = Date.now().toString().slice(-6)
 const patientEmail = `check.pat.${uniq}@hn.bd`
 const doctorEmail = `check.doc.${uniq}@hn.bd`
-const BMDC = 'A-27654' // valid, unclaimed registry number
+// Throwaway registry entry: every seeded BMDC number is already claimed by a seed doctor.
+const BMDC = `CHK-${uniq}`
+const DOCTOR_NAME = 'Dr. Consent Check'
 
 function line(msg = '') {
   console.log(msg)
@@ -75,10 +77,7 @@ async function cleanup() {
     }
     await prisma.user.deleteMany({ where: { id: { in: ids } } })
   }
-  await prisma.doctorRegistry.updateMany({
-    where: { bmdcNumber: BMDC },
-    data: { isClaimed: false, claimedByUserId: null },
-  })
+  await prisma.doctorRegistry.deleteMany({ where: { bmdcNumber: BMDC } })
 }
 
 async function main() {
@@ -96,6 +95,10 @@ async function main() {
 
   try {
     // Setup
+    await prisma.doctorRegistry.create({
+      data: { bmdcNumber: BMDC, fullName: DOCTOR_NAME, specialization: 'General Physician' },
+    })
+
     const pReg = await api('POST', '/auth/register', {
       role: 'patient',
       email: patientEmail,
@@ -116,12 +119,17 @@ async function main() {
       fullName: 'ignored',
     })
     const doctorToken = dReg.json?.data?.accessToken
+    if (!uhid || !doctorToken) {
+      throw new Error(
+        `Setup failed — patient ${pReg.status} ${pReg.json?.message ?? ''}, doctor ${dReg.status} ${dReg.json?.message ?? ''}`,
+      )
+    }
     // Simulate admin verifying the doctor so they may request access.
     await prisma.user.update({ where: { email: doctorEmail }, data: { status: 'active' } })
 
     step(1, 'A patient and a verified doctor exist')
     info('Patient UHID', uhid)
-    info('Doctor', `Dr. Imran Kabir (BMDC ${BMDC})`)
+    info('Doctor', `${DOCTOR_NAME} (BMDC ${BMDC})`)
 
     step(2, 'Doctor requests access to the patient by UHID')
     const req = await api(
