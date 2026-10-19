@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { AuthLayout } from './AuthLayout'
 import { forgotSchema, resetSchema, type ForgotValues, type ResetValues } from './schemas'
 import { authApi } from './api'
@@ -14,22 +15,23 @@ import { FormError } from '@/components/ui/FormError'
 type Step = 'request' | 'reset' | 'done'
 
 export function ForgotPasswordPage() {
+  const { t } = useTranslation()
   const [step, setStep] = useState<Step>('request')
   const [email, setEmail] = useState('')
 
   return (
     <AuthLayout
-      title={step === 'done' ? 'Password updated' : 'Reset your password'}
+      title={step === 'done' ? t('auth.forgot.titleDone') : t('auth.forgot.titleRequest')}
       subtitle={
         step === 'request'
-          ? "Enter your email and we'll send a reset code."
+          ? t('auth.forgot.subtitleRequest')
           : step === 'reset'
-            ? `Enter the 6-digit code sent to ${email}.`
-            : 'You can now log in with your new password.'
+            ? t('auth.forgot.subtitleReset', { email })
+            : t('auth.forgot.subtitleDone')
       }
       footer={
         <Link to="/login" className="font-semibold text-brand hover:underline">
-          ← Back to log in
+          {t('auth.forgot.backToLogin')}
         </Link>
       }
     >
@@ -43,10 +45,11 @@ export function ForgotPasswordPage() {
       )}
       {step === 'reset' && <ResetForm email={email} onDone={() => setStep('done')} />}
       {step === 'done' && (
-        <Link to="/login">
-          <Button size="lg" className="w-full">
-            Go to log in
-          </Button>
+        <Link
+          to="/login"
+          className="inline-flex w-full items-center justify-center rounded-xl bg-brand px-7 py-3 text-[15px] font-semibold text-white shadow-brand transition-all duration-150 hover:-translate-y-0.5 hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        >
+          {t('auth.forgot.goToLogin')}
         </Link>
       )}
     </AuthLayout>
@@ -54,6 +57,7 @@ export function ForgotPasswordPage() {
 }
 
 function RequestForm({ onSent }: { onSent: (email: string) => void }) {
+  const { t } = useTranslation()
   const {
     register,
     handleSubmit,
@@ -69,21 +73,22 @@ function RequestForm({ onSent }: { onSent: (email: string) => void }) {
     <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-4" noValidate>
       {mutation.isError && <FormError error={mutation.error} />}
       <Input
-        label="Email"
+        label={t('auth.forgot.emailLabel')}
         type="email"
-        placeholder="you@example.com"
+        placeholder={t('auth.forgot.emailPlaceholder')}
         autoComplete="email"
         error={errors.email?.message}
         {...register('email')}
       />
       <Button type="submit" size="lg" className="w-full" disabled={mutation.isPending}>
-        {mutation.isPending ? 'Sending…' : 'Send reset code'}
+        {mutation.isPending ? t('auth.forgot.sending') : t('auth.forgot.send')}
       </Button>
     </form>
   )
 }
 
 function ResetForm({ email, onDone }: { email: string; onDone: () => void }) {
+  const { t } = useTranslation()
   const {
     register,
     handleSubmit,
@@ -100,7 +105,8 @@ function ResetForm({ email, onDone }: { email: string; onDone: () => void }) {
     <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-4" noValidate>
       {mutation.isError && <FormError error={mutation.error} />}
       <Input
-        label="6-digit code"
+        label={t('auth.forgot.codeLabel')}
+        autoComplete="one-time-code"
         inputMode="numeric"
         maxLength={6}
         placeholder="••••••"
@@ -108,14 +114,14 @@ function ResetForm({ email, onDone }: { email: string; onDone: () => void }) {
         {...register('code')}
       />
       <PasswordInput
-        label="New password"
-        placeholder="At least 8 characters"
+        label={t('auth.forgot.newPassword')}
+        placeholder={t('auth.forgot.newPasswordPlaceholder')}
         autoComplete="new-password"
         error={errors.newPassword?.message}
         {...register('newPassword')}
       />
       <Button type="submit" size="lg" className="w-full" disabled={mutation.isPending}>
-        {mutation.isPending ? 'Updating…' : 'Update password'}
+        {mutation.isPending ? t('auth.forgot.updating') : t('auth.forgot.update')}
       </Button>
     </form>
   )

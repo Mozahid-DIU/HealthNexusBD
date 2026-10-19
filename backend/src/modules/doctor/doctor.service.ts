@@ -18,7 +18,7 @@ async function getActiveDoctor(userId: string) {
   const doctor = await prisma.doctor.findUnique({ where: { userId }, include: { user: true } })
   if (!doctor) throw AppError.forbidden('Doctor profile not found')
   if (doctor.user.status !== 'active') {
-    throw AppError.forbidden('Your doctor account is pending verification')
+    throw AppError.forbidden('Your doctor account is pending verification', 'ACCOUNT_PENDING')
   }
   return doctor
 }

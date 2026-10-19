@@ -17,6 +17,20 @@ export const authLimiter = rateLimit({
     sendError(res, 'Too many attempts. Please try again in a few minutes.', 429),
 })
 
+/**
+ * Token refresh gets its own, more generous budget. Every signed-in user refreshes about
+ * once per access-token lifetime, and a whole clinic can share one public IP — counting
+ * refreshes against the login/OTP limit would sign everyone out at once.
+ */
+export const refreshLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: skipInTests,
+  handler: (_req, res) => sendError(res, 'Too many requests. Please slow down.', 429),
+})
+
 /** General limiter for the rest of the API. */
 export const apiLimiter = rateLimit({
   windowMs: 60 * 1000,

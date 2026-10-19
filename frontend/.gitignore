@@ -10,3 +10,6 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .DS_Store
+
+# TypeScript incremental build cache
+*.tsbuildinfo

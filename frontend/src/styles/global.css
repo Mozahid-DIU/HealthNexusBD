@@ -1,9 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* Inter for Latin text; Noto Sans Bengali (variable 400–900) for Bangla. Google's unicode-range
+   means the Bengali font is only downloaded when Bangla text is actually on the page. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Bengali:wght@400..900&display=swap');
 @import 'tailwindcss';
 
 /* ── Design tokens (from the HealthNexus BD design language) ───────────── */
 @theme {
-  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-sans: 'Inter', 'Noto Sans Bengali', system-ui, sans-serif;
 
   --color-brand: #0b5cad;
   --color-brand-dark: #0a4f99;
@@ -68,4 +70,9 @@ body {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Bangla script needs a little more line height than Latin to keep matras/conjuncts clear. */
+:lang(bn) body {
+  line-height: 1.6;
 }

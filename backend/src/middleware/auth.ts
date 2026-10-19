@@ -14,7 +14,7 @@ import { AppError } from '../utils/AppError.ts'
 export async function authenticate(req: Request, _res: Response, next: NextFunction): Promise<void> {
   const header = req.headers.authorization
   if (!header || !header.startsWith('Bearer ')) {
-    return next(AppError.unauthorized('Missing or malformed Authorization header'))
+    return next(AppError.unauthorized('Missing or malformed Authorization header', 'TOKEN_INVALID'))
   }
   const token = header.slice('Bearer '.length).trim()
 
@@ -22,7 +22,7 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
   try {
     payload = verifyAccessToken(token)
   } catch {
-    return next(AppError.unauthorized('Invalid or expired token'))
+    return next(AppError.unauthorized('Invalid or expired token', 'TOKEN_INVALID'))
   }
 
   let user
@@ -35,11 +35,18 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
     return next(err)
   }
 
-  if (!user || payload.ver !== user.tokenVersion) {
-    return next(AppError.unauthorized('Session is no longer valid. Please log in again.'))
+  if (!user) {
+    return next(AppError.unauthorized('Session is no longer valid. Please log in again.', 'SESSION_INVALID'))
   }
+  // Checked before the version so a suspended user is told why, not just "expired"
+  // (suspending also bumps the version).
   if (user.status === 'suspended') {
-    return next(AppError.forbidden('This account has been suspended. Contact the administrator.'))
+    return next(
+      AppError.forbidden('This account has been suspended. Contact the administrator.', 'ACCOUNT_SUSPENDED'),
+    )
+  }
+  if (payload.ver !== user.tokenVersion) {
+    return next(AppError.unauthorized('Session is no longer valid. Please log in again.', 'SESSION_INVALID'))
   }
   // Role comes from the database, so a stale token can never carry an outdated role.
   req.user = { id: payload.sub, role: user.role }

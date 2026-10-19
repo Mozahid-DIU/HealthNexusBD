@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Navbar } from '@/components/layout/Navbar'
 import { Hero } from './Hero'
 import { TrustBadges } from './TrustBadges'
@@ -8,6 +9,7 @@ import { Container } from '@/components/ui/Container'
  * Features grid, "how it works", stats, and footer land in the next step.
  */
 export function LandingPage() {
+  const { t } = useTranslation()
   return (
     <div className="min-h-screen bg-white text-body">
       <Navbar />
@@ -20,9 +22,7 @@ export function LandingPage() {
           <p className="text-sm font-bold text-brand">
             HealthNexus <span className="text-teal">BD</span>
           </p>
-          <p className="text-xs text-slate">
-            Secure, AI-powered unified health records for Bangladesh.
-          </p>
+          <p className="text-xs text-slate">{t('landing.footer.tagline')}</p>
         </Container>
       </footer>
     </div>

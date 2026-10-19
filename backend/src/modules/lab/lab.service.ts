@@ -11,7 +11,7 @@ async function getActiveLab(userId: string) {
   const lab = await prisma.diagnosticLab.findUnique({ where: { userId }, include: { user: true } })
   if (!lab) throw AppError.forbidden('Lab profile not found')
   if (lab.user.status !== 'active') {
-    throw AppError.forbidden('Your lab account is pending approval')
+    throw AppError.forbidden('Your lab account is pending approval', 'ACCOUNT_PENDING')
   }
   return lab
 }

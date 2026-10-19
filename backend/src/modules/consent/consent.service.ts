@@ -51,7 +51,7 @@ export async function requestAccess(
 ) {
   const doctor = await getDoctorOrThrow(userId)
   if (doctor.user.status !== 'active') {
-    throw AppError.forbidden('Your doctor account is pending verification')
+    throw AppError.forbidden('Your doctor account is pending verification', 'ACCOUNT_PENDING')
   }
 
   const patient = await prisma.patient.findUnique({

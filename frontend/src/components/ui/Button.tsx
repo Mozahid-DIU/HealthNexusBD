@@ -31,11 +31,12 @@ export function Button({
   variant = 'primary',
   size = 'md',
   className = '',
+  type = 'button', // never submit a surrounding form by accident
   children,
   ...props
 }: ButtonProps) {
   return (
-    <button className={`${base} ${variants[variant]} ${sizes[size]} ${className}`} {...props}>
+    <button type={type} className={`${base} ${variants[variant]} ${sizes[size]} ${className}`} {...props}>
       {children}
     </button>
   )

@@ -1,4 +1,5 @@
 import { forwardRef, useState, type InputHTMLAttributes, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Input } from './Input'
 
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
@@ -27,6 +28,7 @@ function EyeIcon({ open }: { open: boolean }) {
 }
 
 export const PasswordInput = forwardRef<HTMLInputElement, Props>(function PasswordInput(props, ref) {
+  const { t } = useTranslation()
   const [show, setShow] = useState(false)
   return (
     <Input
@@ -38,7 +40,8 @@ export const PasswordInput = forwardRef<HTMLInputElement, Props>(function Passwo
           type="button"
           onClick={() => setShow((s) => !s)}
           className="flex h-8 w-8 items-center justify-center rounded-lg text-faint hover:text-brand"
-          aria-label={show ? 'Hide password' : 'Show password'}
+          aria-label={show ? t('common.hidePassword') : t('common.showPassword')}
+          aria-pressed={show}
         >
           <EyeIcon open={show} />
         </button>

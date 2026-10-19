@@ -120,5 +120,16 @@ Legend — 🔓 public · 🔒 auth required · roles in `[ ]`.
 
 - **Pagination:** `?page=1&limit=20` → `meta: { total, page, limit }`.
 - **Errors:** never leak internals — `{ success:false, error:"Human-safe message" }` + proper HTTP status (400/401/403/404/409/429/500).
-- **Rate limits:** `/auth/login`, `/auth/forgot-password`, `/consent/request`, `/consent/verify`, `/consent/resend`.
+- **Error codes:** some errors also carry a stable `code`. Clients should branch on the code, never on the message text, which is for humans and may change. `code` is omitted when there is none.
+
+  | `code` | Status | Meaning | Client should |
+  |---|---|---|---|
+  | `TOKEN_INVALID` | 401 | Access token missing, malformed or expired | Refresh once, then retry |
+  | `SESSION_INVALID` | 401 | Session revoked (logout, password reset, suspension) or refresh token invalid | Sign out; ask the user to log in |
+  | `ACCOUNT_SUSPENDED` | 403 | Suspended by an admin (login, refresh, any authenticated call) | Sign out and say why |
+  | `ACCOUNT_PENDING` | 403 | Doctor/lab not yet verified | Show the "pending verification" screen |
+
+- **Rate limits:**
+  - `/auth/login`, `/auth/register` and `/auth/forgot-password` share the strict auth limit (20 per 15 min per IP), as do the consent endpoints.
+  - `/auth/refresh` has its own limit (300 per 15 min per IP), so many users behind one clinic IP are never signed out together.
 - **Audit-written actions:** login, record view, record create, consent grant/revoke.

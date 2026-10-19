@@ -79,7 +79,11 @@ See [SEED.md](./SEED.md). Shared demo password: `Demo@1234`.
 
 ## 7. Tests
 
-Run these from `backend/`:
+**Frontend** (from `frontend/`):
+- `npm test` runs the Vitest + Testing Library suite in jsdom.
+- It covers routing guards, the API client (refresh, session-ending codes, offline), both languages (key parity, no English leaking into Bangla), forms and the UI kit.
+
+**Backend**, run these from `backend/`:
 
 | Command | What |
 |---------|------|

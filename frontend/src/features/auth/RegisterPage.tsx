@@ -3,6 +3,8 @@ import { useForm, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import type { TranslationKey } from '@/i18n'
 import { AuthLayout } from './AuthLayout'
 import { patientSchema, doctorSchema, labSchema } from './schemas'
 import { authApi } from './api'
@@ -19,61 +21,111 @@ type Values = Record<string, string>
 
 interface FieldDef {
   name: string
-  label: string
-  placeholder: string
+  label: TranslationKey
+  placeholder: TranslationKey
   type?: 'text' | 'password'
-  hint?: string
+  autoComplete?: string
 }
 
-const ROLES: { key: RegRole; label: string; blurb: string }[] = [
-  { key: 'patient', label: 'Patient', blurb: 'Own and share your records' },
-  { key: 'doctor', label: 'Doctor', blurb: 'BMDC-verified access' },
-  { key: 'lab', label: 'Lab', blurb: 'Upload diagnostic reports' },
+const ROLES: { key: RegRole; label: TranslationKey; blurb: TranslationKey }[] = [
+  { key: 'patient', label: 'roles.patient', blurb: 'auth.register.patientBlurb' },
+  { key: 'doctor', label: 'roles.doctor', blurb: 'auth.register.doctorBlurb' },
+  { key: 'lab', label: 'roles.lab', blurb: 'auth.register.labBlurb' },
 ]
+
+const EMAIL: FieldDef = {
+  name: 'email',
+  label: 'auth.register.email',
+  placeholder: 'auth.register.emailPlaceholder',
+  autoComplete: 'email',
+}
+const PHONE: FieldDef = {
+  name: 'phone',
+  label: 'auth.register.phone',
+  placeholder: 'auth.register.phonePlaceholder',
+  autoComplete: 'tel',
+}
+const PASSWORD: FieldDef = {
+  name: 'password',
+  label: 'auth.register.password',
+  placeholder: 'auth.register.passwordPlaceholder',
+  type: 'password',
+}
 
 const FIELDS: Record<RegRole, FieldDef[]> = {
   patient: [
-    { name: 'fullName', label: 'Full name', placeholder: 'e.g. Rahim Uddin' },
-    { name: 'nid', label: 'National ID (NID)', placeholder: '10–17 digit NID' },
-    { name: 'email', label: 'Email', placeholder: 'you@example.com' },
-    { name: 'phone', label: 'Phone', placeholder: '017XXXXXXXX' },
-    { name: 'password', label: 'Password', placeholder: 'At least 8 characters', type: 'password' },
+    {
+      name: 'fullName',
+      label: 'auth.register.fullName',
+      placeholder: 'auth.register.fullNamePatientPlaceholder',
+      autoComplete: 'name',
+    },
+    { name: 'nid', label: 'auth.register.nid', placeholder: 'auth.register.nidPlaceholder' },
+    EMAIL,
+    PHONE,
+    PASSWORD,
   ],
   doctor: [
-    { name: 'fullName', label: 'Full name', placeholder: 'e.g. Dr. Ayesha Karim' },
-    { name: 'bmdcNumber', label: 'BMDC registration no.', placeholder: 'e.g. A-29871' },
-    { name: 'specialization', label: 'Specialization (optional)', placeholder: 'e.g. Cardiologist' },
-    { name: 'email', label: 'Email', placeholder: 'you@example.com' },
-    { name: 'phone', label: 'Phone', placeholder: '017XXXXXXXX' },
-    { name: 'password', label: 'Password', placeholder: 'At least 8 characters', type: 'password' },
+    {
+      name: 'fullName',
+      label: 'auth.register.fullName',
+      placeholder: 'auth.register.fullNameDoctorPlaceholder',
+      autoComplete: 'name',
+    },
+    { name: 'bmdcNumber', label: 'auth.register.bmdc', placeholder: 'auth.register.bmdcPlaceholder' },
+    {
+      name: 'specialization',
+      label: 'auth.register.specialization',
+      placeholder: 'auth.register.specializationPlaceholder',
+    },
+    EMAIL,
+    PHONE,
+    PASSWORD,
   ],
   lab: [
-    { name: 'centerName', label: 'Diagnostic center name', placeholder: 'e.g. PathCare Diagnostics' },
-    { name: 'licenseNumber', label: 'DGHS license no.', placeholder: 'e.g. DGHS-LAB-0099' },
-    { name: 'address', label: 'Address (optional)', placeholder: 'e.g. Dhanmondi, Dhaka' },
-    { name: 'email', label: 'Email', placeholder: 'lab@example.com' },
-    { name: 'phone', label: 'Phone', placeholder: '017XXXXXXXX' },
-    { name: 'password', label: 'Password', placeholder: 'At least 8 characters', type: 'password' },
+    {
+      name: 'centerName',
+      label: 'auth.register.centerName',
+      placeholder: 'auth.register.centerNamePlaceholder',
+      autoComplete: 'organization',
+    },
+    { name: 'licenseNumber', label: 'auth.register.license', placeholder: 'auth.register.licensePlaceholder' },
+    {
+      name: 'address',
+      label: 'auth.register.address',
+      placeholder: 'auth.register.addressPlaceholder',
+      autoComplete: 'street-address',
+    },
+    { ...EMAIL, placeholder: 'auth.register.labEmailPlaceholder' },
+    PHONE,
+    PASSWORD,
   ],
 }
 
 const SCHEMA = { patient: patientSchema, doctor: doctorSchema, lab: labSchema }
 
 function RoleTabs({ role, onChange }: { role: RegRole; onChange: (r: RegRole) => void }) {
+  const { t } = useTranslation()
   return (
-    <div className="mb-6 grid grid-cols-3 gap-2 rounded-2xl bg-white p-1.5 shadow-card">
+    <div
+      role="group"
+      aria-label={t('auth.register.roleTabs')}
+      className="mb-6 grid grid-cols-3 gap-2 rounded-2xl bg-white p-1.5 shadow-card"
+    >
       {ROLES.map((r) => {
         const active = r.key === role
         return (
           <button
             key={r.key}
             type="button"
+            aria-pressed={active}
+            title={t(r.blurb)}
             onClick={() => onChange(r.key)}
             className={`rounded-xl px-2 py-2.5 text-center transition ${
               active ? 'bg-brand text-white shadow-brand' : 'text-slate hover:bg-brand/[0.05]'
             }`}
           >
-            <span className="block text-sm font-bold">{r.label}</span>
+            <span className="block text-sm font-bold">{t(r.label)}</span>
           </button>
         )
       })}
@@ -83,6 +135,7 @@ function RoleTabs({ role, onChange }: { role: RegRole; onChange: (r: RegRole) =>
 
 /** Self-contained per-role form (remounts when the role changes to reset + swap schema). */
 function RegisterForm({ role }: { role: RegRole }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const setAuth = useAuthStore((s) => s.setAuth)
 
@@ -112,8 +165,8 @@ function RegisterForm({ role }: { role: RegRole }) {
         f.type === 'password' ? (
           <PasswordInput
             key={f.name}
-            label={f.label}
-            placeholder={f.placeholder}
+            label={t(f.label)}
+            placeholder={t(f.placeholder)}
             autoComplete="new-password"
             error={errors[f.name]?.message}
             {...register(f.name)}
@@ -121,8 +174,9 @@ function RegisterForm({ role }: { role: RegRole }) {
         ) : (
           <Input
             key={f.name}
-            label={f.label}
-            placeholder={f.placeholder}
+            label={t(f.label)}
+            placeholder={t(f.placeholder)}
+            autoComplete={f.autoComplete}
             error={errors[f.name]?.message}
             {...register(f.name)}
           />
@@ -130,12 +184,14 @@ function RegisterForm({ role }: { role: RegRole }) {
       )}
 
       <Button type="submit" size="lg" className="w-full" disabled={mutation.isPending}>
-        {mutation.isPending ? 'Creating account…' : 'Create account'}
+        {mutation.isPending ? t('auth.register.submitting') : t('auth.register.submit')}
       </Button>
 
       {role !== 'patient' && (
         <p className="text-center text-xs text-slate">
-          {role === 'doctor' ? 'Doctor' : 'Lab'} accounts are activated after admin verification.
+          {role === 'doctor'
+            ? t('auth.register.doctorVerificationNote')
+            : t('auth.register.labVerificationNote')}
         </p>
       )}
     </form>
@@ -143,17 +199,18 @@ function RegisterForm({ role }: { role: RegRole }) {
 }
 
 export function RegisterPage() {
+  const { t } = useTranslation()
   const [role, setRole] = useState<RegRole>('patient')
 
   return (
     <AuthLayout
-      title="Create your account"
-      subtitle="Choose your role to get started."
+      title={t('auth.register.title')}
+      subtitle={t('auth.register.subtitle')}
       footer={
         <>
-          Already have an account?{' '}
+          {t('auth.register.haveAccount')}{' '}
           <Link to="/login" className="font-semibold text-brand hover:underline">
-            Log in
+            {t('auth.register.logIn')}
           </Link>
         </>
       }

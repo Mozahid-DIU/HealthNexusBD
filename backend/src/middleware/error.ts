@@ -22,7 +22,7 @@ export function errorHandler(
 ): Response {
   // Known operational errors
   if (err instanceof AppError) {
-    return sendError(res, err.message, err.statusCode)
+    return sendError(res, err.message, err.statusCode, err.code)
   }
 
   // Validation errors

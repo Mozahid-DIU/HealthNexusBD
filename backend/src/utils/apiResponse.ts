@@ -1,4 +1,5 @@
 import type { Response } from 'express'
+import type { ErrorCode } from './AppError.ts'
 
 /**
  * Consistent response envelope for the whole API:
@@ -19,8 +20,10 @@ export function sendSuccess<T>(
   return res.status(status).json({ success: true, data, error: null, ...(meta ? { meta } : {}) })
 }
 
-export function sendError(res: Response, message: string, status = 400): Response {
-  return res.status(status).json({ success: false, data: null, error: message })
+export function sendError(res: Response, message: string, status = 400, code?: ErrorCode): Response {
+  return res
+    .status(status)
+    .json({ success: false, data: null, error: message, ...(code ? { code } : {}) })
 }
 
 /**

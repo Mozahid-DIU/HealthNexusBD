@@ -163,7 +163,7 @@ export async function login(input: LoginInput, ipAddress?: string) {
   if (!ok) throw AppError.unauthorized('Invalid credentials')
 
   if (user.status === 'suspended') {
-    throw AppError.forbidden('This account has been suspended. Contact the administrator.')
+    throw AppError.forbidden('This account has been suspended. Contact the administrator.', 'ACCOUNT_SUSPENDED')
   }
 
   const tokens = issueTokens(user)
@@ -178,14 +178,14 @@ export async function refresh(refreshToken: string) {
   try {
     payload = verifyRefreshToken(refreshToken)
   } catch {
-    throw AppError.unauthorized('Invalid or expired refresh token')
+    throw AppError.unauthorized('Invalid or expired refresh token', 'SESSION_INVALID')
   }
   const user = await prisma.user.findUnique({ where: { id: payload.sub } })
-  if (!user) throw AppError.unauthorized('User no longer exists')
-  if (user.status === 'suspended') throw AppError.forbidden('Account suspended')
+  if (!user) throw AppError.unauthorized('User no longer exists', 'SESSION_INVALID')
+  if (user.status === 'suspended') throw AppError.forbidden('Account suspended', 'ACCOUNT_SUSPENDED')
   // A logout or password reset bumps tokenVersion, invalidating older refresh tokens.
   if (payload.ver !== user.tokenVersion) {
-    throw AppError.unauthorized('Session is no longer valid. Please log in again.')
+    throw AppError.unauthorized('Session is no longer valid. Please log in again.', 'SESSION_INVALID')
   }
 
   return { accessToken: signAccessToken({ sub: user.id, role: user.role, ver: user.tokenVersion }) }

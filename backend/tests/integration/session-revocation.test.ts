@@ -36,7 +36,9 @@ describe('suspending a user takes effect immediately', () => {
     expect((await suspend(user.id, true)).status).toBe(200)
 
     const res = await request(app).get('/api/patient/profile').set('Authorization', `Bearer ${accessToken}`)
-    expect(res.status).toBe(401)
+    // "Suspended", not just "session expired", so the user knows why.
+    expect(res.status).toBe(403)
+    expect(res.body.code).toBe('ACCOUNT_SUSPENDED')
   })
 
   it('also invalidates the refresh token', async () => {
@@ -71,7 +73,7 @@ describe('suspending a user takes effect immediately', () => {
       .set('Authorization', admin.auth)
       .send({ reason: 'BMDC licence revoked' })
 
-    expect((await me(accessToken)).status).toBe(401)
+    expect((await me(accessToken)).status).toBe(403)
   })
 
   it('cuts off a lab the moment it is rejected', async () => {
@@ -83,7 +85,7 @@ describe('suspending a user takes effect immediately', () => {
       .set('Authorization', admin.auth)
       .send({ reason: 'Licence expired' })
 
-    expect((await me(accessToken)).status).toBe(401)
+    expect((await me(accessToken)).status).toBe(403)
   })
 
   it('blocks a suspended account even if its token version still matches', async () => {

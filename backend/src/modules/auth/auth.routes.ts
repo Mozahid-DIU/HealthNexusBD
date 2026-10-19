@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { validate } from '../../middleware/validate.ts'
 import { authenticate } from '../../middleware/auth.ts'
-import { authLimiter } from '../../middleware/rateLimit.ts'
+import { authLimiter, refreshLimiter } from '../../middleware/rateLimit.ts'
 import {
   forgotPasswordSchema,
   loginSchema,
@@ -23,7 +23,7 @@ export const authRouter = Router()
 
 authRouter.post('/register', authLimiter, validate(registerSchema), registerController)
 authRouter.post('/login', authLimiter, validate(loginSchema), loginController)
-authRouter.post('/refresh', authLimiter, validate(refreshSchema), refreshController)
+authRouter.post('/refresh', refreshLimiter, validate(refreshSchema), refreshController)
 authRouter.post('/logout', authenticate, logoutController)
 authRouter.get('/me', authenticate, meController)
 
