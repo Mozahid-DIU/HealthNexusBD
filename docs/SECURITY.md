@@ -40,6 +40,8 @@
 ## 5. Encryption
 
 - **At rest:** medical record content (`content_encrypted`) and lab file references (`file_ref_encrypted`) encrypted with **AES-256-GCM**.
+  - Lab report **PDF bytes** are also AES-256-GCM encrypted *before* upload, so Cloudinary only ever holds ciphertext. A leaked storage URL is useless on its own.
+  - Files are never handed out as links: the backend decrypts and streams them through authenticated endpoints (`/patient/lab-reports/:id/file`, `/lab/reports/:id/file`) with `Cache-Control: no-store`.
   - Random 12-byte **IV per record**; GCM **auth tag** stored to detect tampering.
   - Key from `AES_SECRET_KEY` (32 bytes / 64 hex) in `.env` — **never** in the database, so a DB dump alone is unreadable.
   - Generate: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.

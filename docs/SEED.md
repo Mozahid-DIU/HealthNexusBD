@@ -55,7 +55,8 @@
 - **Prescriptions:** attach to most records — medications (name/dose/frequency/duration)
   + recommended tests (which become lab prescriptions).
 - **Lab reports (8–10):** uploaded by labs against prescribed tests; `fileRefEncrypted`
-  points to a sample PDF in `/uploads`. Use 2–3 placeholder PDFs.
+  points to a public sample PDF (no patient data), stored unencrypted. Real uploads are
+  encrypted (see SECURITY.md §5); the file endpoints serve both kinds.
 - **AI summaries (4–6):** a few records with a sample summary + interaction/allergy
   alerts (e.g. Rahim: "Chronic diabetic; allergic to penicillin; on Metformin" + a
   penicillin allergy alert) so the AI feature demos without a live call.

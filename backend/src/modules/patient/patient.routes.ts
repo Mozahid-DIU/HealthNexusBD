@@ -5,6 +5,7 @@ import { validate } from '../../middleware/validate.ts'
 import { idParamSchema, listQuerySchema, updateProfileSchema } from './patient.schema.ts'
 import {
   getAuditController,
+  getLabReportFileController,
   getLabReportsController,
   getProfileController,
   getRecordByIdController,
@@ -24,4 +25,9 @@ patientRouter.get('/records', validate(listQuerySchema, 'query'), getRecordsCont
 patientRouter.get('/records/:id', validate(idParamSchema, 'params'), getRecordByIdController)
 
 patientRouter.get('/lab-reports', validate(listQuerySchema, 'query'), getLabReportsController)
+patientRouter.get(
+  '/lab-reports/:id/file',
+  validate(idParamSchema, 'params'),
+  getLabReportFileController,
+)
 patientRouter.get('/audit', validate(listQuerySchema, 'query'), getAuditController)

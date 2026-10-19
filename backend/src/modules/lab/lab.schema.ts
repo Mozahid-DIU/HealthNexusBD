@@ -17,6 +17,10 @@ export const listQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).optional(),
 })
 
+export const idParamSchema = z.object({
+  id: z.string().uuid('Invalid id'),
+})
+
 export type SearchQuery = z.infer<typeof searchQuerySchema>
 export type UploadReportInput = z.infer<typeof uploadReportSchema>
 export type ListQuery = z.infer<typeof listQuerySchema>

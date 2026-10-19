@@ -3,7 +3,8 @@ import { env } from '../config/env.ts'
 import { logger } from './logger.ts'
 
 /**
- * AES-256-GCM encryption for data at rest (medical record content, lab file refs).
+ * AES-256-GCM encryption for data at rest (medical record content, lab report files
+ * and their storage refs).
  *
  * GCM gives us confidentiality AND integrity: a tampered ciphertext fails the auth
  * tag check on decrypt and throws, rather than returning garbage.
@@ -41,6 +42,32 @@ export function decrypt(payload: string): string {
   decipher.setAuthTag(authTag)
   const plaintext = Buffer.concat([decipher.update(data), decipher.final()])
   return plaintext.toString('utf8')
+}
+
+const TAG_LENGTH = 16
+
+/**
+ * Encrypt binary content (lab report PDFs) with the same AES-256-GCM key.
+ * Output layout: <iv 12 bytes><authTag 16 bytes><ciphertext>.
+ */
+export function encryptBuffer(plain: Buffer): Buffer {
+  const iv = crypto.randomBytes(IV_LENGTH)
+  const cipher = crypto.createCipheriv(ALGORITHM, KEY, iv)
+  const ciphertext = Buffer.concat([cipher.update(plain), cipher.final()])
+  return Buffer.concat([iv, cipher.getAuthTag(), ciphertext])
+}
+
+export function decryptBuffer(payload: Buffer): Buffer {
+  if (payload.length < IV_LENGTH + TAG_LENGTH) {
+    throw new Error('Invalid encrypted file payload')
+  }
+  const iv = payload.subarray(0, IV_LENGTH)
+  const authTag = payload.subarray(IV_LENGTH, IV_LENGTH + TAG_LENGTH)
+  const data = payload.subarray(IV_LENGTH + TAG_LENGTH)
+
+  const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv)
+  decipher.setAuthTag(authTag)
+  return Buffer.concat([decipher.update(data), decipher.final()])
 }
 
 /**

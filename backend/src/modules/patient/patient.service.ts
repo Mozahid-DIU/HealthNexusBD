@@ -3,6 +3,7 @@ import { prisma } from '../../config/prisma.ts'
 import { AppError } from '../../utils/AppError.ts'
 import { safeDecrypt } from '../../utils/crypto.ts'
 import { getPagination } from '../../utils/pagination.ts'
+import { readReportFile } from '../../services/reportFiles.ts'
 import type { ListQuery, UpdateProfileInput } from './patient.schema.ts'
 
 async function getPatientOrThrow(userId: string) {
@@ -149,13 +150,23 @@ export async function getLabReports(userId: string, query: ListQuery) {
   const data = reports.map((r) => ({
     id: r.id,
     testName: r.testName,
-    fileRef: safeDecrypt(r.fileRefEncrypted),
+    fileUrl: `/api/patient/lab-reports/${r.id}/file`,
     lab: r.lab.centerName,
     isVerified: r.isVerified,
     uploadedAt: r.uploadedAt,
   }))
 
   return { data, meta: { total, page, limit } }
+}
+
+/** Decrypted PDF of one of the patient's own lab reports. */
+export async function getLabReportFile(userId: string, reportId: string) {
+  const p = await getPatientOrThrow(userId)
+
+  const report = await prisma.labReport.findFirst({ where: { id: reportId, patientId: p.id } })
+  if (!report) throw AppError.notFound('Lab report not found')
+
+  return { pdf: await readReportFile(report.fileRefEncrypted), filename: report.testName }
 }
 
 // ---------------------------------------------------------------- audit ("who saw my data")

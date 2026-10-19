@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
 import { asyncHandler } from '../../utils/asyncHandler.ts'
-import { sendSuccess } from '../../utils/apiResponse.ts'
+import { sendPdf, sendSuccess } from '../../utils/apiResponse.ts'
 import { AppError } from '../../utils/AppError.ts'
 import * as labService from './lab.service.ts'
 import type { ListQuery, SearchQuery } from './lab.schema.ts'
@@ -28,4 +28,9 @@ export const uploadReportController = asyncHandler(async (req: Request, res: Res
 export const listUploadsController = asyncHandler(async (req: Request, res: Response) => {
   const { data, meta } = await labService.listUploads(userId(req), query<ListQuery>(req))
   return sendSuccess(res, data, 200, meta)
+})
+
+export const reportFileController = asyncHandler(async (req: Request, res: Response) => {
+  const { pdf, filename } = await labService.getReportFile(userId(req), req.params.id, req.ip)
+  return sendPdf(res, pdf, filename)
 })

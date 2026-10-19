@@ -1,5 +1,6 @@
 import type { Prisma, PrismaClient } from '@prisma/client'
 import { encrypt } from '../src/utils/crypto.ts'
+import { SAMPLE_REPORT_PDF_URL } from '../src/services/reportFiles.ts'
 
 export interface SeededDoctor {
   userId: string
@@ -13,7 +14,6 @@ export interface SeededPatient {
 }
 
 /** A public, always-available dummy PDF used as the demo lab-report file. */
-const DEMO_PDF_URL = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
 
 interface RecordDef {
   patient: number
@@ -221,7 +221,7 @@ export async function seedClinical(
             labId: lid,
             recordId: record.id,
             testName: def.labTest,
-            fileRefEncrypted: encrypt(DEMO_PDF_URL),
+            fileRefEncrypted: encrypt(SAMPLE_REPORT_PDF_URL),
           },
         })
         labReports++

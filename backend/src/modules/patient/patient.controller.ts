@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
 import { asyncHandler } from '../../utils/asyncHandler.ts'
-import { sendSuccess } from '../../utils/apiResponse.ts'
+import { sendPdf, sendSuccess } from '../../utils/apiResponse.ts'
 import { AppError } from '../../utils/AppError.ts'
 import * as patientService from './patient.service.ts'
 import type { ListQuery } from './patient.schema.ts'
@@ -40,4 +40,9 @@ export const getLabReportsController = asyncHandler(async (req: Request, res: Re
 export const getAuditController = asyncHandler(async (req: Request, res: Response) => {
   const { data, meta } = await patientService.getAudit(userId(req), query(req))
   return sendSuccess(res, data, 200, meta)
+})
+
+export const getLabReportFileController = asyncHandler(async (req: Request, res: Response) => {
+  const { pdf, filename } = await patientService.getLabReportFile(userId(req), req.params.id)
+  return sendPdf(res, pdf, filename)
 })

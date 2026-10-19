@@ -1,9 +1,8 @@
 import { prisma } from '../../config/prisma.ts'
 import { AppError } from '../../utils/AppError.ts'
-import { encrypt, safeDecrypt } from '../../utils/crypto.ts'
 import { getPagination } from '../../utils/pagination.ts'
 import { writeAudit } from '../../utils/audit.ts'
-import { uploadPdf } from '../../services/storage.ts'
+import { readReportFile, storeReportFile } from '../../services/reportFiles.ts'
 import type { ListQuery, UploadReportInput } from './lab.schema.ts'
 
 /** Resolve the calling lab and ensure the account is approved/active. */
@@ -58,6 +57,8 @@ export async function searchPatient(userId: string, uhid: string) {
 
 // ---------------------------------------------------------------- upload report
 
+const PDF_MAGIC = Buffer.from('%PDF-')
+
 export async function uploadReport(
   userId: string,
   input: UploadReportInput,
@@ -65,6 +66,11 @@ export async function uploadReport(
   ip?: string | null,
 ) {
   const lab = await getActiveLab(userId)
+
+  // The multer filter only trusts the client-declared mimetype; check the real bytes.
+  if (!fileBuffer.subarray(0, PDF_MAGIC.length).equals(PDF_MAGIC)) {
+    throw AppError.badRequest('The uploaded file is not a valid PDF')
+  }
 
   const patient = await prisma.patient.findUnique({ where: { uhid: input.uhid } })
   if (!patient) throw AppError.notFound('No patient found with this UHID')
@@ -81,8 +87,8 @@ export async function uploadReport(
     throw AppError.forbidden(`"${input.testName}" was not prescribed for this patient`)
   }
 
-  // Upload the PDF to Cloudinary, then store only the AES-encrypted URL.
-  const { url } = await uploadPdf(fileBuffer)
+  // The PDF is AES-encrypted before upload; the DB keeps only an encrypted ref to it.
+  const fileRefEncrypted = await storeReportFile(fileBuffer)
 
   const report = await prisma.labReport.create({
     data: {
@@ -90,7 +96,7 @@ export async function uploadReport(
       labId: lab.id,
       recordId: prescription.recordId,
       testName: input.testName,
-      fileRefEncrypted: encrypt(url),
+      fileRefEncrypted,
     },
   })
 
@@ -126,10 +132,31 @@ export async function listUploads(userId: string, query: ListQuery) {
     id: r.id,
     testName: r.testName,
     patient: r.patient,
-    fileRef: safeDecrypt(r.fileRefEncrypted),
+    fileUrl: `/api/lab/reports/${r.id}/file`,
     isVerified: r.isVerified,
     uploadedAt: r.uploadedAt,
   }))
 
   return { data, meta: { total, page, limit } }
+}
+
+// ---------------------------------------------------------------- download (own uploads only)
+
+export async function getReportFile(userId: string, reportId: string, ip?: string | null) {
+  const lab = await getActiveLab(userId)
+
+  const report = await prisma.labReport.findFirst({ where: { id: reportId, labId: lab.id } })
+  if (!report) throw AppError.notFound('Report not found')
+
+  const pdf = await readReportFile(report.fileRefEncrypted)
+
+  await writeAudit({
+    actorUserId: userId,
+    action: 'view',
+    patientId: report.patientId,
+    resource: `lab_report_file:${report.id}`,
+    ipAddress: ip ?? null,
+  })
+
+  return { pdf, filename: report.testName }
 }

@@ -52,7 +52,8 @@ Legend — 🔓 public · 🔒 auth required · roles in `[ ]`.
 | PATCH | `/profile` | Update editable fields. |
 | GET | `/records` | Own medical records (paginated, decrypted). |
 | GET | `/records/:id` | One record + prescription + AI summary. |
-| GET | `/lab-reports` | Own lab reports (decrypted file links). |
+| GET | `/lab-reports` | Own lab reports. Each item has a `fileUrl` pointing to the endpoint below; no storage link is exposed. |
+| GET | `/lab-reports/:id/file` | The report PDF, decrypted server-side (`application/pdf`, `Cache-Control: no-store`). 404 if not the patient's own report. |
 | GET | `/audit` | Own audit log — who accessed data & when (paginated). |
 
 ---
@@ -76,7 +77,8 @@ Legend — 🔓 public · 🔒 auth required · roles in `[ ]`.
 |--------|------|---------|
 | GET | `/search?uhid=` | Find patient + their **prescribed tests** (not full history). |
 | POST | `/reports` | Upload a report PDF for a prescribed test → AES-256 encrypted, linked to prescription. |
-| GET | `/uploads` | Lab's own uploaded reports (paginated). |
+| GET | `/uploads` | Lab's own uploaded reports (paginated), each with a `fileUrl`. |
+| GET | `/reports/:id/file` | Decrypted PDF of one of this lab's own uploads. Audited as `view`. 404 for another lab's report. |
 
 ---
 
