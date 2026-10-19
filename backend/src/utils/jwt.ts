@@ -6,6 +6,7 @@ import type { UserRole } from '@prisma/client'
 export interface AccessTokenPayload {
   sub: string // user id
   role: UserRole
+  ver: number // must match the user's current tokenVersion (checked on every request)
 }
 
 export interface RefreshTokenPayload {

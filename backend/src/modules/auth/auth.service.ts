@@ -23,7 +23,7 @@ function minutesFromNow(mins: number): Date {
 /** Build the auth token pair for a user. */
 function issueTokens(user: Pick<User, 'id' | 'role' | 'tokenVersion'>) {
   return {
-    accessToken: signAccessToken({ sub: user.id, role: user.role }),
+    accessToken: signAccessToken({ sub: user.id, role: user.role, ver: user.tokenVersion }),
     refreshToken: signRefreshToken({ sub: user.id, ver: user.tokenVersion }),
   }
 }
@@ -188,7 +188,7 @@ export async function refresh(refreshToken: string) {
     throw AppError.unauthorized('Session is no longer valid. Please log in again.')
   }
 
-  return { accessToken: signAccessToken({ sub: user.id, role: user.role }) }
+  return { accessToken: signAccessToken({ sub: user.id, role: user.role, ver: user.tokenVersion }) }
 }
 
 /** Log out: invalidate every outstanding refresh token for the user. */

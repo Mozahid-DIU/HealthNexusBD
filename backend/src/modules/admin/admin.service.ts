@@ -9,6 +9,12 @@ import type {
   VerificationQuery,
 } from './admin.schema.ts'
 
+/**
+ * Suspending also bumps tokenVersion, which invalidates every access and refresh token
+ * the user holds — they are signed out on their very next request.
+ */
+const SUSPEND_AND_SIGN_OUT = { status: 'suspended', tokenVersion: { increment: 1 } } as const
+
 // ---------------------------------------------------------------- dashboard
 
 export async function getDashboard() {
@@ -113,7 +119,7 @@ export async function rejectDoctor(
   if (!doctor) throw AppError.notFound('Doctor not found')
   if (doctor.user.status === 'suspended') throw AppError.conflict('This doctor is already rejected')
 
-  await prisma.user.update({ where: { id: doctor.userId }, data: { status: 'suspended' } })
+  await prisma.user.update({ where: { id: doctor.userId }, data: SUSPEND_AND_SIGN_OUT })
 
   await writeAudit({
     actorUserId: adminUserId,
@@ -192,7 +198,7 @@ export async function rejectLab(
   if (!lab) throw AppError.notFound('Lab not found')
   if (lab.user.status === 'suspended') throw AppError.conflict('This lab is already rejected')
 
-  await prisma.user.update({ where: { id: lab.userId }, data: { status: 'suspended' } })
+  await prisma.user.update({ where: { id: lab.userId }, data: SUSPEND_AND_SIGN_OUT })
 
   await writeAudit({
     actorUserId: adminUserId,
@@ -253,7 +259,10 @@ export async function setUserSuspension(
     throw AppError.conflict(`User is already ${nextStatus}`)
   }
 
-  await prisma.user.update({ where: { id: userId }, data: { status: nextStatus } })
+  await prisma.user.update({
+    where: { id: userId },
+    data: suspend ? SUSPEND_AND_SIGN_OUT : { status: 'active' },
+  })
 
   await writeAudit({
     actorUserId: adminUserId,

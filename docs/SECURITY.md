@@ -18,7 +18,10 @@
 ## 2. Authentication
 
 - **Passwords** hashed with **bcrypt** (cost ≥ 12) or argon2. Never stored or logged in plaintext; encryption is *not* used for passwords (one-way hashing only).
-- **JWT**: short-lived **access token** (~15 min) + longer **refresh token** (~7 days). Access token carries `{ userId, role }`. Refresh tokens are rotated and revocable on logout.
+- **JWT**: short-lived **access token** (~15 min) + longer **refresh token** (~7 days). Both carry the user's `tokenVersion` (access: `{ sub, role, ver }`).
+- **Instant revocation**: every authenticated request re-reads the user (one primary-key lookup). A token whose `ver` is older than the user's `tokenVersion` gets `401`, and a suspended account gets `403`. The role is taken from the database, not the token.
+  - Suspend, reject (doctor/lab), logout and password reset all bump `tokenVersion`, so the user is signed out on their **next request**, not when the token expires.
+  - Reinstating a suspended user does not revive their old tokens; they must log in again.
 - Secrets (`JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`) live in `.env`, min 32 random chars, never in code.
 - Doctor/lab accounts stay `pending` and **cannot act** until admin approval.
 

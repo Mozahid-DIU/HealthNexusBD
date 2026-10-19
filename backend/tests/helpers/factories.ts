@@ -18,8 +18,8 @@ const phone = (n: string) => `017${n.padStart(8, '0').slice(-8)}`
 
 type Status = 'active' | 'pending' | 'suspended'
 
-function bearer(user: { id: string; role: 'patient' | 'doctor' | 'lab' | 'admin' }) {
-  return `Bearer ${signAccessToken({ sub: user.id, role: user.role })}`
+function bearer(user: { id: string; role: 'patient' | 'doctor' | 'lab' | 'admin'; tokenVersion: number }) {
+  return `Bearer ${signAccessToken({ sub: user.id, role: user.role, ver: user.tokenVersion })}`
 }
 
 export async function createPatient(opts: { status?: Status } = {}) {
