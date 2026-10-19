@@ -90,17 +90,17 @@ model PasswordResetToken {
 }
 
 model Patient {
-  id              String   @id @default(uuid()) @db.Uuid
-  userId          String   @unique @map("user_id") @db.Uuid
-  uhid            String   @unique // BD-YYYY-XXXXX
-  nid             String   @unique
-  fullName        String   @map("full_name")
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @unique @map("user_id") @db.Uuid
+  uhid            String    @unique // BD-YYYY-XXXXX
+  nid             String    @unique
+  fullName        String    @map("full_name")
   dateOfBirth     DateTime? @map("date_of_birth") @db.Date
   gender          String?
-  bloodGroup      String?  @map("blood_group")
-  allergies       Json     @default("[]")
-  chronicDiseases Json     @default("[]") @map("chronic_diseases")
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  bloodGroup      String?   @map("blood_group")
+  allergies       Json      @default("[]")
+  chronicDiseases Json      @default("[]") @map("chronic_diseases")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   medicalRecords MedicalRecord[]
@@ -108,18 +108,19 @@ model Patient {
   otpTokens      OtpToken[]
   labReports     LabReport[]
   auditSubjects  AuditLog[]      @relation("SubjectLogs")
+  notifications  Notification[]
 
   @@map("patients")
 }
 
 model Doctor {
-  id              String    @id @default(uuid()) @db.Uuid
-  userId          String    @unique @map("user_id") @db.Uuid
-  bmdcNumber      String    @unique @map("bmdc_number")
-  fullName        String    @map("full_name")
-  specialization  String?
-  isBmdcVerified  Boolean   @default(false) @map("is_bmdc_verified")
-  approvedAt      DateTime? @map("approved_at") @db.Timestamptz(6)
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @unique @map("user_id") @db.Uuid
+  bmdcNumber     String    @unique @map("bmdc_number")
+  fullName       String    @map("full_name")
+  specialization String?
+  isBmdcVerified Boolean   @default(false) @map("is_bmdc_verified")
+  approvedAt     DateTime? @map("approved_at") @db.Timestamptz(6)
 
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   medicalRecords MedicalRecord[]
@@ -188,15 +189,16 @@ model Admin {
 // ---------------------- CLINICAL ----------------------
 
 model MedicalRecord {
-  id               String   @id @default(uuid()) @db.Uuid
-  patientId        String   @map("patient_id") @db.Uuid
-  doctorId         String?  @map("doctor_id") @db.Uuid
-  contentEncrypted String   @map("content_encrypted") // AES-256
-  symptoms         Json     @default("[]")
-  diagnosis        String?
-  isVerified       Boolean  @default(true) @map("is_verified")
-  followUpDate     DateTime? @map("follow_up_date") @db.Date
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  id                     String    @id @default(uuid()) @db.Uuid
+  patientId              String    @map("patient_id") @db.Uuid
+  doctorId               String?   @map("doctor_id") @db.Uuid
+  contentEncrypted       String    @map("content_encrypted") // AES-256
+  symptoms               Json      @default("[]")
+  diagnosis              String?
+  isVerified             Boolean   @default(true) @map("is_verified")
+  followUpDate           DateTime? @map("follow_up_date") @db.Date
+  followUpReminderSentAt DateTime? @map("follow_up_reminder_sent_at") @db.Timestamptz(6)
+  createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   patient       Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
   doctor        Doctor?        @relation(fields: [doctorId], references: [id])
@@ -250,8 +252,8 @@ model AccessSession {
   grantedAt DateTime      @default(now()) @map("granted_at") @db.Timestamptz(6)
   expiresAt DateTime      @map("expires_at") @db.Timestamptz(6)
 
-  patient  Patient    @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctor   Doctor     @relation(fields: [doctorId], references: [id])
+  patient  Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor   Doctor    @relation(fields: [doctorId], references: [id])
   otpToken OtpToken?
 
   @@index([doctorId, status])
@@ -309,4 +311,27 @@ model AuditLog {
 
   @@index([patientId, createdAt])
   @@map("audit_logs")
+}
+
+// ---------------------- NOTIFICATIONS (FR-21) ----------------------
+
+enum NotificationType {
+  lab_report
+  follow_up
+}
+
+/// In-app notification for a patient. An SMS is sent alongside, best-effort.
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  patientId String           @map("patient_id") @db.Uuid
+  type      NotificationType
+  title     String
+  body      String
+  readAt    DateTime?        @map("read_at") @db.Timestamptz(6)
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId, createdAt])
+  @@map("notifications")
 }

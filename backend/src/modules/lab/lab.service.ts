@@ -3,6 +3,7 @@ import { AppError } from '../../utils/AppError.ts'
 import { getPagination } from '../../utils/pagination.ts'
 import { writeAudit } from '../../utils/audit.ts'
 import { readReportFile, storeReportFile } from '../../services/reportFiles.ts'
+import { notifyLabReportReady } from '../../services/notifications.ts'
 import type { ListQuery, UploadReportInput } from './lab.schema.ts'
 
 /** Resolve the calling lab and ensure the account is approved/active. */
@@ -107,6 +108,9 @@ export async function uploadReport(
     resource: `lab_report:${report.id}`,
     ipAddress: ip ?? null,
   })
+
+  // FR-21: in-app + SMS. Best-effort; never fails the upload.
+  await notifyLabReportReady({ patientId: patient.id, testName: report.testName, labName: lab.centerName })
 
   return { id: report.id, testName: report.testName, uploadedAt: report.uploadedAt }
 }

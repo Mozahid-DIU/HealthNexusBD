@@ -216,3 +216,48 @@ export async function getAudit(userId: string, query: ListQuery) {
 
   return { data, meta: { total, page, limit } }
 }
+
+// ---------------------------------------------------------------- notifications (FR-21)
+
+export async function getNotifications(userId: string, query: ListQuery) {
+  const p = await getPatientOrThrow(userId)
+  const { skip, take, page, limit } = getPagination(query)
+
+  const [total, unreadCount, notifications] = await Promise.all([
+    prisma.notification.count({ where: { patientId: p.id } }),
+    prisma.notification.count({ where: { patientId: p.id, readAt: null } }),
+    prisma.notification.findMany({
+      where: { patientId: p.id },
+      skip,
+      take,
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, type: true, title: true, body: true, readAt: true, createdAt: true },
+    }),
+  ])
+
+  return { data: { notifications, unreadCount }, meta: { total, page, limit } }
+}
+
+export async function markNotificationRead(userId: string, notificationId: string) {
+  const p = await getPatientOrThrow(userId)
+
+  // Scoped to the patient, so another patient's id simply matches nothing.
+  const { count } = await prisma.notification.updateMany({
+    where: { id: notificationId, patientId: p.id, readAt: null },
+    data: { readAt: new Date() },
+  })
+  if (count === 0) {
+    const exists = await prisma.notification.findFirst({ where: { id: notificationId, patientId: p.id } })
+    if (!exists) throw AppError.notFound('Notification not found')
+  }
+  return { id: notificationId, read: true }
+}
+
+export async function markAllNotificationsRead(userId: string) {
+  const p = await getPatientOrThrow(userId)
+  const { count } = await prisma.notification.updateMany({
+    where: { patientId: p.id, readAt: null },
+    data: { readAt: new Date() },
+  })
+  return { updated: count }
+}

@@ -55,6 +55,13 @@ Legend — 🔓 public · 🔒 auth required · roles in `[ ]`.
 | GET | `/lab-reports` | Own lab reports. Each item has a `fileUrl` pointing to the endpoint below; no storage link is exposed. |
 | GET | `/lab-reports/:id/file` | The report PDF, decrypted server-side (`application/pdf`, `Cache-Control: no-store`). 404 if not the patient's own report. |
 | GET | `/audit` | Own audit log — who accessed data & when (paginated). |
+| GET | `/notifications` | Inbox (FR-21): new lab reports and follow-up reminders, newest first, paginated. Returns `{ notifications, unreadCount }`. |
+| POST | `/notifications/:id/read` | Mark one notification read. 404 if it isn't the patient's. |
+| POST | `/notifications/read-all` | Mark all read. |
+
+> **Notifications (FR-21).** Each is stored in-app and also sent by SMS (best-effort; a failed SMS never blocks the action). SMS text is deliberately generic — test names and diagnoses appear only inside the app.
+> - **New lab report:** sent when a lab uploads a report.
+> - **Follow-up reminder:** sent once per record, from 09:00 Bangladesh time on the day before `followUpDate`. The API runs this hourly; `npm run reminders` triggers it manually or from an external cron.
 
 ---
 

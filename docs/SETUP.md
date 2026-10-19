@@ -75,6 +75,7 @@ See [SEED.md](./SEED.md). Shared demo password: `Demo@1234`.
 | `npm run seed` | Re-load demo data (idempotent) |
 | `npx prisma migrate reset` | Wipe + re-migrate + re-seed (careful) |
 | `npm run check:consent` | Live walk-through of the OTP consent flow against the real DB (cleans up after itself) |
+| `npm run reminders` | Send any due follow-up reminders now. The API also does this hourly; on a host that sleeps idle apps, run it from an external cron. |
 
 ## 7. Tests
 

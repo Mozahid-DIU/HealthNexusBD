@@ -24,6 +24,8 @@ const ROUTES: Array<{ method: 'get' | 'post'; path: string; role: Role }> = [
   { method: 'get', path: '/api/patient/lab-reports', role: 'patient' },
   { method: 'get', path: '/api/patient/audit', role: 'patient' },
   { method: 'get', path: '/api/consent/requests', role: 'patient' },
+  { method: 'get', path: '/api/patient/notifications', role: 'patient' },
+  { method: 'post', path: '/api/patient/notifications/read-all', role: 'patient' },
   { method: 'get', path: '/api/doctor/patients', role: 'doctor' },
   { method: 'get', path: '/api/doctor/search?uhid=BD-2026-00001', role: 'doctor' },
   { method: 'post', path: '/api/doctor/records', role: 'doctor' },

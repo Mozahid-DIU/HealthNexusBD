@@ -6,6 +6,9 @@ import { idParamSchema, listQuerySchema, updateProfileSchema } from './patient.s
 import {
   getAuditController,
   getLabReportFileController,
+  getNotificationsController,
+  markAllNotificationsReadController,
+  markNotificationReadController,
   getLabReportsController,
   getProfileController,
   getRecordByIdController,
@@ -29,5 +32,17 @@ patientRouter.get(
   '/lab-reports/:id/file',
   validate(idParamSchema, 'params'),
   getLabReportFileController,
+  getNotificationsController,
+  markAllNotificationsReadController,
+  markNotificationReadController,
 )
 patientRouter.get('/audit', validate(listQuerySchema, 'query'), getAuditController)
+
+// FR-21 inbox: new lab reports and follow-up reminders.
+patientRouter.get('/notifications', validate(listQuerySchema, 'query'), getNotificationsController)
+patientRouter.post('/notifications/read-all', markAllNotificationsReadController)
+patientRouter.post(
+  '/notifications/:id/read',
+  validate(idParamSchema, 'params'),
+  markNotificationReadController,
+)

@@ -46,3 +46,16 @@ export const getLabReportFileController = asyncHandler(async (req: Request, res:
   const { pdf, filename } = await patientService.getLabReportFile(userId(req), req.params.id)
   return sendPdf(res, pdf, filename)
 })
+
+export const getNotificationsController = asyncHandler(async (req: Request, res: Response) => {
+  const { data, meta } = await patientService.getNotifications(userId(req), query(req))
+  return sendSuccess(res, data, 200, meta)
+})
+
+export const markNotificationReadController = asyncHandler(async (req: Request, res: Response) => {
+  return sendSuccess(res, await patientService.markNotificationRead(userId(req), req.params.id))
+})
+
+export const markAllNotificationsReadController = asyncHandler(async (req: Request, res: Response) => {
+  return sendSuccess(res, await patientService.markAllNotificationsRead(userId(req)))
+})
