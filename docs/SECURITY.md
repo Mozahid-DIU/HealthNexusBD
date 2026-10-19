@@ -69,6 +69,16 @@
 ## 9. Audit log (integrity)
 
 - **Append-only**: insert only; no update/delete API, admin has no delete permission.
+- **Enforced by the database**, not just the code: triggers on `audit_logs` reject every
+  `UPDATE`, `DELETE` and `TRUNCATE` (migration `20261019120000_audit_log_append_only`).
+  A bug or a stray query cannot rewrite history. Deleting a patient who has audit history
+  is blocked too.
+- Dev/test tooling (seed refresh, check scripts) clears its own demo rows via
+  `prisma/audit-purge.ts`, which unlocks deletes for one transaction only and refuses to
+  run when `NODE_ENV=production`.
+- Limit: the DB owner role can still drop the triggers. A production deployment should
+  connect the app with a separate role that has no `UPDATE`/`DELETE`/`TRIGGER` rights on
+  `audit_logs`.
 - Records actor, action, subject patient, resource, IP, timestamp.
 - Optional hardening: hash-chain each entry (store hash of previous) to make tampering detectable.
 

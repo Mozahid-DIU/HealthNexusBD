@@ -1,6 +1,7 @@
 import type { Prisma, PrismaClient } from '@prisma/client'
 import { encrypt } from '../src/utils/crypto.ts'
 import { SAMPLE_REPORT_PDF_URL } from '../src/services/reportFiles.ts'
+import { withAuditPurge } from './audit-purge.ts'
 
 export interface SeededDoctor {
   userId: string
@@ -166,11 +167,14 @@ export async function seedClinical(
   const patientIds = patients.map((p) => p.id)
 
   // --- Idempotent refresh: wipe demo clinical data, then rebuild ---
-  await prisma.auditLog.deleteMany({ where: { patientId: { in: patientIds } } })
-  await prisma.labReport.deleteMany({ where: { patientId: { in: patientIds } } })
-  await prisma.otpToken.deleteMany({ where: { patientId: { in: patientIds } } })
-  await prisma.accessSession.deleteMany({ where: { patientId: { in: patientIds } } })
-  await prisma.medicalRecord.deleteMany({ where: { patientId: { in: patientIds } } }) // cascades prescriptions + AI summaries
+  // audit_logs is append-only; the demo rows are cleared through the dev-only purge.
+  await withAuditPurge(prisma, async (tx) => {
+    await tx.auditLog.deleteMany({ where: { patientId: { in: patientIds } } })
+    await tx.labReport.deleteMany({ where: { patientId: { in: patientIds } } })
+    await tx.otpToken.deleteMany({ where: { patientId: { in: patientIds } } })
+    await tx.accessSession.deleteMany({ where: { patientId: { in: patientIds } } })
+    await tx.medicalRecord.deleteMany({ where: { patientId: { in: patientIds } } }) // cascades prescriptions + AI summaries
+  })
 
   let records = 0
   let prescriptions = 0

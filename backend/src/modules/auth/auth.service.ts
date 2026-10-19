@@ -43,10 +43,13 @@ export async function getProfile(userId: string) {
 export async function register(input: RegisterInput) {
   const { role, email, phone, password } = input
   const passwordHash = await hashPassword(password)
+  // Picked before the transaction: its lookups use their own connection, so running
+  // them inside would only burn the transaction's time budget.
+  const uhid = role === 'patient' ? await generateUhid() : null
 
   const user = await prisma.$transaction(async (tx) => {
     if (role === 'patient') {
-      const uhid = await generateUhid()
+      if (!uhid) throw new Error('UHID was not generated')
       return tx.user.create({
         data: {
           email,

@@ -18,6 +18,7 @@ import type { Server } from 'node:http'
 let createApp: (typeof import('../src/app.ts'))['createApp']
 let prisma: (typeof import('../src/config/prisma.ts'))['prisma']
 let env: (typeof import('../src/config/env.ts'))['env']
+let withAuditPurge: (typeof import('../prisma/audit-purge.ts'))['withAuditPurge']
 
 const PORT = 4100
 const BASE = `http://localhost:${PORT}/api`
@@ -71,11 +72,14 @@ async function cleanup() {
       where: { userId: { in: ids } },
       select: { id: true },
     })
-    await prisma.auditLog.deleteMany({ where: { actorUserId: { in: ids } } })
-    if (pats.length) {
-      await prisma.auditLog.deleteMany({ where: { patientId: { in: pats.map((p) => p.id) } } })
-    }
-    await prisma.user.deleteMany({ where: { id: { in: ids } } })
+    // audit_logs is append-only; test rows are removed through the dev-only purge.
+    await withAuditPurge(prisma, async (tx) => {
+      await tx.auditLog.deleteMany({ where: { actorUserId: { in: ids } } })
+      if (pats.length) {
+        await tx.auditLog.deleteMany({ where: { patientId: { in: pats.map((p) => p.id) } } })
+      }
+      await tx.user.deleteMany({ where: { id: { in: ids } } })
+    })
   }
   await prisma.doctorRegistry.deleteMany({ where: { bmdcNumber: BMDC } })
 }
@@ -85,6 +89,7 @@ async function main() {
   ;({ createApp } = await import('../src/app.ts'))
   ;({ prisma } = await import('../src/config/prisma.ts'))
   ;({ env } = await import('../src/config/env.ts'))
+  ;({ withAuditPurge } = await import('../prisma/audit-purge.ts'))
 
   if (env.OTP_MODE !== 'demo') {
     line('⚠  OTP_MODE is not "demo" — the code will be sent by SMS and not shown here.')
@@ -121,7 +126,7 @@ async function main() {
     const doctorToken = dReg.json?.data?.accessToken
     if (!uhid || !doctorToken) {
       throw new Error(
-        `Setup failed — patient ${pReg.status} ${pReg.json?.message ?? ''}, doctor ${dReg.status} ${dReg.json?.message ?? ''}`,
+        `Setup failed — patient ${pReg.status} ${pReg.json?.error ?? ''}, doctor ${dReg.status} ${dReg.json?.error ?? ''}`,
       )
     }
     // Simulate admin verifying the doctor so they may request access.
