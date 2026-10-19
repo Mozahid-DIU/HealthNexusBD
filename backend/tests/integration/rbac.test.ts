@@ -27,6 +27,7 @@ const ROUTES: Array<{ method: 'get' | 'post'; path: string; role: Role }> = [
   { method: 'get', path: '/api/patient/notifications', role: 'patient' },
   { method: 'post', path: '/api/patient/notifications/read-all', role: 'patient' },
   { method: 'get', path: '/api/doctor/patients', role: 'doctor' },
+  { method: 'get', path: '/api/doctor/patients/00000000-0000-0000-0000-000000000000/lab-reports', role: 'doctor' },
   { method: 'get', path: '/api/doctor/search?uhid=BD-2026-00001', role: 'doctor' },
   { method: 'post', path: '/api/doctor/records', role: 'doctor' },
   { method: 'get', path: '/api/consent/sessions', role: 'doctor' },
@@ -57,7 +58,8 @@ describe('role-based access control', () => {
 
   it('lets each role into its own GET routes', async () => {
     for (const { method, path, role } of ROUTES) {
-      if (method !== 'get' || path.includes('search')) continue
+      // Search needs a real match and per-patient routes need consent; both are tested elsewhere.
+      if (method !== 'get' || path.includes('search') || path.includes('/patients/0000')) continue
       const res = await request(app).get(path).set('Authorization', auth[role])
       expect(res.status, `${role} → ${path}`).toBe(200)
     }

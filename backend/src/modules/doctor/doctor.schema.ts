@@ -43,6 +43,12 @@ export const idParamSchema = z.object({
   id: z.string().uuid('Invalid id'),
 })
 
+/** /patients/:id/lab-reports/:reportId/file */
+export const patientReportParamsSchema = z.object({
+  id: z.string().uuid('Invalid patient id'),
+  reportId: z.string().uuid('Invalid report id'),
+})
+
 export type SearchQuery = z.infer<typeof searchQuerySchema>
 export type ListQuery = z.infer<typeof listQuerySchema>
 export type CreateRecordInput = z.infer<typeof createRecordSchema>

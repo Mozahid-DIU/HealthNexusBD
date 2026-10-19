@@ -72,6 +72,8 @@ Legend — 🔓 public · 🔒 auth required · roles in `[ ]`.
 | GET | `/search?uhid=` or `?phone=` | Find a patient to request access. |
 | GET | `/patients` | Patients with active sessions. |
 | GET | `/patients/:id/records` | Read patient records **(requires active session)**. Audited as `view`. |
+| GET | `/patients/:id/lab-reports` | The patient's lab reports, each with a `fileUrl` **(requires active session)**. Audited as `view`. |
+| GET | `/patients/:id/lab-reports/:reportId/file` | Decrypted report PDF **(requires active session)**. Audited as `view`. 404 if the report belongs to a different patient. |
 | POST | `/records` | Create a medical record (diagnosis, symptoms) → AES-256 encrypted. |
 | POST | `/records/:id/prescription` | Add prescription (medications, recommended tests). |
 | POST | `/records/:id/ai-summary` | Generate AI clinical summary (Gemini). |
@@ -82,7 +84,7 @@ Legend — 🔓 public · 🔒 auth required · roles in `[ ]`.
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/search?uhid=` | Find patient + their **prescribed tests** (not full history). |
+| GET | `/search?uhid=` or `?phone=` | Find patient + their **prescribed tests** (not full history). |
 | POST | `/reports` | Upload a report PDF for a prescribed test → AES-256 encrypted, linked to prescription. |
 | GET | `/uploads` | Lab's own uploaded reports (paginated), each with a `fileUrl`. |
 | GET | `/reports/:id/file` | Decrypted PDF of one of this lab's own uploads. Audited as `view`. 404 for another lab's report. |

@@ -4,7 +4,7 @@ import { getPagination } from '../../utils/pagination.ts'
 import { writeAudit } from '../../utils/audit.ts'
 import { readReportFile, storeReportFile } from '../../services/reportFiles.ts'
 import { notifyLabReportReady } from '../../services/notifications.ts'
-import type { ListQuery, UploadReportInput } from './lab.schema.ts'
+import type { ListQuery, SearchQuery, UploadReportInput } from './lab.schema.ts'
 
 /** Resolve the calling lab and ensure the account is approved/active. */
 async function getActiveLab(userId: string) {
@@ -32,11 +32,13 @@ async function prescribedTestNames(patientId: string): Promise<string[]> {
 
 // ---------------------------------------------------------------- search
 
-export async function searchPatient(userId: string, uhid: string) {
+export async function searchPatient(userId: string, query: SearchQuery) {
   await getActiveLab(userId)
 
-  const patient = await prisma.patient.findUnique({ where: { uhid } })
-  if (!patient) throw AppError.notFound('No patient found with this UHID')
+  const patient = await prisma.patient.findFirst({
+    where: query.uhid ? { uhid: query.uhid } : { user: { phone: query.phone } },
+  })
+  if (!patient) throw AppError.notFound('No patient found')
 
   const [names, reports] = await Promise.all([
     prescribedTestNames(patient.id),

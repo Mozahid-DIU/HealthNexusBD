@@ -6,6 +6,7 @@ import { getPagination } from '../../utils/pagination.ts'
 import { writeAudit } from '../../utils/audit.ts'
 import { getActiveAccessSession } from '../consent/consent.service.ts'
 import { generateSummary } from '../../services/ai.ts'
+import { readReportFile } from '../../services/reportFiles.ts'
 import type { CreateRecordInput, ListQuery, PrescriptionInput, SearchQuery } from './doctor.schema.ts'
 
 function asStringArray(value: unknown): string[] {
@@ -268,4 +269,75 @@ export async function addAiSummary(userId: string, recordId: string, ip?: string
     model: result.model,
     generatedAt: summary.generatedAt,
   }
+}
+
+// ---------------------------------------------------------------- lab reports (with consent)
+
+export async function getPatientLabReports(
+  userId: string,
+  patientId: string,
+  query: ListQuery,
+  ip?: string | null,
+) {
+  const doctor = await getActiveDoctor(userId)
+  await assertConsent(doctor.id, patientId)
+
+  const { skip, take, page, limit } = getPagination(query)
+  const [total, reports] = await Promise.all([
+    prisma.labReport.count({ where: { patientId } }),
+    prisma.labReport.findMany({
+      where: { patientId },
+      skip,
+      take,
+      orderBy: { uploadedAt: 'desc' },
+      include: { lab: { select: { centerName: true } } },
+    }),
+  ])
+
+  await writeAudit({
+    actorUserId: userId,
+    action: 'view',
+    patientId,
+    resource: `lab_reports:${reports.length}`,
+    ipAddress: ip ?? null,
+  })
+
+  const data = reports.map((r) => ({
+    id: r.id,
+    testName: r.testName,
+    lab: r.lab.centerName,
+    recordId: r.recordId,
+    isVerified: r.isVerified,
+    uploadedAt: r.uploadedAt,
+    fileUrl: `/api/doctor/patients/${patientId}/lab-reports/${r.id}/file`,
+  }))
+
+  return { data, meta: { total, page, limit } }
+}
+
+/** Decrypted PDF of one lab report, only while the doctor holds consent for that patient. */
+export async function getPatientLabReportFile(
+  userId: string,
+  patientId: string,
+  reportId: string,
+  ip?: string | null,
+) {
+  const doctor = await getActiveDoctor(userId)
+  await assertConsent(doctor.id, patientId)
+
+  // Scoped to the consented patient: another patient's report id matches nothing.
+  const report = await prisma.labReport.findFirst({ where: { id: reportId, patientId } })
+  if (!report) throw AppError.notFound('Lab report not found')
+
+  const pdf = await readReportFile(report.fileRefEncrypted)
+
+  await writeAudit({
+    actorUserId: userId,
+    action: 'view',
+    patientId,
+    resource: `lab_report_file:${report.id}`,
+    ipAddress: ip ?? null,
+  })
+
+  return { pdf, filename: report.testName }
 }

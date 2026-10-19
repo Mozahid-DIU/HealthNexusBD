@@ -2,9 +2,17 @@ import { z } from 'zod'
 
 const UHID_REGEX = /^BD-\d{4}-\d{5}$/
 
-export const searchQuerySchema = z.object({
-  uhid: z.string().trim().toUpperCase().regex(UHID_REGEX, 'Invalid UHID'),
-})
+const PHONE_REGEX = /^01\d{9}$/
+
+/** Find a patient by UHID or mobile number (FR-8); at least one is required. */
+export const searchQuerySchema = z
+  .object({
+    uhid: z.string().trim().toUpperCase().regex(UHID_REGEX, 'Invalid UHID').optional(),
+    phone: z.string().trim().regex(PHONE_REGEX, 'Invalid phone').optional(),
+  })
+  .refine((v) => Boolean(v.uhid) || Boolean(v.phone), {
+    message: 'Provide a uhid or phone to search',
+  })
 
 /** Fields accompanying the uploaded PDF (arrive as multipart text fields). */
 export const uploadReportSchema = z.object({

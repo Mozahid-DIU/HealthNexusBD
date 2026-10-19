@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
 import { asyncHandler } from '../../utils/asyncHandler.ts'
-import { sendSuccess } from '../../utils/apiResponse.ts'
+import { sendPdf, sendSuccess } from '../../utils/apiResponse.ts'
 import { AppError } from '../../utils/AppError.ts'
 import * as doctorService from './doctor.service.ts'
 import type { ListQuery, SearchQuery } from './doctor.schema.ts'
@@ -47,4 +47,24 @@ export const addPrescriptionController = asyncHandler(async (req: Request, res: 
 export const aiSummaryController = asyncHandler(async (req: Request, res: Response) => {
   const result = await doctorService.addAiSummary(userId(req), req.params.id, req.ip)
   return sendSuccess(res, result, 201)
+})
+
+export const patientLabReportsController = asyncHandler(async (req: Request, res: Response) => {
+  const { data, meta } = await doctorService.getPatientLabReports(
+    userId(req),
+    req.params.id,
+    query<ListQuery>(req),
+    req.ip,
+  )
+  return sendSuccess(res, data, 200, meta)
+})
+
+export const patientLabReportFileController = asyncHandler(async (req: Request, res: Response) => {
+  const { pdf, filename } = await doctorService.getPatientLabReportFile(
+    userId(req),
+    req.params.id,
+    req.params.reportId,
+    req.ip,
+  )
+  return sendPdf(res, pdf, filename)
 })

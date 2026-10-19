@@ -15,8 +15,7 @@ function query<T>(req: Request): T {
 }
 
 export const searchController = asyncHandler(async (req: Request, res: Response) => {
-  const { uhid } = query<SearchQuery>(req)
-  return sendSuccess(res, await labService.searchPatient(userId(req), uhid))
+  return sendSuccess(res, await labService.searchPatient(userId(req), query<SearchQuery>(req)))
 })
 
 export const uploadReportController = asyncHandler(async (req: Request, res: Response) => {

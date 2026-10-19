@@ -6,6 +6,7 @@ import {
   createRecordSchema,
   idParamSchema,
   listQuerySchema,
+  patientReportParamsSchema,
   prescriptionSchema,
   searchQuerySchema,
 } from './doctor.schema.ts'
@@ -14,6 +15,8 @@ import {
   aiSummaryController,
   createRecordController,
   myPatientsController,
+  patientLabReportFileController,
+  patientLabReportsController,
   patientRecordsController,
   searchController,
 } from './doctor.controller.ts'
@@ -30,6 +33,18 @@ doctorRouter.get(
   validate(idParamSchema, 'params'),
   validate(listQuerySchema, 'query'),
   patientRecordsController,
+)
+// Lab reports of a consented patient (list + decrypted PDF), both audited.
+doctorRouter.get(
+  '/patients/:id/lab-reports',
+  validate(idParamSchema, 'params'),
+  validate(listQuerySchema, 'query'),
+  patientLabReportsController,
+)
+doctorRouter.get(
+  '/patients/:id/lab-reports/:reportId/file',
+  validate(patientReportParamsSchema, 'params'),
+  patientLabReportFileController,
 )
 doctorRouter.post('/records', validate(createRecordSchema), createRecordController)
 doctorRouter.post(
