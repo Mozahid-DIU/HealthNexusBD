@@ -74,6 +74,24 @@ See [SEED.md](./SEED.md). Shared demo password: `Demo@1234`.
 | `npx prisma studio` | Visual DB browser (see encrypted rows) |
 | `npm run seed` | Re-load demo data (idempotent) |
 | `npx prisma migrate reset` | Wipe + re-migrate + re-seed (careful) |
+| `npm run check:consent` | Live walk-through of the OTP consent flow against the real DB (cleans up after itself) |
+
+## 7. Tests
+
+Run these from `backend/`:
+
+| Command | What |
+|---------|------|
+| `npm test` | Run the whole suite once |
+| `npm run test:watch` | Re-run tests on file changes |
+| `npm run test:coverage` | Run with a coverage report (`coverage/index.html`). Fails if coverage drops below the floor set in `vitest.config.ts`. |
+
+- **No setup needed.** The suite starts its own throwaway PostgreSQL (`embedded-postgres`, UTF-8) on port `54329`. It applies every migration, runs the tests, and deletes the database afterwards. The first run downloads the Postgres binaries.
+- **Never touches Neon or real services.** `tests/setup-env.ts` overrides every variable from `.env`. Cloudinary is replaced by an in-memory fake, and SMS, email and Gemini run in demo mode. `resetDb()` refuses to run against any non-local database.
+- **Layout:**
+  - `tests/unit/`: pure logic (crypto, OTP, AI rules, storage guards)
+  - `tests/integration/`: real HTTP requests through the Express app (auth, consent/OTP, RBAC matrix, doctor, patient, lab reports, admin, audit-log immutability)
+  - `tests/helpers/`: DB reset, user factories, fake storage
 
 ## Troubleshooting
 
