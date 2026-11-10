@@ -25,6 +25,11 @@ if (typeof window.matchMedia !== 'function') {
   })
 }
 
+// jsdom implements neither scrolling nor object URLs.
+window.scrollTo = () => {}
+if (!URL.createObjectURL) URL.createObjectURL = () => 'blob:test'
+if (!URL.revokeObjectURL) URL.revokeObjectURL = () => {}
+
 beforeEach(async () => {
   localStorage.clear()
   useAuthStore.getState().clear()

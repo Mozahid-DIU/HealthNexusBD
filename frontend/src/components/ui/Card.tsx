@@ -1,7 +1,7 @@
 import type { HTMLAttributes, ReactNode } from 'react'
 
 interface CardProps extends HTMLAttributes<HTMLElement> {
-  as?: 'div' | 'section' | 'article'
+  as?: 'div' | 'section' | 'article' | 'aside'
   /** Padding preset; `none` for cards that manage their own (e.g. lists). */
   padding?: 'none' | 'md' | 'lg'
   children: ReactNode

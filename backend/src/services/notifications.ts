@@ -19,6 +19,8 @@ interface PatientNotice {
   type: NotificationType
   title: string
   body: string
+  /** The values in `body`, so clients can show the message in the user's language. */
+  params: Record<string, string>
   sms: string
 }
 
@@ -30,7 +32,13 @@ async function notifyPatient(notice: PatientNotice): Promise<void> {
   if (!patient) return
 
   await prisma.notification.create({
-    data: { patientId: notice.patientId, type: notice.type, title: notice.title, body: notice.body },
+    data: {
+      patientId: notice.patientId,
+      type: notice.type,
+      title: notice.title,
+      body: notice.body,
+      params: notice.params,
+    },
   })
 
   try {
@@ -54,6 +62,7 @@ export async function notifyLabReportReady(input: {
       type: 'lab_report',
       title: 'New lab report available',
       body: `Your ${input.testName} report from ${input.labName} is ready to view.`,
+      params: { testName: input.testName, labName: input.labName },
       sms: 'HealthNexus BD: A new lab report is available in your account. Log in to view it.',
     })
   } catch (err) {
@@ -111,6 +120,10 @@ export async function sendFollowUpReminders(now: Date = new Date()): Promise<num
         type: 'follow_up',
         title: 'Follow-up visit tomorrow',
         body: `Reminder: your follow-up visit${record.diagnosis ? ` for ${record.diagnosis}` : ''} is on ${when}.`,
+        params: {
+          date: tomorrow.toISOString().slice(0, 10),
+          ...(record.diagnosis ? { diagnosis: record.diagnosis } : {}),
+        },
         sms: `HealthNexus BD: Reminder - you have a follow-up visit on ${when}. Log in for details.`,
       })
       sent += 1

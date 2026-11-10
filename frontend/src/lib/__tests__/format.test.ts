@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDate, formatDateTime, formatLongDate, formatNumber, initials } from '../format'
+import { formatDate, formatDateTime, formatLongDate, formatNumber, initials, todayIso } from '../format'
 
 // 2026-03-10 20:30 UTC is 2026-03-11 02:30 in Dhaka (UTC+6).
 const LATE_NIGHT_UTC = '2026-03-10T20:30:00Z'
@@ -21,13 +21,25 @@ describe('format', () => {
     expect(formatDate('2026-03-11T00:00:00.000Z', 'en', { dateOnly: true })).toBe('11 Mar 2026')
   })
 
-  it('formats date and time', () => {
-    expect(formatDateTime(LATE_NIGHT_UTC, 'en')).toMatch(/11 Mar 2026.*2:30/)
+  it('formats date and time on a 24-hour clock', () => {
+    expect(formatDateTime(LATE_NIGHT_UTC, 'en')).toMatch(/11 Mar 2026.*02:30/)
+    expect(formatDateTime('2026-11-10T16:13:00Z', 'en')).toMatch(/22:13/)
+  })
+
+  it('never mixes Latin AM/PM into Bangla times', () => {
+    const bn = formatDateTime('2026-11-10T16:13:00Z', 'bn')
+    expect(bn).toMatch(/২২:১৩/)
+    expect(bn).not.toMatch(/[A-Za-z]/)
   })
 
   it('formats a long date with the weekday, in Dhaka time', () => {
     expect(formatLongDate(LATE_NIGHT_UTC, 'en')).toBe('Wednesday, 11 March 2026')
     expect(formatLongDate(LATE_NIGHT_UTC, 'bn')).toMatch(/বুধবার/)
+  })
+
+  it("gives today's date in Bangladesh, not UTC", () => {
+    // 01:00 on 11 Mar in Dhaka is still 10 Mar in UTC.
+    expect(todayIso(new Date('2026-03-10T19:00:00Z'))).toBe('2026-03-11')
   })
 
   it('formats numbers per language', () => {

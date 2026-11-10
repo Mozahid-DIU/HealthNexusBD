@@ -30,7 +30,10 @@ export function formatDate(value: DateInput, lang: Language, opts: DateOptions =
   }).format(date)
 }
 
-/** e.g. "11 Mar 2026, 2:30 am". */
+/**
+ * e.g. "11 Mar 2026, 22:13" / "১১ মার্চ, ২০২৬, ২২:১৩". Always a 24-hour clock: the Bangla
+ * locale's 12-hour format would otherwise put a Latin "AM/PM" among Bangla digits.
+ */
 export function formatDateTime(value: DateInput, lang: Language): string {
   const date = toDate(value)
   if (!date) return ''
@@ -38,8 +41,9 @@ export function formatDateTime(value: DateInput, lang: Language): string {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-    hour: 'numeric',
+    hour: '2-digit',
     minute: '2-digit',
+    hourCycle: 'h23',
     timeZone: TIME_ZONE,
   }).format(date)
 }
@@ -55,6 +59,11 @@ export function formatLongDate(value: DateInput, lang: Language): string {
     year: 'numeric',
     timeZone: TIME_ZONE,
   }).format(date)
+}
+
+/** Today's calendar date in Bangladesh as "YYYY-MM-DD" (UTC would be a day behind before 06:00). */
+export function todayIso(now: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: TIME_ZONE }).format(now)
 }
 
 export function formatNumber(value: number, lang: Language): string {

@@ -53,6 +53,8 @@ describe('new lab report notification', () => {
     expect(res.body.data.unreadCount).toBe(1)
     expect(res.body.data.notifications[0]).toMatchObject({ type: 'lab_report', readAt: null })
     expect(res.body.data.notifications[0].body).toContain('HIV Antibody')
+    // Structured values so clients can render the message in their own language.
+    expect(res.body.data.notifications[0].params).toEqual({ testName: 'HIV Antibody', labName: expect.any(String) })
   })
 
   it('texts the patient without revealing the test name', async () => {
@@ -158,6 +160,7 @@ describe('follow-up reminders', () => {
     const inbox = (await notifications()).body.data.notifications
     expect(inbox).toHaveLength(1)
     expect(inbox[0].type).toBe('follow_up')
+    expect(inbox[0].params).toEqual({ date: '2026-03-11', diagnosis: 'Hypertension' })
   })
 
   it('sends each reminder only once, even across repeated runs', async () => {

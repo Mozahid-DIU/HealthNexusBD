@@ -231,7 +231,7 @@ export async function getNotifications(userId: string, query: ListQuery) {
       skip,
       take,
       orderBy: { createdAt: 'desc' },
-      select: { id: true, type: true, title: true, body: true, readAt: true, createdAt: true },
+      select: { id: true, type: true, title: true, body: true, params: true, readAt: true, createdAt: true },
     }),
   ])
 

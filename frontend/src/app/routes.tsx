@@ -1,3 +1,4 @@
+import type { ComponentType } from 'react'
 import type { RouteObject } from 'react-router-dom'
 import { LandingPage } from '@/features/landing/LandingPage'
 import type { Role } from '@/types/api'
@@ -22,11 +23,27 @@ const accountOverview = async () => ({
   Component: (await import('@/features/account/AccountOverview')).AccountOverview,
 })
 
-function roleSection(role: Role): RouteObject {
+const patientPage = <K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) => async () => ({
+  Component: (await load())[name],
+})
+
+/** Patient pages, relative to /patient. */
+const PATIENT_PAGES: RouteObject[] = [
+  { index: true, lazy: patientPage(() => import('@/features/patient/PatientHome'), 'PatientHome') },
+  { path: 'records', lazy: patientPage(() => import('@/features/patient/RecordsPage'), 'RecordsPage') },
+  { path: 'records/:recordId', lazy: patientPage(() => import('@/features/patient/RecordDetailPage'), 'RecordDetailPage') },
+  { path: 'lab-reports', lazy: patientPage(() => import('@/features/patient/LabReportsPage'), 'LabReportsPage') },
+  { path: 'consent', lazy: patientPage(() => import('@/features/patient/ConsentPage'), 'ConsentPage') },
+  { path: 'notifications', lazy: patientPage(() => import('@/features/patient/NotificationsPage'), 'NotificationsPage') },
+  { path: 'audit', lazy: patientPage(() => import('@/features/patient/AuditPage'), 'AuditPage') },
+  { path: 'profile', lazy: patientPage(() => import('@/features/patient/ProfilePage'), 'ProfilePage') },
+]
+
+function roleSection(role: Role, pages: RouteObject[] = [{ index: true, lazy: accountOverview }]): RouteObject {
   return {
     path: ROLE_HOME[role],
     element: <RequireRole role={role} />,
-    children: [{ lazy: dashboardLayout, children: [{ index: true, lazy: accountOverview }] }],
+    children: [{ lazy: dashboardLayout, children: pages }],
   }
 }
 
@@ -47,7 +64,7 @@ export const routes: RouteObject[] = [
       },
       // Reachable while signed in too (e.g. resetting from a second device).
       { path: '/forgot-password', lazy: forgotPasswordPage },
-      roleSection('patient'),
+      roleSection('patient', PATIENT_PAGES),
       roleSection('doctor'),
       roleSection('lab'),
       roleSection('admin'),

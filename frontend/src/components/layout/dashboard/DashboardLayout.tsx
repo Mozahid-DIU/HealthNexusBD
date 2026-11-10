@@ -13,6 +13,7 @@ import { displayName } from '@/features/account/displayName'
 import { useLogout } from '@/features/auth/useLogout'
 import { formatLongDate, initials } from '@/lib/format'
 import { useLanguage } from '@/i18n/useLanguage'
+import { NotificationBell } from '@/features/patient/NotificationBell'
 import { useAuthStore } from '@/stores/auth'
 import type { AuthUser } from '@/types/api'
 
@@ -211,7 +212,10 @@ export function DashboardLayout() {
             <Badge tone="brand">{t(`roles.${user.role}`)}</Badge>
             <span className="text-sm text-slate">{formatLongDate(new Date(), lang)}</span>
           </div>
-          <LanguageToggle />
+          <div className="flex items-center gap-1 sm:gap-2">
+            {user.role === 'patient' && <NotificationBell />}
+            <LanguageToggle />
+          </div>
         </header>
 
         <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-[1200px] px-4 py-6 outline-none sm:px-6 lg:px-10 lg:py-8">

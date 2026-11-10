@@ -327,6 +327,8 @@ model Notification {
   type      NotificationType
   title     String
   body      String
+  /// Structured values (e.g. testName, date) so clients can render the text in any language.
+  params    Json             @default("{}")
   readAt    DateTime?        @map("read_at") @db.Timestamptz(6)
   createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
 
