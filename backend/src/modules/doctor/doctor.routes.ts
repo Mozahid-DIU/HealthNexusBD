@@ -15,6 +15,7 @@ import {
   aiSummaryController,
   createRecordController,
   myPatientsController,
+  patientProfileController,
   patientLabReportFileController,
   patientLabReportsController,
   patientRecordsController,
@@ -28,6 +29,7 @@ doctorRouter.use(authenticate, requireRole('doctor'))
 
 doctorRouter.get('/search', validate(searchQuerySchema, 'query'), searchController)
 doctorRouter.get('/patients', myPatientsController)
+doctorRouter.get('/patients/:id', validate(idParamSchema, 'params'), patientProfileController)
 doctorRouter.get(
   '/patients/:id/records',
   validate(idParamSchema, 'params'),

@@ -7,7 +7,7 @@ export interface Call {
 }
 
 type Reply = { status?: number; body?: unknown; blob?: string }
-type Handler = Reply | ((call: Call) => Reply)
+type Handler = Reply | ((call: Call) => Reply | Promise<Reply>)
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -35,7 +35,7 @@ export function mockApi(routes: Record<string, Handler>) {
     calls.push(call)
     const handler = routes[`${method} ${path}`]
     if (!handler) return json(404, { success: false, data: null, error: `unmocked ${method} ${path}` })
-    const reply = typeof handler === 'function' ? handler(call) : handler
+    const reply = typeof handler === 'function' ? await handler(call) : handler
     if (reply.blob !== undefined) {
       return new Response(reply.blob, { status: reply.status ?? 200, headers: { 'Content-Type': 'application/pdf' } })
     }

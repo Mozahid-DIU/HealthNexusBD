@@ -35,6 +35,7 @@ export function notificationText(
 /** Specific (action, resource-prefix) pairs written by the backend's audit log. */
 const AUDIT_TEXT: Record<string, TranslationKey> = {
   'view:patient_records': 'patient.audit.viewedRecords',
+  'view:patient_profile': 'patient.audit.viewedProfile',
   'view:lab_reports': 'patient.audit.viewedLabList',
   'view:lab_report_file': 'patient.audit.openedReport',
   'create:medical_record': 'patient.audit.addedRecord',

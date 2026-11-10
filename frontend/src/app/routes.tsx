@@ -6,6 +6,7 @@ import { GuestOnly, RequireRole, RoleHomeRedirect } from './guards'
 import { NotFoundPage, RouteError } from './ErrorPages'
 import { RootLayout, RouteLoading } from './RootLayout'
 import { ROLE_HOME } from './navigation'
+import { loadArea } from '@/i18n'
 
 /**
  * Code-split routes: the landing page never downloads form, validation or dashboard
@@ -23,9 +24,29 @@ const accountOverview = async () => ({
   Component: (await import('@/features/account/AccountOverview')).AccountOverview,
 })
 
-const patientPage = <K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) => async () => ({
-  Component: (await load())[name],
-})
+const patientPage = <K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) => async () => {
+  // The page and its strings load together, so it never renders untranslated keys.
+  const [module] = await Promise.all([load(), loadArea('patient')])
+  return { Component: module[name] }
+}
+
+const doctorPage = <K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) => async () => {
+  const [module] = await Promise.all([load(), loadArea('doctor')])
+  return { Component: module[name] }
+}
+
+/** Doctor pages, relative to /doctor, all behind the "pending verification" gate. */
+const DOCTOR_PAGES: RouteObject[] = [
+  {
+    lazy: doctorPage(() => import('@/features/doctor/DoctorGate'), 'DoctorGate'),
+    children: [
+      { index: true, lazy: doctorPage(() => import('@/features/doctor/DoctorHome'), 'DoctorHome') },
+      { path: 'find', lazy: doctorPage(() => import('@/features/doctor/FindPatientPage'), 'FindPatientPage') },
+      { path: 'patients', lazy: doctorPage(() => import('@/features/doctor/MyPatientsPage'), 'MyPatientsPage') },
+      { path: 'patients/:patientId', lazy: doctorPage(() => import('@/features/doctor/PatientChartPage'), 'PatientChartPage') },
+    ],
+  },
+]
 
 /** Patient pages, relative to /patient. */
 const PATIENT_PAGES: RouteObject[] = [
@@ -65,7 +86,7 @@ export const routes: RouteObject[] = [
       // Reachable while signed in too (e.g. resetting from a second device).
       { path: '/forgot-password', lazy: forgotPasswordPage },
       roleSection('patient', PATIENT_PAGES),
-      roleSection('doctor'),
+      roleSection('doctor', DOCTOR_PAGES),
       roleSection('lab'),
       roleSection('admin'),
       { path: '/app', element: <RoleHomeRedirect /> },

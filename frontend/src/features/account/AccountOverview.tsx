@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Clock } from 'lucide-react'
-import { authApi } from '@/features/auth/api'
+import { authApi, meQueryKey } from '@/features/auth/api'
 import { PageHeader } from '@/components/layout/dashboard/PageHeader'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { Card, CardHeader } from '@/components/ui/Card'
@@ -12,7 +12,6 @@ import type { AuthUser, UserStatus } from '@/types/api'
 import { displayName } from './displayName'
 import { UhidCard } from './UhidCard'
 
-export const meQueryKey = ['auth', 'me'] as const
 
 const STATUS_TONE: Record<UserStatus, BadgeTone> = {
   active: 'success',

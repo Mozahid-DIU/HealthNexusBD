@@ -7,6 +7,7 @@ export type ErrorCode =
   | 'SESSION_INVALID' // token revoked (logout, suspension, password reset) — log in again
   | 'ACCOUNT_SUSPENDED' // account suspended by an admin — sign the user out
   | 'ACCOUNT_PENDING' // doctor/lab not yet verified — show the pending screen
+  | 'CONSENT_REQUIRED' // doctor has no live consent for this patient — access has ended
 
 /**
  * Operational error with an HTTP status code (and optionally a stable `code`). Throw

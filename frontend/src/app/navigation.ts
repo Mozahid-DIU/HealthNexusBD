@@ -3,9 +3,11 @@ import {
   FlaskConical,
   LayoutDashboard,
   ScrollText,
+  Search,
   ShieldCheck,
   Stethoscope,
   UserRound,
+  UsersRound,
   type LucideIcon,
 } from 'lucide-react'
 import type { TranslationKey } from '@/i18n'
@@ -38,7 +40,11 @@ export const NAVIGATION: Record<Role, NavItem[]> = {
     { to: '/patient/audit', label: 'dashboard.nav.audit', icon: ScrollText },
     { to: '/patient/profile', label: 'dashboard.nav.profile', icon: UserRound },
   ],
-  doctor: [{ to: ROLE_HOME.doctor, label: 'dashboard.nav.overview', icon: LayoutDashboard, end: true }],
+  doctor: [
+    { to: ROLE_HOME.doctor, label: 'dashboard.nav.overview', icon: LayoutDashboard, end: true },
+    { to: '/doctor/find', label: 'dashboard.nav.findPatient', icon: Search },
+    { to: '/doctor/patients', label: 'dashboard.nav.myPatients', icon: UsersRound },
+  ],
   lab: [{ to: ROLE_HOME.lab, label: 'dashboard.nav.overview', icon: LayoutDashboard, end: true }],
   admin: [{ to: ROLE_HOME.admin, label: 'dashboard.nav.overview', icon: LayoutDashboard, end: true }],
 }

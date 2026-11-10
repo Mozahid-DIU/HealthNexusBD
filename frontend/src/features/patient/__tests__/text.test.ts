@@ -52,6 +52,7 @@ describe('notificationText', () => {
 describe('auditDescription', () => {
   it.each([
     ['view', 'patient_records:3', 'Viewed your medical records'],
+    ['view', 'patient_profile:abc', 'Viewed your health profile'],
     ['view', 'lab_reports:2', 'Viewed your lab report list'],
     ['view', 'lab_report_file:abc', 'Opened a lab report'],
     ['create', 'medical_record:abc', 'Added a medical record'],

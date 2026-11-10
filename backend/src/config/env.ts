@@ -27,7 +27,8 @@ const envSchema = z.object({
     .string()
     .regex(/^[0-9a-fA-F]{64}$/, 'AES_SECRET_KEY must be 64 hex chars (32 bytes)'),
 
-  OTP_MODE: z.enum(['real', 'demo']).default('demo'),
+  // Unset → decided by NODE_ENV (see resolveOtpMode), so production fails closed.
+  OTP_MODE: z.enum(['real', 'demo']).optional(),
   OTP_TTL_MINUTES: z.coerce.number().int().positive().default(5),
   OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
   SESSION_TTL_MINUTES: z.coerce.number().int().positive().default(30),
@@ -59,6 +60,17 @@ if (!parsed.success) {
   process.exit(1)
 }
 
-export const env = parsed.data
+type OtpMode = 'real' | 'demo'
+
+/**
+ * Demo mode shows the consent code to the requesting doctor, which would let them grant
+ * themselves access. So an unset mode means real SMS in production; a hosted demo must
+ * opt in explicitly with OTP_MODE=demo.
+ */
+export function resolveOtpMode(nodeEnv: string, raw: OtpMode | undefined): OtpMode {
+  return raw ?? (nodeEnv === 'production' ? 'real' : 'demo')
+}
+
+export const env = { ...parsed.data, OTP_MODE: resolveOtpMode(parsed.data.NODE_ENV, parsed.data.OTP_MODE) }
 export const isDev = env.NODE_ENV === 'development'
 export const isProd = env.NODE_ENV === 'production'

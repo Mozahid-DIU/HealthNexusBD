@@ -67,6 +67,71 @@ describe('patient search', () => {
   })
 })
 
+describe('patient clinical profile (needs an active consent session)', () => {
+  const profile = () =>
+    request(app).get(`/api/doctor/patients/${patient.patient.id}`).set('Authorization', doctor.auth)
+
+  it('is refused without consent', async () => {
+    expect((await profile()).status).toBe(403)
+  })
+
+  it('returns what a doctor needs before prescribing, and audits the view', async () => {
+    await prisma.patient.update({
+      where: { id: patient.patient.id },
+      data: { bloodGroup: 'B+', gender: 'male', dateOfBirth: new Date('1990-05-01') },
+    })
+    const session = await grantSession(doctor.doctor.id, patient.patient.id)
+
+    const res = await profile()
+
+    expect(res.status).toBe(200)
+    expect(res.body.data).toMatchObject({
+      id: patient.patient.id,
+      uhid: patient.patient.uhid,
+      fullName: patient.patient.fullName,
+      gender: 'male',
+      bloodGroup: 'B+',
+      allergies: ['Penicillin'],
+      chronicDiseases: ['Type 2 Diabetes'],
+      consentExpiresAt: session.expiresAt.toISOString(),
+    })
+    expect(res.body.data.dateOfBirth).toMatch(/^1990-05-01/)
+    // Contact and identity numbers are not part of the clinical view.
+    expect(res.body.data).not.toHaveProperty('nid')
+    expect(res.body.data).not.toHaveProperty('phone')
+    const entry = await prisma.auditLog.findFirst({
+      where: { actorUserId: doctor.user.id, action: 'view', resource: `patient_profile:${patient.patient.id}` },
+    })
+    expect(entry).not.toBeNull()
+  })
+
+  it('audits the profile once per consent session, not on every poll', async () => {
+    await grantSession(doctor.doctor.id, patient.patient.id)
+    const where = { actorUserId: doctor.user.id, action: 'view' as const, resource: `patient_profile:${patient.patient.id}` }
+
+    await profile()
+    await profile()
+    await profile()
+    expect(await prisma.auditLog.count({ where })).toBe(1)
+
+    // A fresh grant is a new access episode, so it is audited again.
+    await prisma.accessSession.updateMany({ where: { doctorId: doctor.doctor.id }, data: { status: 'revoked' } })
+    await grantSession(doctor.doctor.id, patient.patient.id)
+    await profile()
+    expect(await prisma.auditLog.count({ where })).toBe(2)
+  })
+
+  it('404s an unknown patient and 400s a bad id', async () => {
+    const missing = await request(app)
+      .get('/api/doctor/patients/00000000-0000-0000-0000-000000000000')
+      .set('Authorization', doctor.auth)
+    const bad = await request(app).get('/api/doctor/patients/nope').set('Authorization', doctor.auth)
+
+    expect([403, 404]).toContain(missing.status)
+    expect(bad.status).toBe(400)
+  })
+})
+
 describe('medical records (need an active consent session)', () => {
   it('refuses to create a record without consent', async () => {
     const res = await post('/api/doctor/records', {
@@ -115,6 +180,24 @@ describe('medical records (need an active consent session)', () => {
 
     expect(own.status).toBe(201)
     expect(foreign.status).toBe(403)
+  })
+
+  it('accepts a prescription with only recommended tests (no medicine yet)', async () => {
+    await grantSession(doctor.doctor.id, patient.patient.id)
+    const id = await createRecord()
+
+    const res = await post(`/api/doctor/records/${id}/prescription`, { medications: [], recommendedTests: ['CBC', 'HbA1c'] })
+
+    expect(res.status).toBe(201)
+  })
+
+  it('rejects a prescription with neither medicines nor tests', async () => {
+    await grantSession(doctor.doctor.id, patient.patient.id)
+    const id = await createRecord()
+
+    const res = await post(`/api/doctor/records/${id}/prescription`, { medications: [], recommendedTests: [] })
+
+    expect(res.status).toBe(400)
   })
 
   it('generates an AI summary with allergy alerts from the patient profile', async () => {

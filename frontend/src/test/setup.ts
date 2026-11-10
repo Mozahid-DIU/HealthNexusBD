@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest'
 import { afterEach, beforeEach } from 'vitest'
 import { cleanup, configure } from '@testing-library/react'
-import { i18n } from '@/i18n'
+import { i18n, loadArea } from '@/i18n'
 import { useAuthStore } from '@/stores/auth'
 
 // Code-split routes load their chunk before rendering; under a busy parallel run that can
@@ -29,6 +29,9 @@ if (typeof window.matchMedia !== 'function') {
 window.scrollTo = () => {}
 if (!URL.createObjectURL) URL.createObjectURL = () => 'blob:test'
 if (!URL.revokeObjectURL) URL.revokeObjectURL = () => {}
+
+// Tests render area pages directly, so make every area's strings available up front.
+await Promise.all([loadArea('patient'), loadArea('doctor')])
 
 beforeEach(async () => {
   localStorage.clear()

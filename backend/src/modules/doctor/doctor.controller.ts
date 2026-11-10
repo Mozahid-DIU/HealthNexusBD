@@ -68,3 +68,7 @@ export const patientLabReportFileController = asyncHandler(async (req: Request, 
   )
   return sendPdf(res, pdf, filename)
 })
+
+export const patientProfileController = asyncHandler(async (req: Request, res: Response) => {
+  return sendSuccess(res, await doctorService.getPatientProfile(userId(req), req.params.id, req.ip))
+})

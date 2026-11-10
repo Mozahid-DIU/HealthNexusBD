@@ -2,6 +2,7 @@ import i18next, { type ParseKeys } from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import { en } from './locales/en'
 import { bn } from './locales/bn'
+import type { Area } from './locales/messages'
 
 /** Any valid translation key, checked at compile time. */
 export type TranslationKey = ParseKeys
@@ -58,6 +59,35 @@ i18n.on('languageChanged', (lng) => {
   applyToDocument(lng)
   if (isLanguage(lng)) saveLanguage(lng)
 })
+
+// ---------------------------------------------------------------- area bundles
+
+const AREA_LOADERS: Record<Area, () => Promise<{ en: object; bn: object }>> = {
+  patient: () => import('./locales/areas/patient'),
+  doctor: () => import('./locales/areas/doctor'),
+}
+const loadedAreas = new Map<Area, Promise<void>>()
+
+/**
+ * Load a dashboard area's strings (both languages, so the toggle switches instantly).
+ * Safe to call repeatedly; route loaders await it before their page renders.
+ */
+export function loadArea(area: Area): Promise<void> {
+  let pending = loadedAreas.get(area)
+  if (!pending) {
+    pending = AREA_LOADERS[area]()
+      .then(({ en: areaEn, bn: areaBn }) => {
+        i18n.addResourceBundle('en', 'translation', { [area]: areaEn }, true, true)
+        i18n.addResourceBundle('bn', 'translation', { [area]: areaBn }, true, true)
+      })
+      .catch((err: unknown) => {
+        loadedAreas.delete(area) // let a later navigation retry (e.g. after going offline)
+        throw err
+      })
+    loadedAreas.set(area, pending)
+  }
+  return pending
+}
 
 export function currentLanguage(): Language {
   return isLanguage(i18n.language) ? i18n.language : DEFAULT_LANGUAGE

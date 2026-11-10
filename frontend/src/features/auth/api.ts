@@ -1,6 +1,9 @@
 import { api } from '@/lib/api'
 import type { AuthResult, AuthUser } from '@/types/api'
 
+/** React Query key for the live /auth/me profile. */
+export const meQueryKey = ['auth', 'me'] as const
+
 export const authApi = {
   login: (body: { identifier: string; password: string }) =>
     api.post<AuthResult>('/auth/login', body),

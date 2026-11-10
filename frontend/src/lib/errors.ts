@@ -8,6 +8,7 @@ const BY_CODE: Partial<Record<NonNullable<ApiError['code']>, TranslationKey>> = 
   SESSION_INVALID: 'errors.sessionExpired',
   ACCOUNT_SUSPENDED: 'errors.accountSuspended',
   ACCOUNT_PENDING: 'errors.accountPending',
+  CONSENT_REQUIRED: 'errors.consentRequired',
 }
 
 /** Known backend messages → translated text. Anything unmatched is shown as sent. */

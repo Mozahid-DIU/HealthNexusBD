@@ -75,9 +75,9 @@ export function ReportFileActions({ fetchFile, title }: ReportFileActionsProps) 
           variant="outline"
           onClick={() => void load('view')}
           disabled={busy !== null}
-          aria-label={`${t('patient.lab.view')}: ${title}`}
+          aria-label={`${t('files.view')}: ${title}`}
         >
-          {busy === 'view' ? <Spinner label={t('patient.lab.opening')} /> : <><Eye aria-hidden className="h-4 w-4" />{t('patient.lab.view')}</>}
+          {busy === 'view' ? <Spinner label={t('files.opening')} /> : <><Eye aria-hidden className="h-4 w-4" />{t('files.view')}</>}
         </Button>
         <Button
           size="sm"
@@ -85,10 +85,10 @@ export function ReportFileActions({ fetchFile, title }: ReportFileActionsProps) 
           onClick={() => void load('download')}
           disabled={busy !== null}
           aria-busy={busy === 'download'}
-          aria-label={`${t('patient.lab.download')}: ${title}`}
+          aria-label={`${t('files.download')}: ${title}`}
         >
           <Download aria-hidden className="h-4 w-4" />
-          {t('patient.lab.download')}
+          {t('files.download')}
         </Button>
       </div>
 
@@ -105,7 +105,7 @@ export function ReportFileActions({ fetchFile, title }: ReportFileActionsProps) 
               className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-brand ring-1 ring-brand/30 hover:bg-brand/[0.05] focus-visible:outline-2 focus-visible:outline-brand"
             >
               <Download aria-hidden className="h-4 w-4" />
-              {t('patient.lab.download')}
+              {t('files.download')}
             </a>
           )
         }
@@ -113,7 +113,7 @@ export function ReportFileActions({ fetchFile, title }: ReportFileActionsProps) 
         {viewUrl && (
           <>
             <iframe src={viewUrl} title={title} className="h-[65vh] w-full rounded-lg border border-line" />
-            <p className="mt-3 text-xs text-slate">{t('patient.lab.viewerFallback')}</p>
+            <p className="mt-3 text-xs text-slate">{t('files.viewerFallback')}</p>
           </>
         )}
       </Modal>

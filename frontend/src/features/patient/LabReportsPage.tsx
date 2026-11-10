@@ -59,13 +59,13 @@ export function LabReportsPage() {
                     {report.isVerified && (
                       <Badge tone="success">
                         <BadgeCheck aria-hidden className="h-3 w-3" />
-                        {t('patient.lab.verified')}
+                        {t('files.verified')}
                       </Badge>
                     )}
                   </p>
                   <p className="mt-0.5 text-sm text-slate">
-                    {t('patient.lab.from', { lab: report.lab })} ·{' '}
-                    {t('patient.lab.uploaded', { date: formatDate(report.uploadedAt, lang) })}
+                    {t('files.from', { lab: report.lab })} ·{' '}
+                    {t('files.uploaded', { date: formatDate(report.uploadedAt, lang) })}
                   </p>
                 </div>
                 <ReportFileActions title={report.testName} fetchFile={() => patientApi.labReportFile(report)} />

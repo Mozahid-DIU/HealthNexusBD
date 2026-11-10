@@ -33,11 +33,17 @@ export const createRecordSchema = z.object({
   followUpDate: z.coerce.date().optional(),
 })
 
-export const prescriptionSchema = z.object({
-  medications: z.array(medicationSchema).min(1, 'At least one medication is required'),
-  recommendedTests: z.array(z.string().trim().min(1).max(120)).max(30).optional(),
-  notes: z.string().trim().max(500).optional(),
-})
+/** Medicines, tests, or both: a first visit often orders tests before prescribing. */
+export const prescriptionSchema = z
+  .object({
+    medications: z.array(medicationSchema).max(30).default([]),
+    recommendedTests: z.array(z.string().trim().min(1).max(120)).max(30).optional(),
+    notes: z.string().trim().max(500).optional(),
+  })
+  .refine((v) => v.medications.length > 0 || (v.recommendedTests?.length ?? 0) > 0, {
+    message: 'Add at least one medication or recommended test',
+    path: ['medications'],
+  })
 
 export const idParamSchema = z.object({
   id: z.string().uuid('Invalid id'),

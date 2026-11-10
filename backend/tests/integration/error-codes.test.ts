@@ -86,6 +86,16 @@ describe('error codes', () => {
     }
   })
 
+  it('CONSENT_REQUIRED when a doctor touches a patient without live consent', async () => {
+    const doctor = await createDoctor()
+    const { patient } = await createPatient()
+
+    const res = await request(app).get(`/api/doctor/patients/${patient.id}/records`).set('Authorization', doctor.auth)
+
+    expect(res.status).toBe(403)
+    expect(res.body.code).toBe('CONSENT_REQUIRED')
+  })
+
   it('omits `code` when there is none, keeping the existing envelope', async () => {
     const admin = await createAdmin()
     const res = await request(app).get('/api/admin/doctors/not-a-uuid/approve').set('Authorization', admin.auth)

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { en } from '../locales/en'
-import { bn } from '../locales/bn'
+import { en as coreEn } from '../locales/en'
+import { bn as coreBn } from '../locales/bn'
+import * as patient from '../locales/areas/patient'
+import * as doctor from '../locales/areas/doctor'
+
+const en = { ...coreEn, patient: patient.en, doctor: doctor.en }
+const bn = { ...coreBn, patient: patient.bn, doctor: doctor.bn }
 
 type Tree = { [key: string]: string | Tree }
 

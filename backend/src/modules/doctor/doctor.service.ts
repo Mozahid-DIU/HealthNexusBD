@@ -29,6 +29,7 @@ async function assertConsent(doctorId: string, patientId: string) {
   if (!session) {
     throw AppError.forbidden(
       'You do not have active consent for this patient. Request access via the consent flow first.',
+      'CONSENT_REQUIRED',
     )
   }
   return session
@@ -81,6 +82,43 @@ export async function listMyPatients(userId: string) {
   })
 
   return sessions.map((s) => ({ ...s.patient, consentExpiresAt: s.expiresAt }))
+}
+
+// ---------------------------------------------------------------- patient clinical profile
+
+/**
+ * What a doctor needs on screen before treating or prescribing (allergies above all),
+ * only while consent is live. Identity and contact details (NID, phone) are excluded.
+ */
+export async function getPatientProfile(userId: string, patientId: string, ip?: string | null) {
+  const doctor = await getActiveDoctor(userId)
+  const session = await assertConsent(doctor.id, patientId)
+
+  const patient = await prisma.patient.findUnique({ where: { id: patientId } })
+  if (!patient) throw AppError.notFound('Patient not found')
+
+  // The open chart re-checks this every 30 s; record the view once per consent session
+  // so the patient's access history shows one entry, not one per poll.
+  const resource = `patient_profile:${patientId}`
+  const alreadyAudited = await prisma.auditLog.findFirst({
+    where: { patientId, actorUserId: userId, action: 'view', resource, createdAt: { gte: session.grantedAt } },
+    select: { id: true },
+  })
+  if (!alreadyAudited) {
+    await writeAudit({ actorUserId: userId, action: 'view', patientId, resource, ipAddress: ip ?? null })
+  }
+
+  return {
+    id: patient.id,
+    uhid: patient.uhid,
+    fullName: patient.fullName,
+    dateOfBirth: patient.dateOfBirth,
+    gender: patient.gender,
+    bloodGroup: patient.bloodGroup,
+    allergies: asStringArray(patient.allergies),
+    chronicDiseases: asStringArray(patient.chronicDiseases),
+    consentExpiresAt: session.expiresAt,
+  }
 }
 
 // ---------------------------------------------------------------- read records

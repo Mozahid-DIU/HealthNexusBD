@@ -12,6 +12,7 @@ export type ApiErrorCode =
   | 'SESSION_INVALID'
   | 'ACCOUNT_SUSPENDED'
   | 'ACCOUNT_PENDING'
+  | 'CONSENT_REQUIRED'
   | 'NETWORK'
 
 /** Thrown on any failed request; carries the HTTP status (0 = no response) and code. */

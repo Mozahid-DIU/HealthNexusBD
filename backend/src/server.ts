@@ -19,6 +19,9 @@ async function bootstrap() {
   const server = app.listen(env.PORT, () => {
     logger.info(`🚀 HealthNexus BD API running at http://localhost:${env.PORT}`)
     logger.info(`   Health check: http://localhost:${env.PORT}/api/health`)
+    if (env.NODE_ENV === 'production' && env.OTP_MODE === 'demo') {
+      logger.warn('⚠ OTP_MODE=demo in production: consent codes are shown to the requesting doctor. Use only for a demo.')
+    }
   })
 
   // FR-21: hourly follow-up reminders (in-app + SMS).

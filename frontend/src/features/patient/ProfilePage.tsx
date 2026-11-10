@@ -103,7 +103,7 @@ function ProfileForm({ profile }: { profile: PatientProfileDetail }) {
           <Select
             label={t('patient.profile.gender')}
             placeholder={profile.gender ? undefined : t('patient.profile.notSet')}
-            options={GENDERS.map((g) => ({ value: g, label: t(`patient.profile.${g}`) }))}
+            options={GENDERS.map((g) => ({ value: g, label: t(`clinical.${g}`) }))}
             error={errors.gender?.message}
             {...register('gender')}
           />
