@@ -67,7 +67,11 @@ body {
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
+    /* Play once and rest: looping at 0.001ms would strobe, and delays would hide text. */
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
     transition-duration: 0.001ms !important;
+    transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }
 }

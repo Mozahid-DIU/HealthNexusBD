@@ -1,6 +1,5 @@
 import type { ComponentType } from 'react'
 import type { RouteObject } from 'react-router-dom'
-import { LandingPage } from '@/features/landing/LandingPage'
 import type { Role } from '@/types/api'
 import { GuestOnly, RequireRole, RoleHomeRedirect } from './guards'
 import { NotFoundPage, RouteError } from './ErrorPages'
@@ -12,6 +11,10 @@ import { loadArea } from '@/i18n'
  * Code-split routes: the landing page never downloads form, validation or dashboard
  * code. The router waits for a chunk before switching pages, so there is no flicker.
  */
+const landingPage = async () => {
+  const [module] = await Promise.all([import('@/features/landing/LandingPage'), loadArea('landing')])
+  return { Component: module.LandingPage }
+}
 const loginPage = async () => ({ Component: (await import('@/features/auth/LoginPage')).LoginPage })
 const registerPage = async () => ({ Component: (await import('@/features/auth/RegisterPage')).RegisterPage })
 const forgotPasswordPage = async () => ({
@@ -102,7 +105,7 @@ export const routes: RouteObject[] = [
     // Shown only on a first visit straight to a code-split page, while its chunk loads.
     hydrateFallbackElement: <RouteLoading />,
     children: [
-      { path: '/', element: <LandingPage /> },
+      { path: '/', lazy: landingPage },
       {
         element: <GuestOnly />,
         children: [

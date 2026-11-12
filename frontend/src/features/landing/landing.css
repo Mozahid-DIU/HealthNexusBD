@@ -1,0 +1,195 @@
+/*
+ * Landing-only motion and atmosphere. Lives in the landing chunk, not the app bundle.
+ * The global prefers-reduced-motion rule (styles/global.css) stills all of it.
+ */
+
+@keyframes lp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes lp-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes lp-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(40px, -30px) scale(1.08);
+  }
+  66% {
+    transform: translate(-30px, 25px) scale(0.94);
+  }
+}
+
+@keyframes lp-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes lp-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+@keyframes lp-shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes lp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes lp-progress {
+  0% {
+    transform: scaleX(0);
+  }
+  70%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes lp-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Staggered entrance for the hero (runs once on load). */
+.lp-rise {
+  opacity: 0;
+  animation: lp-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.lp-float {
+  animation: lp-float 6s ease-in-out infinite;
+}
+
+.lp-drift {
+  animation: lp-drift 18s ease-in-out infinite;
+}
+
+.lp-spin-slow {
+  animation: lp-spin 40s linear infinite;
+}
+
+/* The heartbeat line draws itself across the hero. */
+.lp-ecg {
+  stroke-dasharray: 2400;
+  stroke-dashoffset: 2400;
+  animation: lp-draw 3.2s cubic-bezier(0.65, 0, 0.35, 1) 0.4s forwards;
+}
+
+.lp-pulse::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: lp-pulse 2s ease-out infinite;
+}
+
+.lp-gradient-text {
+  background: linear-gradient(90deg, #5eead4, #8cc8ff, #5eead4);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: lp-shine 6s linear infinite;
+}
+
+.lp-progress {
+  transform-origin: left;
+  animation: lp-progress 2.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.lp-caret {
+  animation: lp-blink 1s steps(1) infinite;
+}
+
+/* Repainting gradient text and drifting blurs is costly on phones: keep them still there. */
+@media (max-width: 1023px) {
+  .lp-gradient-text,
+  .lp-drift {
+    animation: none;
+  }
+}
+
+/* Printing never scrolls, so show every section. */
+@media print {
+  .lp-reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Scroll reveal: shown by Reveal (IntersectionObserver). */
+.lp-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lp-reveal[data-shown='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hairline grid that fades out toward the edges. */
+.lp-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+}
+
+.lp-grid-light {
+  background-image:
+    linear-gradient(to right, rgba(11, 92, 173, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(11, 92, 173, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 60% 70% at 50% 0%, #000 20%, transparent 70%);
+}
+
+/* Fine film grain so the dark surfaces read as material, not flat fill. */
+.lp-grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}

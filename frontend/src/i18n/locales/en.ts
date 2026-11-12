@@ -94,44 +94,6 @@ export const en = {
     goHome: 'Go to home',
   },
 
-  landing: {
-    nav: {
-      home: 'Home',
-      features: 'Features',
-      howItWorks: 'How it works',
-      about: 'About',
-      login: 'Login',
-      registerFree: 'Register Free',
-    },
-    hero: {
-      badge: 'Bangladesh National Health Platform',
-      titleLine1: 'One Lifelong',
-      titleHighlight: 'Health ID',
-      titleLine2: 'for Every Citizen',
-      body:
-        'HealthNexus BD unifies your entire medical history under one secure identifier. Own your records, authorize doctors with an OTP, and get AI-powered clinical summaries — all encrypted end-to-end.',
-      ctaPrimary: 'Get Started — Free',
-      ctaSecondary: 'I already have an account',
-      cardLabel: 'Unified Health ID',
-      cardFormat: 'UHID format',
-      cardHolder: 'Holder',
-      cardHolderValue: 'Your lifelong identity',
-      cardIssuedBy: 'Issued by',
-    },
-    trust: {
-      aesLabel: 'AES-256 Encrypted',
-      aesSub: 'Military-grade data security',
-      otpLabel: 'OTP Consent Access',
-      otpSub: 'You approve every access',
-      aiLabel: 'AI-Powered Insights',
-      aiSub: 'Gemini clinical summaries',
-      auditLabel: 'Immutable Audit Log',
-      auditSub: 'Tamper-proof access history',
-    },
-    footer: {
-      tagline: 'Secure, AI-powered unified health records for Bangladesh.',
-    },
-  },
 
   auth: {
     layout: {

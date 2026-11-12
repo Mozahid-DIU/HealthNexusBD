@@ -1,30 +1,41 @@
+import './landing.css'
 import { useTranslation } from 'react-i18next'
-import { Navbar } from '@/components/layout/Navbar'
+import { About } from './About'
+import { Features } from './Features'
+import { Footer } from './Footer'
 import { Hero } from './Hero'
-import { TrustBadges } from './TrustBadges'
-import { Container } from '@/components/ui/Container'
+import { HowItWorks } from './HowItWorks'
+import { Navbar } from './Navbar'
+import { Roles } from './Roles'
+import { Security } from './Security'
+import { TrustStrip } from './TrustStrip'
 
 /**
- * Public landing page. This is the first slice — Navbar + Hero + trust strip.
- * Features grid, "how it works", stats, and footer land in the next step.
+ * Public landing page: a dark, animated hero showing the product's core moments, then
+ * features, the consent flow, the four roles, the real security numbers and a call to
+ * action. Its code, styles and strings load as their own chunk.
  */
 export function LandingPage() {
   const { t } = useTranslation()
   return (
     <div className="min-h-screen bg-white text-body">
+      <a
+        href="#main-content"
+        className="sr-only z-[120] rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+      >
+        {t('common.skipToContent')}
+      </a>
       <Navbar />
-      <Hero />
-      <TrustBadges />
-
-      {/* Footer (temporary — full sections come next) */}
-      <footer className="border-t border-line bg-white py-10">
-        <Container className="flex flex-col items-center gap-2 text-center">
-          <p className="text-sm font-bold text-brand">
-            HealthNexus <span className="text-teal">BD</span>
-          </p>
-          <p className="text-xs text-slate">{t('landing.footer.tagline')}</p>
-        </Container>
-      </footer>
+      <main id="main-content" tabIndex={-1} className="outline-none">
+        <Hero />
+        <TrustStrip />
+        <Features />
+        <HowItWorks />
+        <Roles />
+        <Security />
+        <About />
+      </main>
+      <Footer />
     </div>
   )
 }

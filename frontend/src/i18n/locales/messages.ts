@@ -3,6 +3,7 @@ import type { PatientMessages } from './areas/patient'
 import type { DoctorMessages } from './areas/doctor'
 import type { LabMessages } from './areas/lab'
 import type { AdminMessages } from './areas/admin'
+import type { LandingMessages } from './areas/landing'
 
 /**
  * Every translation key the app can use: the core bundle plus each lazily loaded area.
@@ -13,7 +14,8 @@ export type Messages = CoreMessages & {
   doctor: DoctorMessages
   lab: LabMessages
   admin: AdminMessages
+  landing: LandingMessages
 }
 
 /** Areas whose strings are loaded on demand (see `loadArea`). */
-export type Area = 'patient' | 'doctor' | 'lab' | 'admin'
+export type Area = 'patient' | 'doctor' | 'lab' | 'admin' | 'landing'

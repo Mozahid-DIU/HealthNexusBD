@@ -31,7 +31,7 @@ if (!URL.createObjectURL) URL.createObjectURL = () => 'blob:test'
 if (!URL.revokeObjectURL) URL.revokeObjectURL = () => {}
 
 // Tests render area pages directly, so make every area's strings available up front.
-await Promise.all([loadArea('patient'), loadArea('doctor'), loadArea('lab'), loadArea('admin')])
+await Promise.all([loadArea('patient'), loadArea('doctor'), loadArea('lab'), loadArea('admin'), loadArea('landing')])
 
 beforeEach(async () => {
   localStorage.clear()

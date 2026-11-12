@@ -67,6 +67,7 @@ const AREA_LOADERS: Record<Area, () => Promise<{ en: object; bn: object }>> = {
   doctor: () => import('./locales/areas/doctor'),
   lab: () => import('./locales/areas/lab'),
   admin: () => import('./locales/areas/admin'),
+  landing: () => import('./locales/areas/landing'),
 }
 const loadedAreas = new Map<Area, Promise<void>>()
 
