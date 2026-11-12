@@ -48,9 +48,9 @@ export function Hero() {
       </div>
       <Heartbeat />
 
-      <Container className="relative grid items-center gap-12 pb-40 pt-32 sm:pt-36 lg:grid-cols-[1.08fr_0.92fr] lg:pb-48 lg:pt-40">
+      <Container className="relative grid items-center gap-12 pb-40 pt-24 sm:pt-28 lg:grid-cols-[1.08fr_0.92fr] lg:pb-48 lg:pt-28">
         <div>
-          <p className="lp-rise mb-7 inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 backdrop-blur" style={{ animationDelay: '0ms' }}>
+          <p className="lp-rise mb-6 inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 backdrop-blur" style={{ animationDelay: '0ms' }}>
             <span className="lp-pulse relative h-2 w-2 rounded-full text-teal">
               <span className="absolute inset-0 rounded-full bg-teal" />
             </span>
