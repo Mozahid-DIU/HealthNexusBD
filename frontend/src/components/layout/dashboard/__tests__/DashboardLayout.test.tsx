@@ -3,15 +3,21 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { routes } from '@/app/routes'
 import { renderRoutes } from '@/test/render'
+import { envelope, mockApi } from '@/test/mockApi'
 import { useAuthStore } from '@/stores/auth'
 import { i18n } from '@/i18n'
 import type { AuthUser } from '@/types/api'
 
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
+// The shell is the same for every role; a lab account has the simplest home page.
+const lab: AuthUser = {
+  id: 'l-1',
+  email: 'pathcare@hn.bd',
+  phone: '01720000001',
+  role: 'lab',
+  status: 'active',
+  lab: { id: 'l1', licenseNumber: 'DGHS-LAB-0099', centerName: 'PathCare Diagnostics' },
+}
 
-// An admin account: its section still uses the shared account overview, which is what
-// these layout tests exercise (the other roles have their own home pages).
 const admin: AuthUser = {
   id: 'a-1',
   email: 'admin@hn.bd',
@@ -21,33 +27,35 @@ const admin: AuthUser = {
   admin: { id: 'a1', fullName: 'System Admin' },
 }
 
-let fetchMock: ReturnType<typeof vi.fn>
+function backend(over: Parameters<typeof mockApi>[0] = {}) {
+  return mockApi({
+    'GET /auth/me': { body: envelope(lab) },
+    'GET /lab/uploads': { body: envelope([], { total: 0, page: 1, limit: 5 }) },
+    'POST /auth/logout': { body: envelope({}) },
+    ...over,
+  })
+}
 
 beforeEach(() => {
   vi.unstubAllGlobals()
-  useAuthStore.getState().setAuth(admin, 'access', 'refresh')
-  fetchMock = vi.fn((input: RequestInfo | URL) => {
-    const url = String(input)
-    if (url.endsWith('/auth/logout')) return Promise.resolve(json({ success: true, data: {}, error: null }))
-    return Promise.resolve(json({ success: true, data: admin, error: null }))
-  })
-  vi.stubGlobal('fetch', fetchMock)
+  useAuthStore.getState().setAuth(lab, 'access', 'refresh')
 })
 
 describe('DashboardLayout', () => {
-  it('shows the portal, the user and live account data', async () => {
-    renderRoutes(routes, '/admin')
+  it('shows the portal, the signed-in account and the role’s navigation', async () => {
+    backend()
+    renderRoutes(routes, '/lab')
 
-    expect(await screen.findByRole('heading', { name: 'Welcome, System Admin' })).toBeInTheDocument()
-    expect(screen.getAllByText('Admin console').length).toBeGreaterThan(0)
-    const account = screen.getByRole('region', { name: 'Account' })
-    expect(within(account).getByText('admin@hn.bd')).toBeInTheDocument()
-    expect(within(account).getByText('Admin')).toBeInTheDocument()
-    expect(within(account).getByText('Active')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Welcome, PathCare Diagnostics' })).toBeInTheDocument()
+    expect(screen.getAllByText('Lab portal').length).toBeGreaterThan(0)
+    const sidebar = screen.getByRole('complementary')
+    expect(within(sidebar).getByText('pathcare@hn.bd')).toBeInTheDocument()
+    expect(within(sidebar).getByRole('link', { name: 'Upload history' })).toHaveAttribute('href', '/lab/uploads')
   })
 
   it('opens the mobile drawer, traps focus, and closes on Escape', async () => {
-    renderRoutes(routes, '/admin')
+    backend()
+    renderRoutes(routes, '/lab')
     const openButton = await screen.findByRole('button', { name: 'Open menu' })
 
     await userEvent.click(openButton)
@@ -62,7 +70,8 @@ describe('DashboardLayout', () => {
   })
 
   it('closes the drawer when tapping the page you are already on', async () => {
-    renderRoutes(routes, '/admin')
+    backend()
+    renderRoutes(routes, '/lab')
     await userEvent.click(await screen.findByRole('button', { name: 'Open menu' }))
     const drawer = screen.getByRole('dialog', { name: 'Dashboard navigation' })
 
@@ -73,24 +82,22 @@ describe('DashboardLayout', () => {
   })
 
   it('logs out: revokes on the server, clears the session and goes to login', async () => {
-    const { router } = renderRoutes(routes, '/admin')
+    const { calls } = backend()
+    const { router } = renderRoutes(routes, '/lab')
     const sidebar = await screen.findByRole('complementary')
 
     await userEvent.click(within(sidebar).getByRole('button', { name: 'Log out' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/login'))
     expect(useAuthStore.getState().accessToken).toBeNull()
-    expect(fetchMock.mock.calls.some(([u]) => String(u).endsWith('/auth/logout'))).toBe(true)
+    expect(calls.some((c) => c.path === '/auth/logout')).toBe(true)
   })
 
   it('still signs out locally when the server is unreachable', async () => {
-    fetchMock.mockImplementation((input: RequestInfo | URL) =>
-      String(input).endsWith('/auth/logout')
-        ? Promise.reject(new TypeError('offline'))
-        : Promise.resolve(json({ success: true, data: admin, error: null })),
-    )
-    const { router } = renderRoutes(routes, '/admin')
+    const { fetchMock } = backend()
+    const { router } = renderRoutes(routes, '/lab')
     const sidebar = await screen.findByRole('complementary')
+    fetchMock.mockImplementation(() => Promise.reject(new TypeError('offline')))
 
     await userEvent.click(within(sidebar).getByRole('button', { name: 'Log out' }))
 
@@ -99,24 +106,44 @@ describe('DashboardLayout', () => {
   })
 
   it('switches the whole dashboard to Bangla', async () => {
-    renderRoutes(routes, '/admin')
-    await screen.findByRole('heading', { name: 'Welcome, System Admin' })
+    backend()
+    renderRoutes(routes, '/lab')
+    await screen.findByRole('heading', { name: 'Welcome, PathCare Diagnostics' })
 
     await userEvent.click(screen.getAllByRole('button', { name: 'বাংলা' })[0])
 
-    expect(await screen.findByRole('heading', { name: 'স্বাগতম, System Admin' })).toBeInTheDocument()
-    expect(screen.getAllByText('অ্যাডমিন কনসোল').length).toBeGreaterThan(0)
+    expect(await screen.findByRole('heading', { name: 'স্বাগতম, PathCare Diagnostics' })).toBeInTheDocument()
+    expect(screen.getAllByText('ল্যাবের পোর্টাল').length).toBeGreaterThan(0)
     expect(screen.getAllByRole('link', { name: 'সারসংক্ষেপ' }).length).toBeGreaterThan(0)
     expect(document.documentElement.lang).toBe('bn')
     await i18n.changeLanguage('en')
   })
 
-  it('falls back to the stored account when the live refresh fails (offline)', async () => {
-    fetchMock.mockImplementation(() => Promise.reject(new TypeError('offline')))
-    renderRoutes(routes, '/admin')
+  it('keeps the session when the network is down', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new TypeError('offline'))))
+    renderRoutes(routes, '/lab')
 
-    expect(await screen.findByRole('heading', { name: 'Welcome, System Admin' })).toBeInTheDocument()
-    expect(within(screen.getByRole('region', { name: 'Account' })).getByText('admin@hn.bd')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Welcome, PathCare Diagnostics' })).toBeInTheDocument()
     expect(useAuthStore.getState().accessToken).toBe('access') // offline must not sign the user out
+  })
+
+  it('shows the admin how many applications are waiting, beside Verifications', async () => {
+    useAuthStore.getState().setAuth(admin, 'access', 'refresh')
+    backend({
+      'GET /auth/me': { body: envelope(admin) },
+      'GET /admin/dashboard': {
+        body: envelope({
+          users: { patients: 0, doctors: 0, labs: 0, total: 0 },
+          pending: { doctors: 2, labs: 1 },
+          suspended: 0,
+          activeSessions: 0,
+          clinical: { records: 0, labReports: 0 },
+        }),
+      },
+    })
+    renderRoutes(routes, '/admin/users')
+
+    const sidebar = await screen.findByRole('complementary')
+    expect(await within(sidebar).findByRole('link', { name: 'Verifications, 3 waiting' })).toHaveAttribute('href', '/admin/verifications')
   })
 })

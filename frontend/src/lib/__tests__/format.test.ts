@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDate, formatDateTime, formatFileSize, formatLongDate, formatNumber, initials, todayIso } from '../format'
+import { formatDate, formatDateTime, formatDay, formatFileSize, formatLongDate, formatNumber, formatRelative, initials, todayIso } from '../format'
 
 // 2026-03-10 20:30 UTC is 2026-03-11 02:30 in Dhaka (UTC+6).
 const LATE_NIGHT_UTC = '2026-03-10T20:30:00Z'
@@ -45,6 +45,21 @@ describe('format', () => {
   it('formats numbers per language', () => {
     expect(formatNumber(1234, 'en')).toBe('1,234')
     expect(formatNumber(1234, 'bn')).toBe('১,২৩৪')
+  })
+
+  it('labels a calendar day briefly, without shifting it across time zones', () => {
+    expect(formatDay('2026-11-05', 'en')).toBe('5 Nov')
+    expect(formatDay('2026-11-05', 'bn')).toMatch(/^৫ নভে/)
+  })
+
+  it('says how long ago something happened', () => {
+    const now = new Date('2026-11-12T10:00:00Z')
+    expect(formatRelative('2026-11-12T09:59:40Z', 'en', now)).toBe('now')
+    expect(formatRelative('2026-11-12T09:55:00Z', 'en', now)).toBe('5 minutes ago')
+    expect(formatRelative('2026-11-12T07:00:00Z', 'en', now)).toBe('3 hours ago')
+    expect(formatRelative('2026-11-11T09:00:00Z', 'en', now)).toBe('yesterday')
+    expect(formatRelative('2026-11-02T09:00:00Z', 'en', now)).toBe('10 days ago')
+    expect(formatRelative('2026-11-12T09:55:00Z', 'bn', now)).toMatch(/৫ মিনিট/)
   })
 
   it('shows file sizes people can read, in the reader’s digits', () => {

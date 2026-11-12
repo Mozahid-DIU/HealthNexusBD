@@ -20,9 +20,6 @@ const forgotPasswordPage = async () => ({
 const dashboardLayout = async () => ({
   Component: (await import('@/components/layout/dashboard/DashboardLayout')).DashboardLayout,
 })
-const accountOverview = async () => ({
-  Component: (await import('@/features/account/AccountOverview')).AccountOverview,
-})
 
 const patientPage = <K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) => async () => {
   // The page and its strings load together, so it never renders untranslated keys.
@@ -39,6 +36,19 @@ const labPage = <K extends string>(load: () => Promise<Record<K, ComponentType>>
   const [module] = await Promise.all([load(), loadArea('lab')])
   return { Component: module[name] }
 }
+
+const adminPage = <K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) => async () => {
+  const [module] = await Promise.all([load(), loadArea('admin')])
+  return { Component: module[name] }
+}
+
+/** Admin console pages, relative to /admin. */
+const ADMIN_PAGES: RouteObject[] = [
+  { index: true, lazy: adminPage(() => import('@/features/admin/AdminHome'), 'AdminHome') },
+  { path: 'verifications', lazy: adminPage(() => import('@/features/admin/VerificationsPage'), 'VerificationsPage') },
+  { path: 'users', lazy: adminPage(() => import('@/features/admin/UsersPage'), 'UsersPage') },
+  { path: 'audit', lazy: adminPage(() => import('@/features/admin/AuditLogPage'), 'AuditLogPage') },
+]
 
 /** Lab pages, relative to /lab, behind the "pending verification" gate. */
 const LAB_PAGES: RouteObject[] = [
@@ -77,7 +87,7 @@ const PATIENT_PAGES: RouteObject[] = [
   { path: 'profile', lazy: patientPage(() => import('@/features/patient/ProfilePage'), 'ProfilePage') },
 ]
 
-function roleSection(role: Role, pages: RouteObject[] = [{ index: true, lazy: accountOverview }]): RouteObject {
+function roleSection(role: Role, pages: RouteObject[]): RouteObject {
   return {
     path: ROLE_HOME[role],
     element: <RequireRole role={role} />,
@@ -105,7 +115,7 @@ export const routes: RouteObject[] = [
       roleSection('patient', PATIENT_PAGES),
       roleSection('doctor', DOCTOR_PAGES),
       roleSection('lab', LAB_PAGES),
-      roleSection('admin'),
+      roleSection('admin', ADMIN_PAGES),
       { path: '/app', element: <RoleHomeRedirect /> },
       { path: '*', element: <NotFoundPage /> },
     ],

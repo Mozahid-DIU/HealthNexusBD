@@ -43,7 +43,7 @@ describe('routing & guards', () => {
     signIn(user)
     renderRoutes(routes, `/${role}`)
 
-    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(/Welcome,|Good to see you,/)
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(/Welcome,|Good to see you,|Platform overview/)
     expect(screen.getAllByRole('link', { name: 'Overview' })[0]).toHaveAttribute('aria-current', 'page')
   })
 

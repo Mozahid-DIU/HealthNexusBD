@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 
 // Code-split routes load their chunk before rendering; under a busy parallel run that can
 // exceed Testing Library's 1s default wait, so allow more time (no test relies on it).
-configure({ asyncUtilTimeout: 5000 })
+configure({ asyncUtilTimeout: 10_000 })
 
 // jsdom has no matchMedia; default to a phone-sized viewport (no media query matches).
 if (typeof window.matchMedia !== 'function') {
@@ -31,7 +31,7 @@ if (!URL.createObjectURL) URL.createObjectURL = () => 'blob:test'
 if (!URL.revokeObjectURL) URL.revokeObjectURL = () => {}
 
 // Tests render area pages directly, so make every area's strings available up front.
-await Promise.all([loadArea('patient'), loadArea('doctor'), loadArea('lab')])
+await Promise.all([loadArea('patient'), loadArea('doctor'), loadArea('lab'), loadArea('admin')])
 
 beforeEach(async () => {
   localStorage.clear()

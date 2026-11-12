@@ -71,6 +71,7 @@ model User {
   auditActions   AuditLog[]           @relation("ActorLogs")
   passwordResets PasswordResetToken[]
 
+  @@index([createdAt]) // admin registration trends
   @@map("users")
 }
 
@@ -207,6 +208,7 @@ model MedicalRecord {
   labReports    LabReport[]
 
   @@index([patientId])
+  @@index([createdAt]) // admin activity trends
   @@map("medical_records")
 }
 
@@ -239,6 +241,7 @@ model LabReport {
   lab     DiagnosticLab  @relation(fields: [labId], references: [id])
   record  MedicalRecord? @relation(fields: [recordId], references: [id])
 
+  @@index([uploadedAt]) // admin activity trends
   @@map("lab_reports")
 }
 
@@ -257,6 +260,7 @@ model AccessSession {
   otpToken OtpToken?
 
   @@index([doctorId, status])
+  @@index([grantedAt]) // admin activity trends
   @@map("access_sessions")
 }
 
@@ -310,6 +314,7 @@ model AuditLog {
   patient Patient? @relation("SubjectLogs", fields: [patientId], references: [id])
 
   @@index([patientId, createdAt])
+  @@index([createdAt]) // admin audit log + activity feed (newest first)
   @@map("audit_logs")
 }
 

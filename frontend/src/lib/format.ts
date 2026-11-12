@@ -70,6 +70,32 @@ export function formatNumber(value: number, lang: Language): string {
   return new Intl.NumberFormat(LOCALE[lang]).format(value)
 }
 
+/** "5 Nov" for a calendar day ("2026-11-05"), read as that day wherever the viewer is. */
+export function formatDay(isoDate: string, lang: Language): string {
+  const date = new Date(`${isoDate}T00:00:00Z`)
+  if (Number.isNaN(date.getTime())) return ''
+  return new Intl.DateTimeFormat(LOCALE[lang], { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(date)
+}
+
+const RELATIVE_STEPS: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+  ['minute', 60],
+  ['hour', 3600],
+  ['day', 86_400],
+]
+
+/** "5 minutes ago", "yesterday", "10 days ago"; under a minute is "now". */
+export function formatRelative(value: DateInput, lang: Language, now: Date = new Date()): string {
+  const date = toDate(value)
+  if (!date) return ''
+  const seconds = Math.round((date.getTime() - now.getTime()) / 1000)
+  const rtf = new Intl.RelativeTimeFormat(LOCALE[lang], { numeric: 'auto' })
+  if (Math.abs(seconds) < 60) return rtf.format(0, 'second')
+  let unit: Intl.RelativeTimeFormatUnit = 'minute'
+  let size = 60
+  for (const [u, s] of RELATIVE_STEPS) if (Math.abs(seconds) >= s) [unit, size] = [u, s]
+  return rtf.format(Math.round(seconds / size), unit)
+}
+
 const MB = 1024 * 1024
 
 /** "47 KB" / "2.5 MB", in the reader's digits. Never "0.0 MB" for a small file. */

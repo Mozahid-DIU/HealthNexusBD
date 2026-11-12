@@ -12,6 +12,7 @@ export type ErrorCode =
   | 'INVALID_FILE' // upload is not a real PDF
   | 'FILE_TOO_LARGE' // upload exceeds MAX_UPLOAD_MB
   | 'FILE_REQUIRED' // upload request without a file
+  | 'NEEDS_VERIFICATION' // reactivating a doctor/lab that was never verified: use Verifications
 
 /**
  * Operational error with an HTTP status code (and optionally a stable `code`). Throw
@@ -42,8 +43,8 @@ export class AppError extends Error {
   static notFound(msg = 'Not found') {
     return new AppError(msg, 404)
   }
-  static conflict(msg = 'Conflict') {
-    return new AppError(msg, 409)
+  static conflict(msg = 'Conflict', code?: ErrorCode) {
+    return new AppError(msg, 409, code)
   }
   static tooMany(msg = 'Too many requests') {
     return new AppError(msg, 429)

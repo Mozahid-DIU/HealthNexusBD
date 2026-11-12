@@ -3,6 +3,8 @@ import { vi } from 'vitest'
 export interface Call {
   method: string
   path: string
+  /** The query string, parsed (routes match on `path` alone). */
+  query: URLSearchParams
   body: unknown
 }
 
@@ -31,7 +33,7 @@ export function mockApi(routes: Record<string, Handler>) {
     const path = url.pathname.replace(/^\/api/, '')
     const method = (init?.method ?? 'GET').toUpperCase()
     const body = typeof init?.body === 'string' ? JSON.parse(init.body) : init?.body
-    const call = { method, path, body }
+    const call = { method, path, query: url.searchParams, body }
     calls.push(call)
     const handler = routes[`${method} ${path}`]
     if (!handler) return json(404, { success: false, data: null, error: `unmocked ${method} ${path}` })

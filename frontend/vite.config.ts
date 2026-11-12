@@ -15,5 +15,9 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
     css: false,
     restoreMocks: true,
+    // Page tests render the whole app (lazy routes + i18n areas); with every file
+    // running in parallel a slow machine needs more than the 5 s default. A real hang
+    // still fails, just later.
+    testTimeout: 20_000,
   },
 })

@@ -1,4 +1,5 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { createPortal } from 'react-dom'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -8,14 +9,16 @@ import { LanguageToggle } from '@/components/i18n/LanguageToggle'
 import { Badge } from '@/components/ui/Badge'
 import { LoadingBlock } from '@/components/ui/Feedback'
 import { useDialogFocus } from '@/components/ui/useDialogFocus'
-import { NAVIGATION, ROLE_HOME } from '@/app/navigation'
+import { NAVIGATION, ROLE_HOME, type NavBadge } from '@/app/navigation'
 import { displayName } from '@/features/account/displayName'
 import { useLogout } from '@/features/auth/useLogout'
-import { formatLongDate, initials } from '@/lib/format'
+import { adminKeys } from '@/features/admin/api'
+import { api } from '@/lib/api'
+import { formatLongDate, formatNumber, initials } from '@/lib/format'
 import { useLanguage } from '@/i18n/useLanguage'
 import { NotificationBell } from '@/features/patient/NotificationBell'
 import { useAuthStore } from '@/stores/auth'
-import type { AuthUser } from '@/types/api'
+import type { AuthUser, Role } from '@/types/api'
 
 const SIDEBAR_WIDTH = 'lg:w-[264px]'
 
@@ -36,12 +39,31 @@ function Brand({ user }: { user: AuthUser }) {
   )
 }
 
+/**
+ * Live counts for nav entries. Admin: applications waiting for verification (shares
+ * the admin dashboard's cache entry, so the badge and the page always agree).
+ */
+function useNavBadges(role: Role): Partial<Record<NavBadge, number>> {
+  const pending = useQuery({
+    queryKey: adminKeys.dashboard(),
+    queryFn: () => api.get<{ pending: { doctors: number; labs: number } }>('/admin/dashboard'),
+    select: (res) => res.data.pending.doctors + res.data.pending.labs,
+    enabled: role === 'admin',
+    refetchInterval: 60_000,
+  })
+  return { pendingVerifications: pending.data }
+}
+
 function NavList({ user, onNavigate }: { user: AuthUser; onNavigate?: () => void }) {
   const { t } = useTranslation()
+  const lang = useLanguage()
+  const badges = useNavBadges(user.role)
   return (
     <nav aria-label={t('dashboard.navLabel')} className="flex-1 overflow-y-auto px-3 py-4">
       <ul className="space-y-1">
-        {NAVIGATION[user.role].map(({ to, label, icon: Icon, end }) => (
+        {NAVIGATION[user.role].map(({ to, label, icon: Icon, end, badge }) => {
+          const count = badge ? (badges[badge] ?? 0) : 0
+          return (
           <li key={to}>
             <NavLink
               to={to}
@@ -58,11 +80,20 @@ function NavList({ user, onNavigate }: { user: AuthUser; onNavigate?: () => void
                   {isActive && <span aria-hidden className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-brand" />}
                   <Icon aria-hidden className="h-[18px] w-[18px] shrink-0" />
                   {t(label)}
+                  {count > 0 && (
+                    <>
+                      <span aria-hidden className="ml-auto min-w-[1.375rem] rounded-full bg-amber-500 px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-white">
+                        {formatNumber(count, lang)}
+                      </span>
+                      <span className="sr-only">, {t('dashboard.nav.waiting', { count: formatNumber(count, lang) })}</span>
+                    </>
+                  )}
                 </>
               )}
             </NavLink>
           </li>
-        ))}
+          )
+        })}
       </ul>
     </nav>
   )

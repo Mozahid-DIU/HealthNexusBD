@@ -1,4 +1,5 @@
 import {
+  BadgeCheck,
   Bell,
   FlaskConical,
   History,
@@ -15,12 +16,16 @@ import {
 import type { TranslationKey } from '@/i18n'
 import type { Role } from '@/types/api'
 
+/** Counts that a nav entry can show beside its label (see `useNavBadges`). */
+export type NavBadge = 'pendingVerifications'
+
 export interface NavItem {
   to: string
   label: TranslationKey
   icon: LucideIcon
   /** Match the path exactly (for section index routes). */
   end?: boolean
+  badge?: NavBadge
 }
 
 /** Each role's dashboard lives under its own prefix. */
@@ -52,5 +57,10 @@ export const NAVIGATION: Record<Role, NavItem[]> = {
     { to: '/lab/upload', label: 'dashboard.nav.uploadReport', icon: Upload },
     { to: '/lab/uploads', label: 'dashboard.nav.uploadHistory', icon: History },
   ],
-  admin: [{ to: ROLE_HOME.admin, label: 'dashboard.nav.overview', icon: LayoutDashboard, end: true }],
+  admin: [
+    { to: ROLE_HOME.admin, label: 'dashboard.nav.overview', icon: LayoutDashboard, end: true },
+    { to: '/admin/verifications', label: 'dashboard.nav.verifications', icon: BadgeCheck, badge: 'pendingVerifications' },
+    { to: '/admin/users', label: 'dashboard.nav.users', icon: UsersRound },
+    { to: '/admin/audit', label: 'dashboard.nav.auditLog', icon: ScrollText },
+  ],
 }

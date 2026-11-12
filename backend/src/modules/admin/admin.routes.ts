@@ -8,6 +8,7 @@ import {
   listUsersQuerySchema,
   rejectSchema,
   suspendSchema,
+  trendsQuerySchema,
   verificationQuerySchema,
 } from './admin.schema.ts'
 import {
@@ -21,6 +22,7 @@ import {
   rejectDoctorController,
   rejectLabController,
   suspendUserController,
+  trendsController,
 } from './admin.controller.ts'
 
 export const adminRouter = Router()
@@ -29,6 +31,7 @@ export const adminRouter = Router()
 adminRouter.use(authenticate, requireRole('admin'))
 
 adminRouter.get('/dashboard', dashboardController)
+adminRouter.get('/trends', validate(trendsQuerySchema, 'query'), trendsController)
 
 // Doctor verification
 adminRouter.get('/doctors', validate(verificationQuerySchema, 'query'), listDoctorsController)

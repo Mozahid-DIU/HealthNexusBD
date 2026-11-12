@@ -133,7 +133,8 @@ describe('home and search', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Find patient' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/doctor/find'))
-    expect(await screen.findByText('Nasrin Akter')).toBeInTheDocument()
+    // The find page's own result section (the home list also names her while it loads).
+    expect(await screen.findByRole('region', { name: 'Nasrin Akter' })).toBeInTheDocument()
   })
 
   it('validates the search term before sending anything', async () => {

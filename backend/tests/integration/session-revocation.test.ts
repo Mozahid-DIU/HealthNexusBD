@@ -77,8 +77,10 @@ describe('suspending a user takes effect immediately', () => {
   })
 
   it('cuts off a lab the moment it is rejected', async () => {
-    const { user, lab } = await createLab()
+    // Rejection is the decision on a waiting application (an approved lab is suspended).
+    const { user, lab } = await createLab({ status: 'pending' })
     const { accessToken } = await login(user.email)
+    expect((await me(accessToken)).status).toBe(200)
 
     await request(app)
       .post(`/api/admin/labs/${lab.id}/reject`)

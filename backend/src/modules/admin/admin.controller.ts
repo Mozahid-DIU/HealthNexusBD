@@ -3,7 +3,8 @@ import { asyncHandler } from '../../utils/asyncHandler.ts'
 import { sendSuccess } from '../../utils/apiResponse.ts'
 import { AppError } from '../../utils/AppError.ts'
 import * as adminService from './admin.service.ts'
-import type { AuditQuery, ListUsersQuery, VerificationQuery } from './admin.schema.ts'
+import { getTrends } from './admin.trends.ts'
+import type { AuditQuery, ListUsersQuery, TrendsQuery, VerificationQuery } from './admin.schema.ts'
 
 function adminId(req: Request): string {
   if (!req.user) throw AppError.unauthorized()
@@ -20,6 +21,10 @@ function query<T>(req: Request): T {
 
 export const dashboardController = asyncHandler(async (_req: Request, res: Response) => {
   return sendSuccess(res, await adminService.getDashboard())
+})
+
+export const trendsController = asyncHandler(async (req: Request, res: Response) => {
+  return sendSuccess(res, await getTrends(query<TrendsQuery>(req).days))
 })
 
 // --- doctors ---
