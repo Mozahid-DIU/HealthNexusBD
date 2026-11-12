@@ -122,7 +122,7 @@ describe('lab patient search by mobile number (FR-8)', () => {
 
     expect(res.status).toBe(200)
     expect(res.body.data.uhid).toBe(patient.patient.uhid)
-    expect(res.body.data.prescribedTests).toEqual([{ name: 'Lipid Profile', status: 'uploaded' }])
+    expect(res.body.data.prescribedTests).toEqual([{ name: 'Lipid Profile', status: 'uploaded', prescribedAt: expect.any(String) }])
   })
 
   it('returns 404 for an unknown phone and 400 for a malformed one or none', async () => {

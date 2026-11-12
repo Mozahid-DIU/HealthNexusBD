@@ -16,7 +16,7 @@ function query<T>(req: Request): T {
 }
 
 export const searchController = asyncHandler(async (req: Request, res: Response) => {
-  const result = await doctorService.searchPatient(userId(req), query<SearchQuery>(req))
+  const result = await doctorService.searchPatient(userId(req), query<SearchQuery>(req), req.ip)
   return sendSuccess(res, result)
 })
 

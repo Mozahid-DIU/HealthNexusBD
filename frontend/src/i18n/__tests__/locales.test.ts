@@ -3,9 +3,10 @@ import { en as coreEn } from '../locales/en'
 import { bn as coreBn } from '../locales/bn'
 import * as patient from '../locales/areas/patient'
 import * as doctor from '../locales/areas/doctor'
+import * as lab from '../locales/areas/lab'
 
-const en = { ...coreEn, patient: patient.en, doctor: doctor.en }
-const bn = { ...coreBn, patient: patient.bn, doctor: doctor.bn }
+const en = { ...coreEn, patient: patient.en, doctor: doctor.en, lab: lab.en }
+const bn = { ...coreBn, patient: patient.bn, doctor: doctor.bn, lab: lab.bn }
 
 type Tree = { [key: string]: string | Tree }
 

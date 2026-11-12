@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Search } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { parseIdentifier } from './helpers'
+import { parseIdentifier } from '@/lib/identifier'
 
 interface PatientSearchFormProps {
   initial?: string
@@ -30,7 +30,7 @@ export function PatientSearchForm({ initial = '', onSearch, busy = false, autoFo
   return (
     <form onSubmit={submit} noValidate role="search">
       <label htmlFor="patient-search" className="mb-1.5 block text-[13px] font-semibold text-body">
-        {t('doctor.search.label')}
+        {t('clinical.search.label')}
       </label>
       <div className="flex flex-col gap-2 sm:flex-row">
         <div className="relative flex-1">
@@ -42,7 +42,7 @@ export function PatientSearchForm({ initial = '', onSearch, busy = false, autoFo
               setValue(e.target.value)
               if (invalid) setInvalid(false)
             }}
-            placeholder={t('doctor.search.placeholder')}
+            placeholder={t('clinical.search.placeholder')}
             autoFocus={autoFocus}
             autoComplete="off"
             spellCheck={false}
@@ -54,12 +54,12 @@ export function PatientSearchForm({ initial = '', onSearch, busy = false, autoFo
           />
         </div>
         <Button type="submit" size="lg" disabled={busy} className="sm:w-auto">
-          {busy ? t('doctor.search.searching') : t('doctor.search.submit')}
+          {busy ? t('clinical.search.searching') : t('clinical.search.submit')}
         </Button>
       </div>
       {invalid && (
         <p id="patient-search-error" role="alert" className="mt-1.5 text-xs font-medium text-red-500">
-          {t('doctor.search.invalid')}
+          {t('clinical.search.invalid')}
         </p>
       )}
     </form>

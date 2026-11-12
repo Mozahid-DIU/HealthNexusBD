@@ -11,7 +11,7 @@ export const uploadPdf = multer({
   limits: { fileSize: env.MAX_UPLOAD_MB * 1024 * 1024, files: 1 },
   fileFilter: (_req, file, cb) => {
     if (file.mimetype !== 'application/pdf') {
-      cb(AppError.badRequest('Only PDF files are allowed'))
+      cb(AppError.badRequest('Only PDF files are allowed', 'INVALID_FILE'))
       return
     }
     cb(null, true)

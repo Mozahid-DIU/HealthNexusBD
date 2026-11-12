@@ -3,7 +3,7 @@ import { prisma } from '../../config/prisma.ts'
 import { AppError } from '../../utils/AppError.ts'
 import { encrypt, safeDecrypt } from '../../utils/crypto.ts'
 import { getPagination } from '../../utils/pagination.ts'
-import { writeAudit } from '../../utils/audit.ts'
+import { auditPatientSearch, writeAudit } from '../../utils/audit.ts'
 import { getActiveAccessSession } from '../consent/consent.service.ts'
 import { generateSummary } from '../../services/ai.ts'
 import { readReportFile } from '../../services/reportFiles.ts'
@@ -42,7 +42,7 @@ function maskPhone(phone: string): string {
 
 // ---------------------------------------------------------------- search
 
-export async function searchPatient(userId: string, query: SearchQuery) {
+export async function searchPatient(userId: string, query: SearchQuery, ip?: string | null) {
   const doctor = await getActiveDoctor(userId)
 
   const where: Prisma.PatientWhereInput = query.uhid
@@ -56,6 +56,7 @@ export async function searchPatient(userId: string, query: SearchQuery) {
   if (!patient) throw AppError.notFound('No patient found')
 
   const session = await getActiveAccessSession(doctor.id, patient.id)
+  await auditPatientSearch(userId, patient.id, ip)
 
   return {
     patientId: patient.id,

@@ -11,7 +11,7 @@ import { formatDateTime } from '@/lib/format'
 import { patientApi, patientKeys } from './api'
 import { auditDescription } from './text'
 import type { AuditEntry } from './types'
-import { useClampPage, usePageParam } from './usePageParam'
+import { useClampPage, usePageParam } from '@/lib/usePageParam'
 
 const ROLE_TONE: Record<AuditEntry['role'], BadgeTone> = {
   doctor: 'brand',

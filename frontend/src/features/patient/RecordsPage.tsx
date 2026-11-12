@@ -10,7 +10,7 @@ import { Pagination } from '@/components/ui/Pagination'
 import { useLanguage } from '@/i18n/useLanguage'
 import { formatDate, formatNumber } from '@/lib/format'
 import { patientApi, patientKeys } from './api'
-import { useClampPage, usePageParam } from './usePageParam'
+import { useClampPage, usePageParam } from '@/lib/usePageParam'
 
 export function RecordsPage() {
   const { t } = useTranslation()

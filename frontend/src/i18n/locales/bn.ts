@@ -64,6 +64,10 @@ export const bn: CoreMessages = {
 
   errors: {
     generic: 'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।',
+    testNotPrescribed: 'এই রোগীর জন্য এই পরীক্ষাটি প্রেসক্রাইব করা হয়নি, তাই এর রিপোর্ট আপলোড করা যাবে না।',
+    invalidFile: 'ফাইলটি সঠিক PDF নয়। রিপোর্টটি PDF হিসেবে সেভ করে আবার চেষ্টা করুন।',
+    fileTooLarge: 'ফাইলটি অনেক বড়। রিপোর্ট সর্বোচ্চ ১০ MB হতে পারে।',
+    fileRequired: 'আপলোড করার জন্য একটি PDF ফাইল বেছে নিন।',
     invalidInput: 'কিছু তথ্য সঠিক নয়। ফর্মটি দেখে আবার চেষ্টা করুন।',
     network: 'সার্ভারের সাথে সংযোগ করা যাচ্ছে না। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।',
     sessionExpired: 'আপনার সেশন শেষ হয়েছে। আবার লগইন করুন।',
@@ -226,6 +230,8 @@ export const bn: CoreMessages = {
       profile: 'আমার প্রোফাইল',
       findPatient: 'রোগী খুঁজুন',
       myPatients: 'আমার রোগী',
+      uploadReport: 'রিপোর্ট আপলোড',
+      uploadHistory: 'আপলোডের ইতিহাস',
     },
     account: 'অ্যাকাউন্ট',
     signedInAs: 'লগইন করেছেন',
@@ -249,7 +255,22 @@ export const bn: CoreMessages = {
     },
   },
 
+  verification: {
+    title: 'আপনার অ্যাকাউন্ট যাচাই করা হচ্ছে',
+    next: 'এরপর কী হবে',
+    autoUnlock: 'অনুমোদনের পর এই পেজ নিজে থেকেই খুলে যাবে।',
+    check: 'আবার দেখুন',
+  },
+
   clinical: {
+    search: {
+      label: 'UHID বা মোবাইল নম্বর',
+      placeholder: 'BD-2026-01240 অথবা 017XXXXXXXX',
+      submit: 'রোগী খুঁজুন',
+      searching: 'খোঁজা হচ্ছে…',
+      invalid: 'UHID (BD-YYYY-XXXXX) অথবা ১১ সংখ্যার মোবাইল নম্বর দিন',
+      notFound: 'এই UHID বা নম্বরে কোনো রোগী পাওয়া যায়নি।',
+    },
     note: 'ক্লিনিক্যাল নোট',
     symptoms: 'উপসর্গ',
     prescription: 'প্রেসক্রিপশন',
@@ -277,6 +298,16 @@ export const bn: CoreMessages = {
     verified: 'যাচাইকৃত',
     from: '{{lab}} থেকে',
     uploaded: 'আপলোড {{date}}',
+    dropTitle: 'PDF ফাইলটি এখানে টেনে আনুন',
+    dropOr: 'অথবা',
+    browse: 'PDF বেছে নিন',
+    dropHint: 'শুধু PDF, সর্বোচ্চ {{max}} MB',
+    dropActive: 'ফাইলটি যোগ করতে ছেড়ে দিন',
+    notPdf: 'এটি PDF নয়। PDF হিসেবে সেভ করা রিপোর্টটি বেছে নিন।',
+    tooLarge: 'ফাইলটি {{size}}। সর্বোচ্চ সীমা {{max}} MB।',
+    empty: 'ফাইলটি খালি।',
+    remove: '{{name}} সরান',
+    selected: 'বেছে নেওয়া হয়েছে: {{name}}, {{size}}',
   },
 
   ui: {

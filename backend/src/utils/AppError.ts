@@ -8,6 +8,10 @@ export type ErrorCode =
   | 'ACCOUNT_SUSPENDED' // account suspended by an admin — sign the user out
   | 'ACCOUNT_PENDING' // doctor/lab not yet verified — show the pending screen
   | 'CONSENT_REQUIRED' // doctor has no live consent for this patient — access has ended
+  | 'TEST_NOT_PRESCRIBED' // lab upload for a test no doctor prescribed for this patient
+  | 'INVALID_FILE' // upload is not a real PDF
+  | 'FILE_TOO_LARGE' // upload exceeds MAX_UPLOAD_MB
+  | 'FILE_REQUIRED' // upload request without a file
 
 /**
  * Operational error with an HTTP status code (and optionally a stable `code`). Throw
@@ -26,8 +30,8 @@ export class AppError extends Error {
     Object.setPrototypeOf(this, AppError.prototype)
   }
 
-  static badRequest(msg = 'Bad request') {
-    return new AppError(msg, 400)
+  static badRequest(msg = 'Bad request', code?: ErrorCode) {
+    return new AppError(msg, 400, code)
   }
   static unauthorized(msg = 'Unauthorized', code?: ErrorCode) {
     return new AppError(msg, 401, code)

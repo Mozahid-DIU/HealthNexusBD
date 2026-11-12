@@ -38,6 +38,7 @@ const AUDIT_TEXT: Record<string, TranslationKey> = {
   'view:patient_profile': 'patient.audit.viewedProfile',
   'view:lab_reports': 'patient.audit.viewedLabList',
   'view:lab_report_file': 'patient.audit.openedReport',
+  'view:patient_search': 'patient.audit.searchedYou',
   'create:medical_record': 'patient.audit.addedRecord',
   'create:prescription': 'patient.audit.addedPrescription',
   'create:ai_summary': 'patient.audit.generatedSummary',

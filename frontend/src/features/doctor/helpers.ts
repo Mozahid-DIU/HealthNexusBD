@@ -1,18 +1,3 @@
-const UHID = /^BD-\d{4}-\d{5}$/
-const MOBILE = /^01\d{9}$/
-
-/**
- * Accept what a doctor actually types: a UHID in any case, or a mobile number with or
- * without +880 / spaces / dashes. Returns the query the API expects, or null.
- */
-export function parseIdentifier(raw: string): { uhid: string } | { phone: string } | null {
-  const text = raw.trim().toUpperCase()
-  if (UHID.test(text)) return { uhid: text }
-  let digits = text.replace(/[\s()-]/g, '').replace(/^\+/, '')
-  if (digits.startsWith('880')) digits = digits.slice(2) // 8801XXXXXXXXX → 01XXXXXXXXX
-  return MOBILE.test(digits) ? { phone: digits } : null
-}
-
 /** Whole years since `dateOfBirth` (a DB DATE, i.e. midnight UTC), or null. */
 export function ageFrom(dateOfBirth: string | null | undefined, now: Date = new Date()): number | null {
   if (!dateOfBirth) return null

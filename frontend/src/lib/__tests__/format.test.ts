@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDate, formatDateTime, formatLongDate, formatNumber, initials, todayIso } from '../format'
+import { formatDate, formatDateTime, formatFileSize, formatLongDate, formatNumber, initials, todayIso } from '../format'
 
 // 2026-03-10 20:30 UTC is 2026-03-11 02:30 in Dhaka (UTC+6).
 const LATE_NIGHT_UTC = '2026-03-10T20:30:00Z'
@@ -45,6 +45,13 @@ describe('format', () => {
   it('formats numbers per language', () => {
     expect(formatNumber(1234, 'en')).toBe('1,234')
     expect(formatNumber(1234, 'bn')).toBe('১,২৩৪')
+  })
+
+  it('shows file sizes people can read, in the reader’s digits', () => {
+    expect(formatFileSize(48_000, 'en')).toBe('47 KB')
+    expect(formatFileSize(300, 'en')).toBe('1 KB')
+    expect(formatFileSize(2.45 * 1024 * 1024, 'en')).toBe('2.5 MB')
+    expect(formatFileSize(10 * 1024 * 1024, 'bn')).toBe('১০ MB')
   })
 
   it('returns an empty string for missing or invalid dates instead of "Invalid Date"', () => {

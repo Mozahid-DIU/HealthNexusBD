@@ -31,6 +31,20 @@ export const refreshLimiter = rateLimit({
   handler: (_req, res) => sendError(res, 'Too many requests. Please slow down.', 429),
 })
 
+/**
+ * Patient look-ups (doctor and lab search) reveal who is registered, so they get a
+ * tighter budget than the general API: enough for a busy counter, too little to
+ * walk through UHIDs.
+ */
+export const searchLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: skipInTests,
+  handler: (_req, res) => sendError(res, 'Too many searches. Please wait a few minutes.', 429),
+})
+
 /** General limiter for the rest of the API. */
 export const apiLimiter = rateLimit({
   windowMs: 60 * 1000,

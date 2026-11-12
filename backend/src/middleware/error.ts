@@ -39,7 +39,7 @@ export function errorHandler(
         : err.code === 'LIMIT_FILE_COUNT' || err.code === 'LIMIT_UNEXPECTED_FILE'
           ? 'Only a single file may be uploaded'
           : 'File upload failed'
-    return sendError(res, message, 400)
+    return sendError(res, message, 400, err.code === 'LIMIT_FILE_SIZE' ? 'FILE_TOO_LARGE' : undefined)
   }
 
   // Prisma known errors (e.g. unique constraint)

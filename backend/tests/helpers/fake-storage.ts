@@ -26,7 +26,13 @@ export async function downloadFile(url: string): Promise<Buffer> {
   return file
 }
 
-export async function deleteRawFile(): Promise<void> {}
+/** Public ids passed to deleteRawFile, so tests can prove cleanup happened. */
+export const deleted: string[] = []
+
+export async function deleteRawFile(publicId: string): Promise<void> {
+  deleted.push(publicId)
+  for (const url of stored.keys()) if (url.endsWith(publicId)) stored.delete(url)
+}
 
 export function publicIdFromRawUrl(url: string): string {
   return url.split('/upload/')[1] ?? ''

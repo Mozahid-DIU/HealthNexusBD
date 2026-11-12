@@ -20,6 +20,8 @@ export const PAGE_SIZE = 10
  */
 export const doctorKeys = {
   all: ['doctor'] as const,
+  /** No argument: every search (for invalidation). */
+  search: (q?: string) => (q === undefined ? (['doctor', 'search'] as const) : (['doctor', 'search', q] as const)),
   patients: () => ['doctor', 'patients'] as const,
   patient: (id: string) => ['doctor', 'patient', id] as const,
   profile: (id: string) => ['doctor', 'patient', id, 'profile'] as const,

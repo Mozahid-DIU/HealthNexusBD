@@ -9,6 +9,10 @@ const BY_CODE: Partial<Record<NonNullable<ApiError['code']>, TranslationKey>> = 
   ACCOUNT_SUSPENDED: 'errors.accountSuspended',
   ACCOUNT_PENDING: 'errors.accountPending',
   CONSENT_REQUIRED: 'errors.consentRequired',
+  TEST_NOT_PRESCRIBED: 'errors.testNotPrescribed',
+  INVALID_FILE: 'errors.invalidFile',
+  FILE_TOO_LARGE: 'errors.fileTooLarge',
+  FILE_REQUIRED: 'errors.fileRequired',
 }
 
 /** Known backend messages → translated text. Anything unmatched is shown as sent. */

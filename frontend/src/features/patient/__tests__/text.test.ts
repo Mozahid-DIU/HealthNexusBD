@@ -55,6 +55,7 @@ describe('auditDescription', () => {
     ['view', 'patient_profile:abc', 'Viewed your health profile'],
     ['view', 'lab_reports:2', 'Viewed your lab report list'],
     ['view', 'lab_report_file:abc', 'Opened a lab report'],
+    ['view', 'patient_search:abc', 'Looked you up by UHID or phone number'],
     ['create', 'medical_record:abc', 'Added a medical record'],
     ['create', 'prescription:abc', 'Wrote a prescription'],
     ['create', 'ai_summary:abc', 'Generated an AI clinical summary'],

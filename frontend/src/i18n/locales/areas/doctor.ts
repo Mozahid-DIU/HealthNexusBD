@@ -4,13 +4,9 @@
  */
 export const en = {
   pending: {
-    title: 'Your account is being verified',
     body: 'An administrator is checking your BMDC registration. You will be able to find patients and request access as soon as it is approved.',
     bmdc: 'BMDC registration',
-    next: 'What happens next',
     step1: 'An admin matches your BMDC number with the council registry.',
-    step2: 'Once approved, this page unlocks automatically.',
-    check: 'Check again',
   },
   home: {
     title: 'Good to see you, {{name}}',
@@ -19,14 +15,6 @@ export const en = {
     activeEmpty: 'No active access right now',
     activeEmptyBody: 'Search for a patient above. Access lasts for a limited time after the patient shares their code.',
     viewAll: 'View all',
-  },
-  search: {
-    label: 'UHID or mobile number',
-    placeholder: 'BD-2026-01240 or 017XXXXXXXX',
-    submit: 'Find patient',
-    searching: 'Searching…',
-    invalid: 'Enter a UHID (BD-YYYY-XXXXX) or an 11-digit mobile number',
-    notFound: 'No patient found with this UHID or number.',
   },
   find: {
     title: 'Find a patient',
@@ -138,13 +126,9 @@ export type DoctorMessages = typeof en
 
 export const bn: DoctorMessages = {
   pending: {
-    title: 'আপনার অ্যাকাউন্ট যাচাই করা হচ্ছে',
     body: 'একজন অ্যাডমিন আপনার BMDC নিবন্ধন যাচাই করছেন। অনুমোদন পাওয়ার সাথে সাথে আপনি রোগী খুঁজতে ও অ্যাক্সেস চাইতে পারবেন।',
     bmdc: 'BMDC নিবন্ধন',
-    next: 'এরপর কী হবে',
     step1: 'অ্যাডমিন আপনার BMDC নম্বর কাউন্সিলের তালিকার সাথে মিলিয়ে দেখবেন।',
-    step2: 'অনুমোদনের পর এই পেজ নিজে থেকেই খুলে যাবে।',
-    check: 'আবার দেখুন',
   },
   home: {
     title: 'স্বাগতম, {{name}}',
@@ -153,14 +137,6 @@ export const bn: DoctorMessages = {
     activeEmpty: 'এই মুহূর্তে কোনো সক্রিয় অ্যাক্সেস নেই',
     activeEmptyBody: 'ওপরে রোগী খুঁজুন। রোগী কোড দেওয়ার পর নির্দিষ্ট সময়ের জন্য অ্যাক্সেস থাকে।',
     viewAll: 'সব দেখুন',
-  },
-  search: {
-    label: 'UHID বা মোবাইল নম্বর',
-    placeholder: 'BD-2026-01240 অথবা 017XXXXXXXX',
-    submit: 'রোগী খুঁজুন',
-    searching: 'খোঁজা হচ্ছে…',
-    invalid: 'UHID (BD-YYYY-XXXXX) অথবা ১১ সংখ্যার মোবাইল নম্বর দিন',
-    notFound: 'এই UHID বা নম্বরে কোনো রোগী পাওয়া যায়নি।',
   },
   find: {
     title: 'রোগী খুঁজুন',

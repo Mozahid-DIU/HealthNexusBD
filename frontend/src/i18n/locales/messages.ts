@@ -1,6 +1,7 @@
 import type { CoreMessages } from './en'
 import type { PatientMessages } from './areas/patient'
 import type { DoctorMessages } from './areas/doctor'
+import type { LabMessages } from './areas/lab'
 
 /**
  * Every translation key the app can use: the core bundle plus each lazily loaded area.
@@ -9,7 +10,8 @@ import type { DoctorMessages } from './areas/doctor'
 export type Messages = CoreMessages & {
   patient: PatientMessages
   doctor: DoctorMessages
+  lab: LabMessages
 }
 
 /** Areas whose strings are loaded on demand (see `loadArea`). */
-export type Area = 'patient' | 'doctor'
+export type Area = 'patient' | 'doctor' | 'lab'

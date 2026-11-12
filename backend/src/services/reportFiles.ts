@@ -1,5 +1,6 @@
 import { decrypt, decryptBuffer, encrypt, encryptBuffer } from '../utils/crypto.ts'
-import { downloadFile, uploadRawFile } from './storage.ts'
+import { deleteRawFile, downloadFile, publicIdFromRawUrl, uploadRawFile } from './storage.ts'
+import { logger } from '../utils/logger.ts'
 
 /**
  * Lab report files, encrypted at rest (SRS NFR: "lab files encrypted at rest, AES-256").
@@ -27,6 +28,17 @@ export const SAMPLE_REPORT_PDF_URL =
 export async function storeReportFile(pdf: Buffer): Promise<string> {
   const { url } = await uploadRawFile(encryptBuffer(pdf))
   return encrypt(ENCRYPTED_PREFIX + url)
+}
+
+/** Best-effort removal of a stored report file (e.g. when saving its DB row failed). */
+export async function discardReportFile(fileRefEncrypted: string): Promise<void> {
+  try {
+    const ref = decrypt(fileRefEncrypted)
+    if (!ref.startsWith(ENCRYPTED_PREFIX)) return
+    await deleteRawFile(publicIdFromRawUrl(ref.slice(ENCRYPTED_PREFIX.length)))
+  } catch (err) {
+    logger.error({ err }, 'Failed to discard an orphaned report file')
+  }
 }
 
 /** Resolve a stored `fileRefEncrypted` back to the original PDF bytes. */

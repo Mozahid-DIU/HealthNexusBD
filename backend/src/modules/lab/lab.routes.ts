@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { authenticate } from '../../middleware/auth.ts'
 import { requireRole } from '../../middleware/rbac.ts'
 import { validate } from '../../middleware/validate.ts'
+import { searchLimiter } from '../../middleware/rateLimit.ts'
 import { uploadPdf } from '../../middleware/upload.ts'
 import {
   idParamSchema,
@@ -21,7 +22,7 @@ export const labRouter = Router()
 // Every route requires an authenticated lab (approval is checked in the service).
 labRouter.use(authenticate, requireRole('lab'))
 
-labRouter.get('/search', validate(searchQuerySchema, 'query'), searchController)
+labRouter.get('/search', searchLimiter, validate(searchQuerySchema, 'query'), searchController)
 
 // multer parses the multipart body first, then Zod validates the text fields.
 labRouter.post('/reports', uploadPdf, validate(uploadReportSchema), uploadReportController)

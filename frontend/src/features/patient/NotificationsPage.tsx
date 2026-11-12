@@ -12,7 +12,7 @@ import { translateApiError } from '@/lib/errors'
 import { toast } from '@/stores/toast'
 import { patientApi, patientKeys } from './api'
 import { notificationText } from './text'
-import { useClampPage, usePageParam } from './usePageParam'
+import { useClampPage, usePageParam } from '@/lib/usePageParam'
 
 export function NotificationsPage() {
   const { t } = useTranslation()

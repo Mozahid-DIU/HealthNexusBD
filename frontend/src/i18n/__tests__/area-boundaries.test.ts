@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest'
  */
 const sources = import.meta.glob<string>('/src/features/**/*.{ts,tsx}', { query: '?raw', import: 'default', eager: true })
 
-const AREAS = ['patient', 'doctor'] as const
+const AREAS = ['patient', 'doctor', 'lab'] as const
 
 describe('i18n area boundaries', () => {
   for (const area of AREAS) {

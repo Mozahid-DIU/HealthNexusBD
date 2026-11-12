@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { ageFrom, formatCountdown, parseIdentifier } from '../helpers'
+import { parseIdentifier } from '@/lib/identifier'
+import { ageFrom, formatCountdown } from '../helpers'
 
 describe('parseIdentifier', () => {
   it('recognises a UHID in any case and with spaces', () => {
@@ -9,6 +10,10 @@ describe('parseIdentifier', () => {
     expect(parseIdentifier('01810000007')).toEqual({ phone: '01810000007' })
     expect(parseIdentifier('+880 1810-000007')).toEqual({ phone: '01810000007' })
     expect(parseIdentifier('8801810000007')).toEqual({ phone: '01810000007' })
+  })
+  it('accepts Bangla digits, as typed on a Bangla keyboard', () => {
+    expect(parseIdentifier('০১৮১০০০০০০৭')).toEqual({ phone: '01810000007' })
+    expect(parseIdentifier('BD-২০২৬-০১২৪০')).toEqual({ uhid: 'BD-2026-01240' })
   })
   it('rejects anything else', () => {
     for (const bad of ['', 'BD-26-1', '0181000000', '12345678901', 'hello']) {

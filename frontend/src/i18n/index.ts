@@ -65,6 +65,7 @@ i18n.on('languageChanged', (lng) => {
 const AREA_LOADERS: Record<Area, () => Promise<{ en: object; bn: object }>> = {
   patient: () => import('./locales/areas/patient'),
   doctor: () => import('./locales/areas/doctor'),
+  lab: () => import('./locales/areas/lab'),
 }
 const loadedAreas = new Map<Area, Promise<void>>()
 

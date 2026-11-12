@@ -15,11 +15,11 @@ function query<T>(req: Request): T {
 }
 
 export const searchController = asyncHandler(async (req: Request, res: Response) => {
-  return sendSuccess(res, await labService.searchPatient(userId(req), query<SearchQuery>(req)))
+  return sendSuccess(res, await labService.searchPatient(userId(req), query<SearchQuery>(req), req.ip))
 })
 
 export const uploadReportController = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.file) throw AppError.badRequest('A PDF file is required (field name: "file")')
+  if (!req.file) throw AppError.badRequest('A PDF file is required (field name: "file")', 'FILE_REQUIRED')
   const result = await labService.uploadReport(userId(req), req.body, req.file.buffer, req.ip)
   return sendSuccess(res, result, 201)
 })

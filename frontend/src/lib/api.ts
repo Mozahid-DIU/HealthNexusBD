@@ -13,6 +13,10 @@ export type ApiErrorCode =
   | 'ACCOUNT_SUSPENDED'
   | 'ACCOUNT_PENDING'
   | 'CONSENT_REQUIRED'
+  | 'TEST_NOT_PRESCRIBED'
+  | 'INVALID_FILE'
+  | 'FILE_TOO_LARGE'
+  | 'FILE_REQUIRED'
   | 'NETWORK'
 
 /** Thrown on any failed request; carries the HTTP status (0 = no response) and code. */

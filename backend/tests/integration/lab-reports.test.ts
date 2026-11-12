@@ -5,7 +5,7 @@ import { prisma } from '../../src/config/prisma.ts'
 import { decrypt, encrypt } from '../../src/utils/crypto.ts'
 import { SAMPLE_REPORT_PDF_URL } from '../../src/services/reportFiles.ts'
 import { resetDb } from '../helpers/db.ts'
-import { SAMPLE_PDF_BYTES, downloadCalls, stored } from '../helpers/fake-storage.ts'
+import { SAMPLE_PDF_BYTES, deleted, downloadCalls, stored } from '../helpers/fake-storage.ts'
 import { createDoctor, createLab, createPatient, createPrescription } from '../helpers/factories.ts'
 
 vi.mock('../../src/services/storage.ts', () => import('../helpers/fake-storage.ts'))
@@ -19,16 +19,22 @@ type Patient = Awaited<ReturnType<typeof createPatient>>
 
 let lab: Lab
 let patient: Patient
+let doctorId: string
 
 beforeEach(async () => {
   await resetDb()
   stored.clear()
   downloadCalls.length = 0
+  deleted.length = 0
   lab = await createLab()
   patient = await createPatient()
   const { doctor } = await createDoctor()
+  doctorId = doctor.id
   await createPrescription(patient.patient.id, doctor.id, [TEST_NAME])
 })
+
+const search = (query = `uhid=${patient.patient.uhid}`) =>
+  request(app).get(`/api/lab/search?${query}`).set('Authorization', lab.auth)
 
 function upload(file: Buffer = PDF, testName = TEST_NAME, auth = lab.auth) {
   return request(app)
@@ -56,9 +62,47 @@ describe('lab patient search', () => {
       .set('Authorization', lab.auth)
 
     expect(before.status).toBe(200)
-    expect(before.body.data.prescribedTests).toEqual([{ name: TEST_NAME, status: 'pending' }])
-    expect(after.body.data.prescribedTests).toEqual([{ name: TEST_NAME, status: 'uploaded' }])
+    expect(before.body.data.prescribedTests).toEqual([
+      { name: TEST_NAME, status: 'pending', prescribedAt: expect.any(String) },
+    ])
+    expect(after.body.data.prescribedTests).toMatchObject([{ name: TEST_NAME, status: 'uploaded' }])
     expect(before.body.data).not.toHaveProperty('records')
+    expect(before.body.data).not.toHaveProperty('allergies')
+  })
+
+  it('shows a masked phone and gender so the lab can confirm who is at the counter', async () => {
+    const res = await search()
+    const phone = (await prisma.user.findUniqueOrThrow({ where: { id: patient.user.id } })).phone
+
+    expect(res.body.data.phone).toBe(`********${phone.slice(-3)}`)
+    expect(res.body.data).toHaveProperty('gender')
+  })
+
+  it('finds the patient by mobile number too', async () => {
+    const phone = (await prisma.user.findUniqueOrThrow({ where: { id: patient.user.id } })).phone
+    const res = await search(`phone=${phone}`)
+    expect(res.body.data.uhid).toBe(patient.patient.uhid)
+  })
+
+  it('shows a test as pending again when a doctor prescribes it again after the last upload', async () => {
+    await uploadOk()
+    await createPrescription(patient.patient.id, doctorId, [TEST_NAME, 'CBC'])
+
+    const res = await search()
+
+    // Pending first; each test appears once.
+    expect(res.body.data.prescribedTests.map((t: { name: string; status: string }) => [t.name, t.status])).toEqual([
+      ['HbA1c', 'pending'],
+      ['CBC', 'pending'],
+    ])
+  })
+
+  it('links an upload to the latest prescription of that test', async () => {
+    const latest = await createPrescription(patient.patient.id, doctorId, [TEST_NAME])
+    const id = await uploadOk()
+
+    const row = await prisma.labReport.findUniqueOrThrow({ where: { id } })
+    expect(row.recordId).toBe(latest.id)
   })
 
   it('lists the lab uploads with API links', async () => {
@@ -90,11 +134,24 @@ describe('lab report upload', () => {
   it('rejects a file whose bytes are not a PDF', async () => {
     const res = await upload(Buffer.from('MZ\x90\x00 not a pdf'))
     expect(res.status).toBe(400)
+    expect(res.body.code).toBe('INVALID_FILE')
+  })
+
+  it('rejects a non-PDF content type with a stable code', async () => {
+    const res = await request(app)
+      .post('/api/lab/reports')
+      .set('Authorization', lab.auth)
+      .field('uhid', patient.patient.uhid)
+      .field('testName', TEST_NAME)
+      .attach('file', Buffer.from('hello'), { filename: 'notes.txt', contentType: 'text/plain' })
+    expect(res.status).toBe(400)
+    expect(res.body.code).toBe('INVALID_FILE')
   })
 
   it('only allows reports for a prescribed test', async () => {
     const res = await upload(PDF, 'MRI Brain')
     expect(res.status).toBe(403)
+    expect(res.body.code).toBe('TEST_NOT_PRESCRIBED')
   })
 
   it('does not let a pending (unapproved) lab upload', async () => {
@@ -226,5 +283,82 @@ describe('lab access to its own uploads', () => {
     const res = await request(app).get(`/api/lab/reports/${id}/file`).set('Authorization', other.auth)
 
     expect(res.status).toBe(404)
+  })
+})
+
+describe('test names written differently by different doctors', () => {
+  it('treats case and spacing variants as one test, shown as last prescribed', async () => {
+    await createPrescription(patient.patient.id, doctorId, ['  cbc', 'Lipid   Profile'])
+    await createPrescription(patient.patient.id, doctorId, ['CBC '])
+
+    const res = await search()
+
+    expect(res.body.data.prescribedTests.map((t: { name: string }) => t.name)).toEqual(['CBC', 'Lipid Profile', 'HbA1c'])
+  })
+
+  it('accepts an upload under any spelling and marks every variant done', async () => {
+    await createPrescription(patient.patient.id, doctorId, [' hba1C '])
+
+    const res = await upload(PDF, 'HBA1C')
+
+    expect(res.status).toBe(201)
+    const after = await search()
+    expect(after.body.data.prescribedTests).toMatchObject([{ status: 'uploaded' }])
+  })
+})
+
+describe('patient search is audited and throttled', () => {
+  const searches = (resource: string) => prisma.auditLog.count({ where: { action: 'view', resource } })
+
+  it('records a lab looking a patient up, once per short window', async () => {
+    await search()
+    await search()
+
+    expect(await searches(`patient_search:${patient.patient.id}`)).toBe(1)
+  })
+
+  it('records a doctor looking a patient up too', async () => {
+    const doctor = await createDoctor()
+    await request(app).get(`/api/doctor/search?uhid=${patient.patient.uhid}`).set('Authorization', doctor.auth)
+
+    const entry = await prisma.auditLog.findFirst({
+      where: { actorUserId: doctor.user.id, resource: `patient_search:${patient.patient.id}` },
+    })
+    expect(entry).not.toBeNull()
+  })
+
+  it('puts both search endpoints behind their own stricter limiter', async () => {
+    const { searchLimiter, apiLimiter } = await import('../../src/middleware/rateLimit.ts')
+    expect(searchLimiter).not.toBe(apiLimiter)
+    const { labRouter } = await import('../../src/modules/lab/lab.routes.ts')
+    const { doctorRouter } = await import('../../src/modules/doctor/doctor.routes.ts')
+    for (const router of [labRouter, doctorRouter]) {
+      const layer = router.stack.find((l: { route?: { path: string } }) => l.route?.path === '/search')
+      expect(layer!.route!.stack.map((s: { handle: unknown }) => s.handle)).toContain(searchLimiter)
+    }
+  })
+})
+
+describe('upload failure handling', () => {
+  it('says a file is required with a stable code', async () => {
+    const res = await request(app)
+      .post('/api/lab/reports')
+      .set('Authorization', lab.auth)
+      .field('uhid', patient.patient.uhid)
+      .field('testName', TEST_NAME)
+
+    expect(res.status).toBe(400)
+    expect(res.body.code).toBe('FILE_REQUIRED')
+  })
+
+  it('removes the stored file if saving the report fails', async () => {
+    const spy = vi.spyOn(prisma.labReport, 'create').mockRejectedValueOnce(new Error('db down'))
+
+    const res = await upload()
+
+    expect(res.status).toBe(500)
+    expect(stored.size).toBe(0)
+    expect(deleted).toHaveLength(1)
+    spy.mockRestore()
   })
 })

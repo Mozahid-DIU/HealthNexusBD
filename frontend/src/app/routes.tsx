@@ -35,6 +35,23 @@ const doctorPage = <K extends string>(load: () => Promise<Record<K, ComponentTyp
   return { Component: module[name] }
 }
 
+const labPage = <K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) => async () => {
+  const [module] = await Promise.all([load(), loadArea('lab')])
+  return { Component: module[name] }
+}
+
+/** Lab pages, relative to /lab, behind the "pending verification" gate. */
+const LAB_PAGES: RouteObject[] = [
+  {
+    lazy: labPage(() => import('@/features/lab/LabGate'), 'LabGate'),
+    children: [
+      { index: true, lazy: labPage(() => import('@/features/lab/LabHome'), 'LabHome') },
+      { path: 'upload', lazy: labPage(() => import('@/features/lab/UploadReportPage'), 'UploadReportPage') },
+      { path: 'uploads', lazy: labPage(() => import('@/features/lab/UploadsPage'), 'UploadsPage') },
+    ],
+  },
+]
+
 /** Doctor pages, relative to /doctor, all behind the "pending verification" gate. */
 const DOCTOR_PAGES: RouteObject[] = [
   {
@@ -87,7 +104,7 @@ export const routes: RouteObject[] = [
       { path: '/forgot-password', lazy: forgotPasswordPage },
       roleSection('patient', PATIENT_PAGES),
       roleSection('doctor', DOCTOR_PAGES),
-      roleSection('lab'),
+      roleSection('lab', LAB_PAGES),
       roleSection('admin'),
       { path: '/app', element: <RoleHomeRedirect /> },
       { path: '*', element: <NotFoundPage /> },

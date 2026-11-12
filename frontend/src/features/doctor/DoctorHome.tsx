@@ -9,7 +9,7 @@ import { displayName } from '@/features/account/displayName'
 import { useAuthStore } from '@/stores/auth'
 import { doctorApi, doctorKeys } from './api'
 import { ConsentedPatientList } from './ConsentedPatientList'
-import { PatientSearchForm } from './PatientSearchForm'
+import { PatientSearchForm } from '@/features/clinical/PatientSearchForm'
 
 const HOME_LIMIT = 4
 

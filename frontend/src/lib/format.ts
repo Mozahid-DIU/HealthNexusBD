@@ -70,6 +70,15 @@ export function formatNumber(value: number, lang: Language): string {
   return new Intl.NumberFormat(LOCALE[lang]).format(value)
 }
 
+const MB = 1024 * 1024
+
+/** "47 KB" / "2.5 MB", in the reader's digits. Never "0.0 MB" for a small file. */
+export function formatFileSize(bytes: number, lang: Language): string {
+  if (bytes < MB) return `${formatNumber(Math.max(1, Math.round(bytes / 1024)), lang)} KB`
+  const mb = new Intl.NumberFormat(LOCALE[lang], { maximumFractionDigits: 1 }).format(bytes / MB)
+  return `${mb} MB`
+}
+
 /** Up to two initials for an avatar, skipping titles like "Dr.". */
 export function initials(name: string): string {
   const words = name

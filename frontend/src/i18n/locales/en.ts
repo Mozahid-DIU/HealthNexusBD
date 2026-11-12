@@ -62,6 +62,10 @@ export const en = {
 
   errors: {
     generic: 'Something went wrong. Please try again.',
+    testNotPrescribed: 'This test was not prescribed for this patient, so its report cannot be uploaded.',
+    invalidFile: 'This file is not a valid PDF. Save the report as a PDF and try again.',
+    fileTooLarge: 'This file is too large. Reports can be up to 10 MB.',
+    fileRequired: 'Choose a PDF file to upload.',
     invalidInput: 'Some details are not valid. Please check the form and try again.',
     network: 'Cannot reach the server. Check your internet connection and try again.',
     sessionExpired: 'Your session has ended. Please log in again.',
@@ -224,6 +228,8 @@ export const en = {
       profile: 'My profile',
       findPatient: 'Find patient',
       myPatients: 'My patients',
+      uploadReport: 'Upload report',
+      uploadHistory: 'Upload history',
     },
     account: 'Account',
     signedInAs: 'Signed in as',
@@ -247,7 +253,22 @@ export const en = {
     },
   },
 
+  verification: {
+    title: 'Your account is being verified',
+    next: 'What happens next',
+    autoUnlock: 'Once approved, this page unlocks automatically.',
+    check: 'Check again',
+  },
+
   clinical: {
+    search: {
+      label: 'UHID or mobile number',
+      placeholder: 'BD-2026-01240 or 017XXXXXXXX',
+      submit: 'Find patient',
+      searching: 'Searching…',
+      invalid: 'Enter a UHID (BD-YYYY-XXXXX) or an 11-digit mobile number',
+      notFound: 'No patient found with this UHID or number.',
+    },
     note: 'Clinical note',
     symptoms: 'Symptoms',
     prescription: 'Prescription',
@@ -275,6 +296,16 @@ export const en = {
     verified: 'Verified',
     from: 'From {{lab}}',
     uploaded: 'Uploaded {{date}}',
+    dropTitle: 'Drag the PDF here',
+    dropOr: 'or',
+    browse: 'Choose a PDF',
+    dropHint: 'PDF only, up to {{max}} MB',
+    dropActive: 'Drop the file to add it',
+    notPdf: 'This is not a PDF. Choose the report saved as a PDF.',
+    tooLarge: 'This file is {{size}}. The limit is {{max}} MB.',
+    empty: 'This file is empty.',
+    remove: 'Remove {{name}}',
+    selected: 'Selected: {{name}}, {{size}}',
   },
 
   ui: {

@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { authenticate } from '../../middleware/auth.ts'
 import { requireRole } from '../../middleware/rbac.ts'
 import { validate } from '../../middleware/validate.ts'
+import { searchLimiter } from '../../middleware/rateLimit.ts'
 import {
   createRecordSchema,
   idParamSchema,
@@ -27,7 +28,7 @@ export const doctorRouter = Router()
 // Every route requires an authenticated doctor (verification is checked in the service).
 doctorRouter.use(authenticate, requireRole('doctor'))
 
-doctorRouter.get('/search', validate(searchQuerySchema, 'query'), searchController)
+doctorRouter.get('/search', searchLimiter, validate(searchQuerySchema, 'query'), searchController)
 doctorRouter.get('/patients', myPatientsController)
 doctorRouter.get('/patients/:id', validate(idParamSchema, 'params'), patientProfileController)
 doctorRouter.get(

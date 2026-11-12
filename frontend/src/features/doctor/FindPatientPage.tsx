@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -16,8 +16,10 @@ import { useLanguage } from '@/i18n/useLanguage'
 import { useNow } from '@/lib/useNow'
 import { toast } from '@/stores/toast'
 import { doctorApi, doctorKeys } from './api'
-import { formatCountdown, parseIdentifier } from './helpers'
-import { PatientSearchForm } from './PatientSearchForm'
+import { parseIdentifier } from '@/lib/identifier'
+import { formatCountdown } from './helpers'
+import { PatientSearchForm } from '@/features/clinical/PatientSearchForm'
+import { useUhidInUrl } from '@/features/clinical/useUhidInUrl'
 import type { AccessRequest, SearchResult } from './types'
 
 const STEPS = ['doctor.find.stepFind', 'doctor.find.stepCode', 'doctor.find.stepChart'] as const
@@ -185,7 +187,7 @@ export function FindPatientPage() {
   const [request, setRequest] = useState<AccessRequest | null>(null)
 
   const search = useQuery({
-    queryKey: ['doctor', 'search', q],
+    queryKey: doctorKeys.search(q),
     queryFn: () => doctorApi.search(query!),
     select: (res) => res.data,
     enabled: query !== null,
@@ -194,15 +196,7 @@ export function FindPatientPage() {
   })
   const patient = search.data
 
-  // Searched by mobile number: swap it for the UHID in the address bar (and history),
-  // so the patient's phone number is not left behind in the browser.
-  const byPhone = query !== null && 'phone' in query
-  useEffect(() => {
-    if (!patient || !byPhone) return
-    const cached = queryClient.getQueryData(['doctor', 'search', q])
-    if (cached) queryClient.setQueryData(['doctor', 'search', patient.uhid], cached)
-    setParams({ q: patient.uhid }, { replace: true })
-  }, [patient, byPhone, q, queryClient, setParams])
+  useUhidInUrl(q, query, patient?.uhid, doctorKeys.search)
 
   const send = useMutation({
     mutationFn: () => doctorApi.requestAccess({ uhid: patient!.uhid, ...(reason.trim() ? { reason: reason.trim() } : {}) }),
@@ -218,7 +212,7 @@ export function FindPatientPage() {
     toast.success(t('doctor.find.granted', { minutes: formatNumber(minutes, lang) }))
     // Anything cached from an earlier, ended session must not flash as "access ended".
     queryClient.removeQueries({ queryKey: doctorKeys.patient(patient!.patientId) })
-    void queryClient.invalidateQueries({ queryKey: ['doctor', 'search'] })
+    void queryClient.invalidateQueries({ queryKey: doctorKeys.search() })
     void queryClient.invalidateQueries({ queryKey: doctorKeys.patients() })
     navigate(`/doctor/patients/${patient!.patientId}`)
   }
@@ -265,7 +259,7 @@ export function FindPatientPage() {
             {query && search.isPending && <LoadingBlock lines={3} />}
             {notFound && (
               <p role="alert" className="rounded-xl bg-surface-soft px-4 py-3 text-sm font-semibold text-slate">
-                {t('doctor.search.notFound')}
+                {t('clinical.search.notFound')}
               </p>
             )}
             {search.isError && !notFound && <ErrorState error={search.error} onRetry={() => void search.refetch()} />}

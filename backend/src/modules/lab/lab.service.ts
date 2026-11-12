@@ -1,8 +1,9 @@
 import { prisma } from '../../config/prisma.ts'
 import { AppError } from '../../utils/AppError.ts'
 import { getPagination } from '../../utils/pagination.ts'
-import { writeAudit } from '../../utils/audit.ts'
-import { readReportFile, storeReportFile } from '../../services/reportFiles.ts'
+import { auditPatientSearch, writeAudit } from '../../utils/audit.ts'
+import { cleanTestName, testKey } from '../../utils/testName.ts'
+import { discardReportFile, readReportFile, storeReportFile } from '../../services/reportFiles.ts'
 import { notifyLabReportReady } from '../../services/notifications.ts'
 import type { ListQuery, SearchQuery, UploadReportInput } from './lab.schema.ts'
 
@@ -16,45 +17,86 @@ async function getActiveLab(userId: string) {
   return lab
 }
 
-/** Collect the distinct tests recommended across a patient's prescriptions. */
-async function prescribedTestNames(patientId: string): Promise<string[]> {
+interface OrderedTest {
+  /** As written in the latest prescription (tidied), for display and storage. */
+  name: string
+  prescribedAt: Date
+  recordId: string
+}
+
+/**
+ * Each distinct test recommended for a patient (by `testKey`, so "CBC" and "cbc " are
+ * one test), taken from its most recent prescription.
+ */
+async function latestPrescribedTests(patientId: string): Promise<Map<string, OrderedTest>> {
   const prescriptions = await prisma.prescription.findMany({
     where: { record: { patientId } },
-    select: { recommendedTests: true },
+    select: { recommendedTests: true, createdAt: true, recordId: true },
+    orderBy: { createdAt: 'desc' },
   })
-  const tests = new Set<string>()
+  const latest = new Map<string, OrderedTest>()
   for (const p of prescriptions) {
-    const arr = Array.isArray(p.recommendedTests) ? p.recommendedTests : []
-    for (const t of arr) if (typeof t === 'string') tests.add(t)
+    const tests = Array.isArray(p.recommendedTests) ? p.recommendedTests : []
+    for (const t of tests) {
+      if (typeof t !== 'string' || !cleanTestName(t)) continue
+      const key = testKey(t)
+      if (!latest.has(key)) latest.set(key, { name: cleanTestName(t), prescribedAt: p.createdAt, recordId: p.recordId })
+    }
   }
-  return [...tests]
+  return latest
+}
+
+/** Show only the last 3 digits of a phone number for identification. */
+function maskPhone(phone: string): string {
+  return phone.length <= 3 ? phone : `${'*'.repeat(phone.length - 3)}${phone.slice(-3)}`
 }
 
 // ---------------------------------------------------------------- search
 
-export async function searchPatient(userId: string, query: SearchQuery) {
+export async function searchPatient(userId: string, query: SearchQuery, ip?: string | null) {
   await getActiveLab(userId)
 
   const patient = await prisma.patient.findFirst({
     where: query.uhid ? { uhid: query.uhid } : { user: { phone: query.phone } },
+    include: { user: { select: { phone: true } } },
   })
   if (!patient) throw AppError.notFound('No patient found')
 
-  const [names, reports] = await Promise.all([
-    prescribedTestNames(patient.id),
-    prisma.labReport.findMany({ where: { patientId: patient.id }, select: { testName: true } }),
+  const [prescribed, reports] = await Promise.all([
+    latestPrescribedTests(patient.id),
+    prisma.labReport.findMany({
+      where: { patientId: patient.id },
+      select: { testName: true, uploadedAt: true },
+    }),
   ])
-  const uploaded = new Set(reports.map((r) => r.testName))
+  const lastUpload = new Map<string, Date>()
+  for (const r of reports) {
+    const key = testKey(r.testName)
+    const seen = lastUpload.get(key)
+    if (!seen || r.uploadedAt > seen) lastUpload.set(key, r.uploadedAt)
+  }
 
-  // Labs see ONLY the prescribed tests — never the patient's clinical history.
+  // A test is done once a report arrived after its latest prescription; prescribing it
+  // again (a repeat HbA1c, say) makes it pending again. Pending tests come first.
+  // Reports from any lab count: the patient needs the result, not a second sample.
+  const tests = [...prescribed].map(([key, test]) => {
+    const uploadedAt = lastUpload.get(key)
+    const status = uploadedAt && uploadedAt >= test.prescribedAt ? 'uploaded' : 'pending'
+    return { name: test.name, status, prescribedAt: test.prescribedAt }
+  })
+  tests.sort((a, b) => (a.status === b.status ? 0 : a.status === 'pending' ? -1 : 1))
+
+  await auditPatientSearch(userId, patient.id, ip)
+
+  // Labs see ONLY the prescribed tests — never the patient's clinical history. The
+  // masked phone and gender let the counter confirm they have the right person.
   return {
     patientId: patient.id,
     uhid: patient.uhid,
     fullName: patient.fullName,
-    prescribedTests: names.map((name) => ({
-      name,
-      status: uploaded.has(name) ? 'uploaded' : 'pending',
-    })),
+    gender: patient.gender,
+    phone: maskPhone(patient.user.phone),
+    prescribedTests: tests,
   }
 }
 
@@ -72,36 +114,38 @@ export async function uploadReport(
 
   // The multer filter only trusts the client-declared mimetype; check the real bytes.
   if (!fileBuffer.subarray(0, PDF_MAGIC.length).equals(PDF_MAGIC)) {
-    throw AppError.badRequest('The uploaded file is not a valid PDF')
+    throw AppError.badRequest('The uploaded file is not a valid PDF', 'INVALID_FILE')
   }
 
   const patient = await prisma.patient.findUnique({ where: { uhid: input.uhid } })
   if (!patient) throw AppError.notFound('No patient found with this UHID')
 
-  // Enforce the core rule: a lab may only upload a report for a PRESCRIBED test.
-  const prescription = await prisma.prescription.findFirst({
-    where: {
-      record: { patientId: patient.id },
-      recommendedTests: { array_contains: input.testName },
-    },
-    select: { recordId: true },
-  })
-  if (!prescription) {
-    throw AppError.forbidden(`"${input.testName}" was not prescribed for this patient`)
+  // Enforce the core rule: a lab may only upload a report for a PRESCRIBED test. The
+  // report belongs to the visit that most recently asked for it, under its name.
+  const ordered = (await latestPrescribedTests(patient.id)).get(testKey(input.testName))
+  if (!ordered) {
+    throw AppError.forbidden(`"${input.testName}" was not prescribed for this patient`, 'TEST_NOT_PRESCRIBED')
   }
 
   // The PDF is AES-encrypted before upload; the DB keeps only an encrypted ref to it.
   const fileRefEncrypted = await storeReportFile(fileBuffer)
 
-  const report = await prisma.labReport.create({
-    data: {
-      patientId: patient.id,
-      labId: lab.id,
-      recordId: prescription.recordId,
-      testName: input.testName,
-      fileRefEncrypted,
-    },
-  })
+  let report
+  try {
+    report = await prisma.labReport.create({
+      data: {
+        patientId: patient.id,
+        labId: lab.id,
+        recordId: ordered.recordId,
+        testName: ordered.name,
+        fileRefEncrypted,
+      },
+    })
+  } catch (err) {
+    // Nothing points at the stored file now; don't leave it behind.
+    await discardReportFile(fileRefEncrypted)
+    throw err
+  }
 
   await writeAudit({
     actorUserId: userId,

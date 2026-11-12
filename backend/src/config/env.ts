@@ -46,6 +46,7 @@ const envSchema = z.object({
   CLOUDINARY_API_SECRET: z.string().optional().default(''),
 
   UPLOAD_DIR: z.string().default('./uploads'),
+  // Keep in step with MAX_REPORT_MB in frontend/src/lib/pdfFile.ts (client-side check + message).
   MAX_UPLOAD_MB: z.coerce.number().int().positive().default(10),
 })
 

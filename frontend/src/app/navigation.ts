@@ -1,11 +1,13 @@
 import {
   Bell,
   FlaskConical,
+  History,
   LayoutDashboard,
   ScrollText,
   Search,
   ShieldCheck,
   Stethoscope,
+  Upload,
   UserRound,
   UsersRound,
   type LucideIcon,
@@ -45,6 +47,10 @@ export const NAVIGATION: Record<Role, NavItem[]> = {
     { to: '/doctor/find', label: 'dashboard.nav.findPatient', icon: Search },
     { to: '/doctor/patients', label: 'dashboard.nav.myPatients', icon: UsersRound },
   ],
-  lab: [{ to: ROLE_HOME.lab, label: 'dashboard.nav.overview', icon: LayoutDashboard, end: true }],
+  lab: [
+    { to: ROLE_HOME.lab, label: 'dashboard.nav.overview', icon: LayoutDashboard, end: true },
+    { to: '/lab/upload', label: 'dashboard.nav.uploadReport', icon: Upload },
+    { to: '/lab/uploads', label: 'dashboard.nav.uploadHistory', icon: History },
+  ],
   admin: [{ to: ROLE_HOME.admin, label: 'dashboard.nav.overview', icon: LayoutDashboard, end: true }],
 }

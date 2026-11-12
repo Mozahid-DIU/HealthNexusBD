@@ -96,6 +96,19 @@ describe('error codes', () => {
     expect(res.body.code).toBe('CONSENT_REQUIRED')
   })
 
+  it('FILE_TOO_LARGE when an upload exceeds the size limit', async () => {
+    const lab = await createLab()
+    const big = Buffer.concat([Buffer.from('%PDF-1.4 '), Buffer.alloc(11 * 1024 * 1024)])
+    const res = await request(app)
+      .post('/api/lab/reports')
+      .set('Authorization', lab.auth)
+      .field('uhid', 'BD-2026-00001')
+      .field('testName', 'CBC')
+      .attach('file', big, { filename: 'big.pdf', contentType: 'application/pdf' })
+    expect(res.status).toBe(400)
+    expect(res.body.code).toBe('FILE_TOO_LARGE')
+  })
+
   it('omits `code` when there is none, keeping the existing envelope', async () => {
     const admin = await createAdmin()
     const res = await request(app).get('/api/admin/doctors/not-a-uuid/approve').set('Authorization', admin.auth)
