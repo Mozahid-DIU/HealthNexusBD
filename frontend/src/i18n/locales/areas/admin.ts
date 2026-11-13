@@ -3,6 +3,19 @@
  * `bn` must match `en`'s shape (typed + tested).
  */
 export const en = {
+  login: {
+    badge: 'Admin console',
+    title: 'Sign in to the console',
+    subtitle: 'For HealthNexus BD administrators only.',
+    emailLabel: 'Admin email',
+    emailPlaceholder: 'you@healthnexus.bd',
+    notice: 'Authorised personnel only. Every sign-in is recorded in the audit log.',
+    submit: 'Sign in to the console',
+    submitting: 'Signing in…',
+    back: 'Back to home',
+    notAdmin: 'Patient, doctor or lab?',
+    mainSignIn: 'Use the main sign-in',
+  },
   home: {
     greeting: 'Platform overview',
     subtitle: 'Live figures from across HealthNexus BD.',
@@ -183,6 +196,19 @@ export const en = {
 export type AdminMessages = typeof en
 
 export const bn: AdminMessages = {
+  login: {
+    badge: 'অ্যাডমিন কনসোল',
+    title: 'কনসোলে সাইন ইন করুন',
+    subtitle: 'শুধু HealthNexus BD-এর অ্যাডমিনদের জন্য।',
+    emailLabel: 'অ্যাডমিন ইমেইল',
+    emailPlaceholder: 'you@healthnexus.bd',
+    notice: 'শুধু অনুমোদিত ব্যক্তিদের জন্য। প্রতিটি সাইন-ইন অডিট লগে রেকর্ড হয়।',
+    submit: 'কনসোলে সাইন ইন করুন',
+    submitting: 'সাইন ইন হচ্ছে…',
+    back: 'হোমে ফিরুন',
+    notAdmin: 'রোগী, ডাক্তার বা ল্যাব?',
+    mainSignIn: 'সাধারণ লগইন ব্যবহার করুন',
+  },
   home: {
     greeting: 'প্ল্যাটফর্মের সারসংক্ষেপ',
     subtitle: 'HealthNexus BD জুড়ে সরাসরি পরিসংখ্যান।',

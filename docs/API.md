@@ -13,7 +13,7 @@ Legend — 🔓 public · 🔒 auth required · roles in `[ ]`.
 | Method | Path | Access | Purpose |
 |--------|------|--------|---------|
 | POST | `/register` | 🔓 | Register (role: patient/doctor/lab). Doctor/lab start `pending` until admin approval. Patient gets a UHID. |
-| POST | `/login` | 🔓 | Email/phone + password → access + refresh JWT. |
+| POST | `/login` | 🔓 | Email/phone + password → access + refresh JWT. The admin console also sends `portal: "admin"`: a non-admin then gets the same 401 as a wrong password. |
 | POST | `/refresh` | 🔓 | Refresh token → new access token. |
 | POST | `/logout` | 🔒 | Invalidate refresh token. |
 | GET | `/me` | 🔒 | Current user + role profile. |

@@ -111,6 +111,8 @@ export const routes: RouteObject[] = [
         children: [
           { path: '/login', lazy: loginPage },
           { path: '/register', lazy: registerPage },
+          // The admin console's own entrance (ranks above the /admin section).
+          { path: '/admin/login', lazy: adminPage(() => import('@/features/admin/AdminLoginPage'), 'AdminLoginPage') },
         ],
       },
       // Reachable while signed in too (e.g. resetting from a second device).

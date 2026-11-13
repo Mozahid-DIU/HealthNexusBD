@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { createApp } from '../../src/app.ts'
 import { prisma } from '../../src/config/prisma.ts'
 import { resetDb } from '../helpers/db.ts'
-import { TEST_PASSWORD, createPatient } from '../helpers/factories.ts'
+import { TEST_PASSWORD, createAdmin, createDoctor, createPatient } from '../helpers/factories.ts'
 
 const app = createApp()
 
@@ -148,6 +148,51 @@ describe('POST /api/auth/login', () => {
 
     const entry = await prisma.auditLog.findFirst({ where: { actorUserId: user.id, action: 'login' } })
     expect(entry).not.toBeNull()
+  })
+
+  describe('admin console (portal: admin)', () => {
+    it('signs an admin in', async () => {
+      const { user } = await createAdmin()
+
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ identifier: user.email, password: TEST_PASSWORD, portal: 'admin' })
+
+      expect(res.status).toBe(200)
+      expect(res.body.data.user.role).toBe('admin')
+    })
+
+    it('turns away other roles exactly like a wrong password, without issuing tokens', async () => {
+      const { user } = await createPatient()
+      const { user: suspended } = await createDoctor({ status: 'suspended' })
+
+      const notAdmin = await request(app)
+        .post('/api/auth/login')
+        .send({ identifier: user.email, password: TEST_PASSWORD, portal: 'admin' })
+      const suspendedNotAdmin = await request(app)
+        .post('/api/auth/login')
+        .send({ identifier: suspended.email, password: TEST_PASSWORD, portal: 'admin' })
+      const wrongPassword = await request(app)
+        .post('/api/auth/login')
+        .send({ identifier: user.email, password: 'Wrong@1234', portal: 'admin' })
+
+      expect(notAdmin.status).toBe(401)
+      expect(suspendedNotAdmin.status).toBe(401)
+      expect(notAdmin.body).toEqual(wrongPassword.body)
+      expect(suspendedNotAdmin.body).toEqual(wrongPassword.body)
+      const logins = await prisma.auditLog.count({ where: { actorUserId: user.id, action: 'login' } })
+      expect(logins).toBe(0)
+    })
+
+    it('rejects an unknown portal value', async () => {
+      const { user } = await createAdmin()
+
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ identifier: user.email, password: TEST_PASSWORD, portal: 'doctor' })
+
+      expect(res.status).toBe(400)
+    })
   })
 })
 

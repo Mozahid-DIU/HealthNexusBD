@@ -149,7 +149,7 @@ export async function register(input: RegisterInput) {
 }
 
 export async function login(input: LoginInput, ipAddress?: string) {
-  const { identifier, password } = input
+  const { identifier, password, portal } = input
 
   const where: Prisma.UserWhereInput = identifier.includes('@')
     ? { email: identifier.toLowerCase() }
@@ -161,6 +161,9 @@ export async function login(input: LoginInput, ipAddress?: string) {
 
   const ok = await verifyPassword(password, user.passwordHash)
   if (!ok) throw AppError.unauthorized('Invalid credentials')
+  // The admin console answers a non-admin exactly like a wrong password, so it never
+  // confirms that someone else's credentials are valid.
+  if (portal === 'admin' && user.role !== 'admin') throw AppError.unauthorized('Invalid credentials')
 
   if (user.status === 'suspended') {
     throw AppError.forbidden('This account has been suspended. Contact the administrator.', 'ACCOUNT_SUSPENDED')

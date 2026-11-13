@@ -2,6 +2,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth'
 import { fromState, routeForUser } from '@/features/auth/redirect'
 import type { Role } from '@/types/api'
+import { ROLE_LOGIN } from './navigation'
 
 /** The signed-in user, or null. A user without a token is treated as signed out. */
 function useSessionUser() {
@@ -9,14 +10,14 @@ function useSessionUser() {
 }
 
 /**
- * Only `role` may enter. Signed-out visitors go to /login (remembering where they were
- * going); signed-in users of another role go to their own home.
+ * Only `role` may enter. Signed-out visitors go to that role's sign-in page (remembering
+ * where they were going); signed-in users of another role go to their own home.
  */
 export function RequireRole({ role }: { role: Role }) {
   const user = useSessionUser()
   const location = useLocation()
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />
+    return <Navigate to={ROLE_LOGIN[role]} replace state={{ from: location.pathname + location.search }} />
   }
   if (user.role !== role) return <Navigate to={routeForUser(user)} replace />
   return <Outlet />

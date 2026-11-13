@@ -76,7 +76,12 @@ export function Footer() {
             © {new Intl.NumberFormat(lang === 'bn' ? 'bn-BD' : 'en-GB', { useGrouping: false }).format(new Date().getFullYear())}{' '}
             {t('landing.footer.rights')}
           </p>
-          <p>{t('landing.footer.madeIn')}</p>
+          <div className="flex items-center gap-5">
+            <p>{t('landing.footer.madeIn')}</p>
+            <Link to="/admin/login" className="text-white/60 transition hover:text-white focus-visible:outline-2 focus-visible:outline-teal">
+              {t('landing.footer.admin')}
+            </Link>
+          </div>
         </Container>
       </div>
     </footer>

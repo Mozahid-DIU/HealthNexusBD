@@ -5,7 +5,8 @@ import type { AuthResult, AuthUser } from '@/types/api'
 export const meQueryKey = ['auth', 'me'] as const
 
 export const authApi = {
-  login: (body: { identifier: string; password: string }) =>
+  /** `portal: 'admin'` (the admin console) makes the server refuse every other role. */
+  login: (body: { identifier: string; password: string; portal?: 'admin' }) =>
     api.post<AuthResult>('/auth/login', body),
 
   register: (body: Record<string, unknown>) => api.post<AuthResult>('/auth/register', body),

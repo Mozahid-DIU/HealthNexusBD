@@ -56,6 +56,8 @@ export const registerSchema = z.discriminatedUnion('role', [
 export const loginSchema = z.object({
   identifier: z.string().min(3, 'Enter your email or phone'), // email OR phone
   password: z.string().min(1, 'Password is required'),
+  /** Set by the admin console: only an admin may sign in through it. */
+  portal: z.literal('admin').optional(),
 })
 
 export const refreshSchema = z.object({

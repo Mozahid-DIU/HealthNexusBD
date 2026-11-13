@@ -36,6 +36,14 @@ export const ROLE_HOME: Record<Role, string> = {
   admin: '/admin',
 }
 
+/** Where each role signs in: admins have their own console entrance. */
+export const ROLE_LOGIN: Record<Role, string> = {
+  patient: '/login',
+  doctor: '/login',
+  lab: '/login',
+  admin: '/admin/login',
+}
+
 /** Sidebar entries per role. Pages are added here as each phase ships them. */
 export const NAVIGATION: Record<Role, NavItem[]> = {
   patient: [

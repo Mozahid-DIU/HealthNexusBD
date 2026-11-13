@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
@@ -8,6 +7,7 @@ import { AuthLayout } from './AuthLayout'
 import { loginSchema, type LoginValues } from './schemas'
 import { authApi } from './api'
 import { fromState, routeForUser } from './redirect'
+import { useSignOutReason } from './useSignOutReason'
 import { useAuthStore } from '@/stores/auth'
 import { Input } from '@/components/ui/Input'
 import { PasswordInput } from '@/components/ui/PasswordInput'
@@ -19,13 +19,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const setAuth = useAuthStore((s) => s.setAuth)
-  const clearSignOutReason = useAuthStore((s) => s.clearSignOutReason)
-  // Read once and keep it for this visit; cleared in an effect so StrictMode's double
-  // render can't lose it.
-  const [signOutReason] = useState(() => useAuthStore.getState().signOutReason)
-  useEffect(() => {
-    if (signOutReason) clearSignOutReason()
-  }, [signOutReason, clearSignOutReason])
+  const signOutReason = useSignOutReason()
 
   const {
     register,

@@ -31,6 +31,12 @@ describe('landing page', () => {
     }
   })
 
+  it('keeps a quiet way into the admin console in the footer', async () => {
+    renderRoutes(routes, '/')
+    const footer = await screen.findByRole('contentinfo')
+    expect(within(footer).getByRole('link', { name: 'Admin console' })).toHaveAttribute('href', '/admin/login')
+  })
+
   it('shows what each role gets, one tab at a time', async () => {
     renderRoutes(routes, '/')
     await screen.findByRole('heading', { name: 'One platform, four roles' })

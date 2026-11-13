@@ -158,6 +158,7 @@ export const en = {
     account: 'Account',
     rights: 'HealthNexus BD. All rights reserved.',
     madeIn: 'Made in Bangladesh',
+    admin: 'Admin console',
   },
 }
 
@@ -318,5 +319,6 @@ export const bn: LandingMessages = {
     account: 'অ্যাকাউন্ট',
     rights: 'HealthNexus BD. সর্বস্বত্ব সংরক্ষিত।',
     madeIn: 'বাংলাদেশে তৈরি',
+    admin: 'অ্যাডমিন কনসোল',
   },
 }
