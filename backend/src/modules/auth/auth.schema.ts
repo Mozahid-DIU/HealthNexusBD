@@ -64,12 +64,15 @@ export const refreshSchema = z.object({
   refreshToken: z.string().min(10, 'Refresh token is required'),
 })
 
+/** Email or mobile number: the code goes to whichever one is given. */
+const accountField = z.string().trim().min(3, 'Enter your email or phone').max(160)
+
 export const forgotPasswordSchema = z.object({
-  email: emailField,
+  identifier: accountField,
 })
 
 export const resetPasswordSchema = z.object({
-  email: emailField,
+  identifier: accountField,
   code: z.string().regex(/^\d{6}$/, 'The code must be exactly 6 digits'),
   newPassword: passwordField,
 })

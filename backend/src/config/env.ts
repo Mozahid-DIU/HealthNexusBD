@@ -5,10 +5,16 @@ import { z } from 'zod'
  * Validate and type all environment variables at startup.
  * Fail fast with a clear message if anything required is missing or malformed.
  */
-const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+export const envSchema = z.object({
+  // Unset means production: every dev-only shortcut (codes on screen) stays off unless
+  // the environment says otherwise. Local .env and the tests set it explicitly.
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
   PORT: z.coerce.number().int().positive().default(4000),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  // Proxies in front of the API (Render: 1). Lets req.ip be the visitor's address, so
+  // rate limits apply per visitor instead of to everyone behind the proxy at once.
+  // Unset: 1 on Render (which sets RENDER), else 0.
+  TRUST_PROXY: z.coerce.number().int().min(0).max(5).optional(),
 
   DATABASE_URL: z
     .string()
@@ -37,7 +43,9 @@ const envSchema = z.object({
   GEMINI_API_KEY: z.string().optional().default(''),
   SMS_API_KEY: z.string().optional().default(''),
   SMS_SENDER_ID: z.string().optional().default(''),
-  SMS_API_URL: z.string().optional().default('http://bulksmsbd.net/api/smsapi'),
+  SMS_API_URL: z.string().optional().default('https://bulksmsbd.net/api/smsapi'),
+  // Most real SMS sent per Dhaka day (each costs money).
+  SMS_DAILY_LIMIT: z.coerce.number().int().positive().default(50),
   EMAIL_USER: z.string().optional().default(''),
   EMAIL_APP_PASSWORD: z.string().optional().default(''),
   EMAIL_FROM: z.string().optional().default('HealthNexus BD <no-reply@healthnexus.bd>'),
@@ -72,6 +80,10 @@ export function resolveOtpMode(nodeEnv: string, raw: OtpMode | undefined): OtpMo
   return raw ?? (nodeEnv === 'production' ? 'real' : 'demo')
 }
 
-export const env = { ...parsed.data, OTP_MODE: resolveOtpMode(parsed.data.NODE_ENV, parsed.data.OTP_MODE) }
+export const env = {
+  ...parsed.data,
+  OTP_MODE: resolveOtpMode(parsed.data.NODE_ENV, parsed.data.OTP_MODE),
+  TRUST_PROXY: parsed.data.TRUST_PROXY ?? (process.env.RENDER ? 1 : 0),
+}
 export const isDev = env.NODE_ENV === 'development'
 export const isProd = env.NODE_ENV === 'production'

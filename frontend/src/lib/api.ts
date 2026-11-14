@@ -19,6 +19,7 @@ export type ApiErrorCode =
   | 'FILE_REQUIRED'
   | 'NEEDS_VERIFICATION'
   | 'AI_UNAVAILABLE'
+  | 'SMS_UNAVAILABLE'
   | 'NETWORK'
 
 /** Thrown on any failed request; carries the HTTP status (0 = no response) and code. */

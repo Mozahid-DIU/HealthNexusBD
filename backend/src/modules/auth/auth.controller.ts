@@ -31,7 +31,7 @@ export const logoutController = asyncHandler(async (req: Request, res: Response)
 })
 
 export const forgotPasswordController = asyncHandler(async (req: Request, res: Response) => {
-  return sendSuccess(res, await authService.forgotPassword(req.body.email))
+  return sendSuccess(res, await authService.forgotPassword(req.body.identifier))
 })
 
 export const resetPasswordController = asyncHandler(async (req: Request, res: Response) => {

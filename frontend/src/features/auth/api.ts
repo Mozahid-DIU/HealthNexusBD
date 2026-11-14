@@ -13,9 +13,10 @@ export const authApi = {
 
   me: () => api.get<AuthUser>('/auth/me'),
 
-  forgotPassword: (email: string) =>
-    api.post<{ message: string; devOtp?: string }>('/auth/forgot-password', { email }),
+  /** `identifier` is an email or a mobile number; the code goes there (email or SMS). */
+  forgotPassword: (identifier: string) =>
+    api.post<{ message: string; devOtp?: string }>('/auth/forgot-password', { identifier }),
 
-  resetPassword: (body: { email: string; code: string; newPassword: string }) =>
+  resetPassword: (body: { identifier: string; code: string; newPassword: string }) =>
     api.post<{ message: string }>('/auth/reset-password', body),
 }

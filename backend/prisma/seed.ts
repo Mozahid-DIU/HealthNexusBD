@@ -70,8 +70,17 @@ interface PatientSeed {
   gender: string
 }
 
+/** The owner's real contact details from .env (never committed), else the demo ones. */
+function ownerOr(demo: { email: string; phone: string; name: string }) {
+  const { SEED_OWNER_EMAIL: email, SEED_OWNER_PHONE: phone, SEED_OWNER_NAME: name } = process.env
+  return email && phone && name ? { email, phone, name } : demo
+}
+
 const PATIENTS: PatientSeed[] = [
-  { email: 'rahim@hn.bd', phone: '01810000001', uhid: 'BD-2026-01234', nid: '1990123456781', name: 'Rahim Uddin', blood: 'B+', allergies: ['Penicillin', 'Peanuts'], chronic: ['Type 2 Diabetes', 'Hypertension'], dob: '1969-05-12', gender: 'male' },
+  // Every number here is made up and listed in src/config/demoNumbers.ts, so it never
+  // gets a real SMS. The first patient becomes the project owner's own account (real
+  // phone, real SMS) when SEED_OWNER_* is set in .env, which keeps it out of git.
+  { ...ownerOr({ email: 'rahim@hn.bd', phone: '01810000001', name: 'Rahim Uddin' }), uhid: 'BD-2026-01234', nid: '1990123456781', blood: 'B+', allergies: ['Penicillin', 'Peanuts'], chronic: ['Type 2 Diabetes', 'Hypertension'], dob: '1969-05-12', gender: 'male' },
   { email: 'karim@hn.bd', phone: '01810000002', uhid: 'BD-2026-01235', nid: '1990123456782', name: 'Karim Ahmed', blood: 'O+', allergies: [], chronic: ['Asthma'], dob: '1985-02-20', gender: 'male' },
   { email: 'fatema@hn.bd', phone: '01810000003', uhid: 'BD-2026-01236', nid: '1990123456783', name: 'Fatema Begum', blood: 'A+', allergies: ['Sulfa drugs'], chronic: ['Hypothyroidism'], dob: '1978-11-03', gender: 'female' },
   { email: 'jamal@hn.bd', phone: '01810000004', uhid: 'BD-2026-01237', nid: '1990123456784', name: 'Jamal Hossain', blood: 'AB+', allergies: [], chronic: ['CKD Stage 2'], dob: '1962-07-19', gender: 'male' },

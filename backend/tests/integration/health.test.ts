@@ -17,3 +17,18 @@ describe('GET /api/health', () => {
     expect(res.body).toMatchObject({ success: false, data: null })
   })
 })
+
+describe('behind a proxy (Render)', () => {
+  it('trusts the configured number of proxies, so rate limits see each visitor', async () => {
+    const { env } = await import('../../src/config/env.ts')
+    const saved = env.TRUST_PROXY
+    try {
+      env.TRUST_PROXY = 1
+      expect(createApp().get('trust proxy')).toBe(1)
+      env.TRUST_PROXY = 0
+      expect(createApp().get('trust proxy')).toBe(0)
+    } finally {
+      env.TRUST_PROXY = saved
+    }
+  })
+})

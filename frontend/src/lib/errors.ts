@@ -15,6 +15,7 @@ const BY_CODE: Partial<Record<NonNullable<ApiError['code']>, TranslationKey>> = 
   FILE_REQUIRED: 'errors.fileRequired',
   NEEDS_VERIFICATION: 'errors.needsVerification',
   AI_UNAVAILABLE: 'errors.aiUnavailable',
+  SMS_UNAVAILABLE: 'errors.smsUnavailable',
 }
 
 /** Known backend messages → translated text. Anything unmatched is shown as sent. */
@@ -24,6 +25,7 @@ const BY_MESSAGE: Array<[RegExp, TranslationKey]> = [
   [/BMDC number is already registered/i, 'errors.bmdcClaimed'],
   [/licen[cs]e number is not in/i, 'errors.licenseNotFound'],
   [/licen[cs]e number is already registered/i, 'errors.licenseClaimed'],
+  [/^Invalid or expired code/i, 'errors.invalidOrExpiredCode'],
   [/code has expired/i, 'errors.codeExpired'],
   [/No active reset request/i, 'errors.noResetRequest'],
   [/^Invalid (email or )?code\.?$/i, 'errors.invalidCode'],

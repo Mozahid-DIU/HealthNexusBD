@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type { TranslationKey } from '@/i18n'
+import { parseAccount } from '@/lib/identifier'
 
 /**
  * These mirror the backend Zod schemas so the client fails fast with the same rules.
@@ -49,7 +50,10 @@ export const labSchema = z.object({
   password,
 })
 
-export const forgotSchema = z.object({ email })
+/** Email or mobile number: the reset code goes to whichever is given. */
+export const forgotSchema = z.object({
+  identifier: z.string().trim().refine((v) => parseAccount(v) !== null, msg('validation.account')),
+})
 export type ForgotValues = z.infer<typeof forgotSchema>
 
 export const resetSchema = z.object({

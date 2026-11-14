@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken'
 import request from 'supertest'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createApp } from '../../src/app.ts'
+import { env } from '../../src/config/env.ts'
 import { prisma } from '../../src/config/prisma.ts'
 import { resetDb } from '../helpers/db.ts'
 import { TEST_PASSWORD, createAdmin, createDoctor, createPatient } from '../helpers/factories.ts'
@@ -197,11 +198,16 @@ describe('POST /api/auth/login', () => {
 })
 
 describe('password reset', () => {
-  it('gives the same answer for unknown emails (no enumeration)', async () => {
-    const res = await request(app).post('/api/auth/forgot-password').send({ email: 'nobody@test.bd' })
+  const forgot = (identifier: string) => request(app).post('/api/auth/forgot-password').send({ identifier })
+  const reset = (identifier: string, code: string, newPassword = 'Brand@New1') =>
+    request(app).post('/api/auth/reset-password').send({ identifier, code, newPassword })
 
-    expect(res.status).toBe(200)
-    expect(res.body.data).not.toHaveProperty('devOtp')
+  it('gives the same answer for unknown emails and phones (no enumeration)', async () => {
+    for (const identifier of ['nobody@test.bd', '01999999999']) {
+      const res = await forgot(identifier)
+      expect(res.status).toBe(200)
+      expect(res.body.data).toEqual({ message: expect.stringMatching(/If an account exists/) })
+    }
   })
 
   it('resets the password with the emailed code and logs out old sessions', async () => {
@@ -209,11 +215,9 @@ describe('password reset', () => {
     const login = await request(app)
       .post('/api/auth/login')
       .send({ identifier: user.email, password: TEST_PASSWORD })
-    const { devOtp } = (await request(app).post('/api/auth/forgot-password').send({ email: user.email })).body.data
+    const { devOtp } = (await forgot(user.email)).body.data
 
-    const res = await request(app)
-      .post('/api/auth/reset-password')
-      .send({ email: user.email, code: devOtp, newPassword: 'Brand@New1' })
+    const res = await reset(user.email, devOtp)
 
     expect(res.status).toBe(200)
     const newLogin = await request(app)
@@ -226,12 +230,23 @@ describe('password reset', () => {
     expect(oldRefresh.status).toBe(401)
   })
 
-  it('rejects a wrong code, an unknown email, and a reused code', async () => {
+  it('resets by phone, with the code sent by SMS (number typed with +880 or Bangla digits)', async () => {
     const { user } = await createPatient()
-    const { devOtp } = (await request(app).post('/api/auth/forgot-password').send({ email: user.email })).body.data
+    const typed = `+88${user.phone.replace(/\d/g, (d) => String.fromCharCode(0x09e6 + Number(d)))}`
+    const { devOtp } = (await forgot(typed)).body.data
+    expect(devOtp).toMatch(/^\d{6}$/)
+
+    expect((await reset(user.phone, devOtp)).status).toBe(200)
+    const login = await request(app)
+      .post('/api/auth/login')
+      .send({ identifier: user.phone, password: 'Brand@New1' })
+    expect(login.status).toBe(200)
+  })
+
+  it('rejects a wrong code, an unknown account, and a reused code', async () => {
+    const { user } = await createPatient()
+    const { devOtp } = (await forgot(user.email)).body.data
     const wrong = devOtp === '000000' ? '111111' : '000000'
-    const reset = (email: string, code: string) =>
-      request(app).post('/api/auth/reset-password').send({ email, code, newPassword: 'Brand@New1' })
 
     expect((await reset(user.email, wrong)).status).toBe(400)
     expect((await reset('nobody@test.bd', devOtp)).status).toBe(400)
@@ -241,17 +256,84 @@ describe('password reset', () => {
 
   it('rejects an expired code', async () => {
     const { user } = await createPatient()
-    const { devOtp } = (await request(app).post('/api/auth/forgot-password').send({ email: user.email })).body.data
+    const { devOtp } = (await forgot(user.email)).body.data
     await prisma.passwordResetToken.updateMany({
       where: { userId: user.id },
       data: { expiresAt: new Date(Date.now() - 1000) },
     })
 
-    const res = await request(app)
-      .post('/api/auth/reset-password')
-      .send({ email: user.email, code: devOtp, newPassword: 'Brand@New1' })
+    expect((await reset(user.email, devOtp)).status).toBe(400)
+  })
 
-    expect(res.status).toBe(400)
+  it('sends at most one code a minute and five an hour (SMS costs money)', async () => {
+    const { user } = await createPatient()
+    const count = () => prisma.passwordResetToken.count({ where: { userId: user.id } })
+
+    await forgot(user.phone)
+    const again = await forgot(user.phone)
+    expect(again.status).toBe(200)
+    expect(again.body.data).not.toHaveProperty('devOtp')
+    expect(await count()).toBe(1)
+
+    // Five codes already sent this hour, the last one over a minute ago.
+    await prisma.passwordResetToken.updateMany({
+      where: { userId: user.id },
+      data: { createdAt: new Date(Date.now() - 5 * 60_000) },
+    })
+    for (let i = 0; i < 4; i++) {
+      await prisma.passwordResetToken.create({
+        data: { userId: user.id, codeHash: 'x', expiresAt: new Date(), createdAt: new Date(Date.now() - 5 * 60_000) },
+      })
+    }
+    await forgot(user.phone)
+    expect(await count()).toBe(5)
+  })
+
+  it('answers an unknown account, a missing request and an expired code the same way', async () => {
+    const { user } = await createPatient()
+    const noRequest = await reset(user.email, '123456')
+    const unknown = await reset('nobody@test.bd', '123456')
+    await forgot(user.email)
+    await prisma.passwordResetToken.updateMany({ where: { userId: user.id }, data: { expiresAt: new Date(Date.now() - 1000) } })
+    const expired = await reset(user.email, '123456')
+
+    for (const res of [noRequest, unknown, expired]) {
+      expect(res.status).toBe(400)
+      expect(res.body.error).toBe(unknown.body.error)
+    }
+  })
+
+  it('issues one code even when many requests arrive at once', async () => {
+    const { user } = await createPatient()
+
+    await Promise.all(Array.from({ length: 8 }, () => forgot(user.phone)))
+
+    expect(await prisma.passwordResetToken.count({ where: { userId: user.id } })).toBe(1)
+  })
+
+  it('caps guesses at five even when they arrive at once', async () => {
+    const { user } = await createPatient()
+    const { devOtp } = (await forgot(user.email)).body.data
+    const wrong = devOtp === '000000' ? '111111' : '000000'
+
+    const results = await Promise.all(Array.from({ length: 8 }, () => reset(user.email, wrong)))
+
+    expect(results.filter((r) => r.status === 400)).toHaveLength(5)
+    expect(results.filter((r) => r.status === 429)).toHaveLength(3)
+    expect((await reset(user.email, devOtp)).status).toBe(429)
+  })
+
+  it('never puts the code in the response in production', async () => {
+    const { user } = await createPatient()
+    const nodeEnv = env.NODE_ENV
+    env.NODE_ENV = 'production'
+    try {
+      const res = await forgot(user.email)
+      expect(res.status).toBe(200)
+      expect(res.body.data).not.toHaveProperty('devOtp')
+    } finally {
+      env.NODE_ENV = nodeEnv
+    }
   })
 })
 

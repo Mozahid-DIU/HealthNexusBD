@@ -8,8 +8,8 @@ import { logger } from '../utils/logger.ts'
  *
  * Two modes, chosen by whether EMAIL_USER + EMAIL_APP_PASSWORD are set:
  *   - real: sends through Gmail using an App Password.
- *   - demo: no email is sent; the code is logged (and surfaced to the caller) so
- *     the flow can be tested without a mailbox.
+ *   - demo: no email is sent; outside production the code is logged (and returned to
+ *     the caller) so the flow can be tested without a mailbox.
  */
 
 export type EmailMode = 'demo' | 'real'
@@ -30,7 +30,7 @@ function getTransporter(): Transporter {
   return transporter
 }
 
-function isConfigured(): boolean {
+export function isEmailConfigured(): boolean {
   return Boolean(env.EMAIL_USER && env.EMAIL_APP_PASSWORD)
 }
 
@@ -45,8 +45,10 @@ export async function sendPasswordResetOtp(to: string, code: string): Promise<Em
     `<p style="font-size:24px;font-weight:bold;letter-spacing:3px">${code}</p>` +
     `<p>It expires in ${env.OTP_TTL_MINUTES} minutes. If you did not request this, ignore this email.</p>`
 
-  if (!isConfigured()) {
-    logger.info({ to, code }, '📧 [DEMO] password reset OTP — not actually emailed')
+  if (!isEmailConfigured()) {
+    // Never write a reset code into production logs.
+    const detail = env.NODE_ENV === 'production' ? {} : { code }
+    logger.info({ to, ...detail }, '📧 [DEMO] password reset OTP — not actually emailed')
     return { delivered: false, mode: 'demo' }
   }
 

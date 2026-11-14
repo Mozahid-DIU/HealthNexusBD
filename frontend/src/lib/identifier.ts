@@ -15,3 +15,21 @@ export function parseIdentifier(raw: string): PatientQuery | null {
   if (digits.startsWith('880')) digits = digits.slice(2) // 8801XXXXXXXXX → 01XXXXXXXXX
   return MOBILE.test(digits) ? { phone: digits } : null
 }
+
+export type AccountTarget = { kind: 'email'; value: string } | { kind: 'phone'; value: string }
+
+/**
+ * An account's email or mobile number as typed (for password reset). Mirrors the
+ * backend's parseAccountIdentifier: emails in any case; mobiles with or without
+ * +880, spaces or dashes, in English or Bangla digits. Null when it is neither.
+ */
+export function parseAccount(raw: string): AccountTarget | null {
+  const text = raw.trim().replace(/[০-৯]/g, (d) => String(d.charCodeAt(0) - 0x09e6))
+  if (text.includes('@')) {
+    const email = text.toLowerCase()
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? { kind: 'email', value: email } : null
+  }
+  let digits = text.replace(/[\s()-]/g, '').replace(/^\+/, '')
+  if (digits.startsWith('880')) digits = digits.slice(2)
+  return MOBILE.test(digits) ? { kind: 'phone', value: digits } : null
+}

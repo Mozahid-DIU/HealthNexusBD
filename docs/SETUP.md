@@ -52,7 +52,7 @@ npm run dev                           # app on http://localhost:5173
 ## 4. Log in with demo accounts
 
 See [SEED.md](./SEED.md). Shared demo password: `Demo@1234`.
-- Patient: `rahim@...` (has records, allergies, an active consent session)
+- Patient: `rahim@...`, or your own account if `SEED_OWNER_*` is set in `.env` (has records, allergies, an active consent session)
 - Doctor: `ayesha.karim@hn.bd` (BMDC-verified)
 - Lab: PathCare Diagnostics
 - Admin: `admin@healthnexus.bd`

@@ -11,6 +11,10 @@ describe('translateApiError', () => {
     expect(tr(new ApiError('x', 403, 'ACCOUNT_SUSPENDED'))).toBe(i18n.t('errors.accountSuspended'))
     expect(tr(new ApiError('x', 401, 'SESSION_INVALID'))).toBe(i18n.t('errors.sessionExpired'))
     expect(tr(new ApiError('x', 403, 'ACCOUNT_PENDING'))).toBe(i18n.t('errors.accountPending'))
+    expect(tr(new ApiError('x', 503, 'SMS_UNAVAILABLE'))).toBe(i18n.t('errors.smsUnavailable'))
+    expect(tr(new ApiError('Invalid or expired code. Check it, or request a new one.', 400))).toBe(
+      i18n.t('errors.invalidOrExpiredCode'),
+    )
   })
 
   it('maps rate limits and server errors to friendly text', () => {

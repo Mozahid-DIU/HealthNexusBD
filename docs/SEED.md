@@ -56,7 +56,7 @@ To add them to a database without re-seeding accounts or clinical data:
 ### Patients (8–10, with realistic clinical profiles)
 | Name | UHID | Blood | Allergies | Chronic |
 |------|------|-------|-----------|---------|
-| Rahim Uddin | BD-2026-01234 | B+ | Penicillin, Peanuts | Type 2 Diabetes, Hypertension |
+| Rahim Uddin (replaced by the project owner's own account when `SEED_OWNER_*` is set in `.env`) | BD-2026-01234 | B+ | Penicillin, Peanuts | Type 2 Diabetes, Hypertension |
 | Karim Ahmed | BD-2026-01235 | O+ | — | Asthma |
 | Fatema Begum | BD-2026-01236 | A+ | Sulfa drugs | Hypothyroidism |
 | Jamal Hossain | BD-2026-01237 | AB+ | — | CKD Stage 2 |
@@ -66,6 +66,12 @@ To add them to a database without re-seeding accounts or clinical data:
 | Mizanur Rahman | BD-2026-01241 | O+ | Penicillin | Dyslipidemia |
 
 > UHID format: `BD-YYYY-XXXXX`. NID: 10–17 digit realistic dummy numbers.
+>
+> **SMS:** every seeded phone number is made up, so it is listed in
+> `backend/src/config/demoNumbers.ts` and never gets a real SMS, even with `OTP_MODE=real`
+> (the code is shown on screen instead, as in demo mode). The owner's real number (from
+> `SEED_OWNER_*` in `.env`, never committed) and any account registered later get real SMS.
+> A test keeps the list in step with the seed.
 
 ## Clinical data
 
@@ -78,7 +84,7 @@ To add them to a database without re-seeding accounts or clinical data:
   points to a public sample PDF (no patient data), stored unencrypted. Real uploads are
   encrypted (see SECURITY.md §5); the file endpoints serve both kinds.
 - **AI summaries (4–6):** a few records with a sample summary + interaction/allergy
-  alerts (e.g. Rahim: "Chronic diabetic; allergic to penicillin; on Metformin" + a
+  alerts (e.g. BD-2026-01234: "Chronic diabetic; allergic to penicillin; on Metformin" + a
   penicillin allergy alert) so the AI feature demos without a live call.
 - **Audit logs (10–15):** sample login/view/grant/revoke entries so the audit screens
   aren't empty.

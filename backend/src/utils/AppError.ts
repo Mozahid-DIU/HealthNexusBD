@@ -14,6 +14,7 @@ export type ErrorCode =
   | 'FILE_REQUIRED' // upload request without a file
   | 'NEEDS_VERIFICATION' // reactivating a doctor/lab that was never verified: use Verifications
   | 'AI_UNAVAILABLE' // the Health Assistant's AI is down, busy or not configured — try again later
+  | 'SMS_UNAVAILABLE' // the SMS gateway refused or could not be reached — try again later
 
 /**
  * Operational error with an HTTP status code (and optionally a stable `code`). Throw
@@ -49,5 +50,8 @@ export class AppError extends Error {
   }
   static tooMany(msg = 'Too many requests') {
     return new AppError(msg, 429)
+  }
+  static unavailable(msg = 'Service unavailable', code?: ErrorCode) {
+    return new AppError(msg, 503, code)
   }
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
@@ -11,24 +11,33 @@ import { Input } from '@/components/ui/Input'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import { Button } from '@/components/ui/Button'
 import { FormError } from '@/components/ui/FormError'
+import { parseAccount, type AccountTarget } from '@/lib/identifier'
+import { formatNumber } from '@/lib/format'
+import { useLanguage } from '@/i18n/useLanguage'
 
 type Step = 'request' | 'reset' | 'done'
+
+/** The server sends at most one code a minute per account; the button waits the same. */
+const RESEND_AFTER_SECONDS = 60
 
 export function ForgotPasswordPage() {
   const { t } = useTranslation()
   const [step, setStep] = useState<Step>('request')
-  const [email, setEmail] = useState('')
+  const [target, setTarget] = useState<AccountTarget | null>(null)
+
+  const subtitle =
+    step === 'request'
+      ? t('auth.forgot.subtitleRequest')
+      : step === 'done'
+        ? t('auth.forgot.subtitleDone')
+        : target?.kind === 'phone'
+          ? t('auth.forgot.subtitleResetPhone', { target: target.value })
+          : t('auth.forgot.subtitleResetEmail', { target: target?.value ?? '' })
 
   return (
     <AuthLayout
       title={step === 'done' ? t('auth.forgot.titleDone') : t('auth.forgot.titleRequest')}
-      subtitle={
-        step === 'request'
-          ? t('auth.forgot.subtitleRequest')
-          : step === 'reset'
-            ? t('auth.forgot.subtitleReset', { email })
-            : t('auth.forgot.subtitleDone')
-      }
+      subtitle={subtitle}
       footer={
         <Link to="/login" className="font-semibold text-brand hover:underline">
           {t('auth.forgot.backToLogin')}
@@ -37,13 +46,16 @@ export function ForgotPasswordPage() {
     >
       {step === 'request' && (
         <RequestForm
-          onSent={(sentEmail) => {
-            setEmail(sentEmail)
+          defaultValue={target?.value}
+          onSent={(sent) => {
+            setTarget(sent)
             setStep('reset')
           }}
         />
       )}
-      {step === 'reset' && <ResetForm email={email} onDone={() => setStep('done')} />}
+      {step === 'reset' && target && (
+        <ResetForm target={target} onDone={() => setStep('done')} onChangeTarget={() => setStep('request')} />
+      )}
       {step === 'done' && (
         <Link
           to="/login"
@@ -56,29 +68,34 @@ export function ForgotPasswordPage() {
   )
 }
 
-function RequestForm({ onSent }: { onSent: (email: string) => void }) {
+function RequestForm({ defaultValue, onSent }: { defaultValue?: string; onSent: (target: AccountTarget) => void }) {
   const { t } = useTranslation()
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ForgotValues>({ resolver: zodResolver(forgotSchema) })
+  } = useForm<ForgotValues>({ resolver: zodResolver(forgotSchema), defaultValues: { identifier: defaultValue ?? '' } })
 
   const mutation = useMutation({
-    mutationFn: (values: ForgotValues) => authApi.forgotPassword(values.email),
-    onSuccess: (_res, values) => onSent(values.email),
+    mutationFn: (target: AccountTarget) => authApi.forgotPassword(target.value),
+    onSuccess: (_res, target) => onSent(target),
   })
 
+  const submit = (values: ForgotValues) => {
+    const target = parseAccount(values.identifier)
+    if (target) mutation.mutate(target)
+  }
+
   return (
-    <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit(submit)} className="space-y-4" noValidate>
       {mutation.isError && <FormError error={mutation.error} />}
       <Input
-        label={t('auth.forgot.emailLabel')}
-        type="email"
-        placeholder={t('auth.forgot.emailPlaceholder')}
-        autoComplete="email"
-        error={errors.email?.message}
-        {...register('email')}
+        label={t('auth.forgot.identifierLabel')}
+        placeholder={t('auth.forgot.identifierPlaceholder')}
+        autoComplete="username"
+        hint={t('auth.forgot.identifierHint')}
+        error={errors.identifier?.message}
+        {...register('identifier')}
       />
       <Button type="submit" size="lg" className="w-full" disabled={mutation.isPending}>
         {mutation.isPending ? t('auth.forgot.sending') : t('auth.forgot.send')}
@@ -87,8 +104,29 @@ function RequestForm({ onSent }: { onSent: (email: string) => void }) {
   )
 }
 
-function ResetForm({ email, onDone }: { email: string; onDone: () => void }) {
+/** Seconds left before the code may be sent again; restart() begins a new wait. */
+function useResendTimer() {
+  const [left, setLeft] = useState(RESEND_AFTER_SECONDS)
+  useEffect(() => {
+    if (left <= 0) return
+    const timer = setTimeout(() => setLeft((s) => s - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [left])
+  return { left, restart: () => setLeft(RESEND_AFTER_SECONDS) }
+}
+
+function ResetForm({
+  target,
+  onDone,
+  onChangeTarget,
+}: {
+  target: AccountTarget
+  onDone: () => void
+  onChangeTarget: () => void
+}) {
   const { t } = useTranslation()
+  const lang = useLanguage()
+  const timer = useResendTimer()
   const {
     register,
     handleSubmit,
@@ -97,13 +135,19 @@ function ResetForm({ email, onDone }: { email: string; onDone: () => void }) {
 
   const mutation = useMutation({
     mutationFn: (values: ResetValues) =>
-      authApi.resetPassword({ email, code: values.code, newPassword: values.newPassword }),
+      authApi.resetPassword({ identifier: target.value, code: values.code, newPassword: values.newPassword }),
     onSuccess: onDone,
+  })
+
+  const resend = useMutation({
+    mutationFn: () => authApi.forgotPassword(target.value),
+    onSuccess: timer.restart,
   })
 
   return (
     <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-4" noValidate>
       {mutation.isError && <FormError error={mutation.error} />}
+      {resend.isError && <FormError error={resend.error} />}
       <Input
         label={t('auth.forgot.codeLabel')}
         autoComplete="one-time-code"
@@ -123,6 +167,31 @@ function ResetForm({ email, onDone }: { email: string; onDone: () => void }) {
       <Button type="submit" size="lg" className="w-full" disabled={mutation.isPending}>
         {mutation.isPending ? t('auth.forgot.updating') : t('auth.forgot.update')}
       </Button>
+
+      <div className="flex flex-col items-center gap-1.5 pt-1 text-[13px]">
+        <p aria-live="polite" className="min-h-5 text-slate">
+          {resend.isSuccess && timer.left > RESEND_AFTER_SECONDS - 5 ? t('auth.forgot.resent') : ''}
+        </p>
+        {timer.left > 0 ? (
+          <span className="text-slate">{t('auth.forgot.resendIn', { seconds: formatNumber(timer.left, lang) })}</span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => resend.mutate()}
+            disabled={resend.isPending}
+            className="font-semibold text-brand hover:underline disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          >
+            {resend.isPending ? t('auth.forgot.sending') : t('auth.forgot.resend')}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onChangeTarget}
+          className="font-semibold text-slate hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        >
+          {t('auth.forgot.changeTarget')}
+        </button>
+      </div>
     </form>
   )
 }

@@ -1,6 +1,7 @@
 import request from 'supertest'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../src/app.ts'
+import { env } from '../../src/config/env.ts'
 import { prisma } from '../../src/config/prisma.ts'
 import { resetDb } from '../helpers/db.ts'
 import { createDoctor, createPatient } from '../helpers/factories.ts'
@@ -209,5 +210,108 @@ describe('consent + OTP flow', () => {
       expect(res.status).toBe(404)
       expect((await verify(requestId, devOtp)).status).toBe(201)
     })
+  })
+})
+
+describe('consent code by real SMS', () => {
+  const realMode = { OTP_MODE: 'real', SMS_API_KEY: 'test-key', SMS_SENDER_ID: '8809617000000' } as const
+  const saved = { OTP_MODE: env.OTP_MODE, SMS_API_KEY: env.SMS_API_KEY, SMS_SENDER_ID: env.SMS_SENDER_ID }
+
+  beforeEach(() => {
+    Object.assign(env, realMode)
+  })
+  afterEach(() => {
+    Object.assign(env, saved)
+    vi.unstubAllGlobals()
+  })
+
+  const ask = () =>
+    request(app)
+      .post('/api/consent/request')
+      .set('Authorization', doctor.auth)
+      .send({ uhid: patient.patient.uhid, reason: 'Follow-up consultation' })
+
+  it("texts the code to the patient's phone and never shows it to the doctor", async () => {
+    const gateway = vi.fn(async () => new Response(JSON.stringify({ response_code: 202 })))
+    vi.stubGlobal('fetch', gateway)
+
+    const res = await ask()
+
+    expect(res.status).toBe(201)
+    expect(res.body.data).toMatchObject({ otpMode: 'real', smsSent: true })
+    expect(res.body.data).not.toHaveProperty('devOtp')
+    const sent = new URLSearchParams(String((gateway.mock.calls[0] as unknown as [string, RequestInit])[1].body))
+    expect(sent.get('number')).toBe(patient.user.phone)
+  })
+
+  it('withdraws the request and says so when the SMS cannot be sent', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ response_code: 1007 }))))
+
+    const res = await ask()
+
+    expect(res.status).toBe(503)
+    expect(res.body.code).toBe('SMS_UNAVAILABLE')
+    expect(await prisma.otpToken.count({ where: { isUsed: false } })).toBe(0)
+  })
+
+  it('shows the code for a seeded demo patient, whose made-up number is never texted', async () => {
+    const gateway = vi.fn()
+    vi.stubGlobal('fetch', gateway)
+    await prisma.user.update({ where: { id: patient.user.id }, data: { phone: '01810000002' } })
+
+    const res = await ask()
+
+    expect(res.status).toBe(201)
+    expect(res.body.data).toMatchObject({ otpMode: 'demo', smsSent: false, devOtp: expect.stringMatching(/^\d{6}$/) })
+    expect(gateway).not.toHaveBeenCalled()
+  })
+})
+
+describe('consent request limits', () => {
+  it('lets a doctor text the same patient a new code at most once a minute', async () => {
+    await requestAccess()
+
+    const again = await request(app)
+      .post('/api/consent/request')
+      .set('Authorization', doctor.auth)
+      .send({ uhid: patient.patient.uhid })
+    expect(again.status).toBe(429)
+
+    await prisma.otpToken.updateMany({ data: { createdAt: new Date(Date.now() - 61_000) } })
+    await requestAccess()
+  })
+
+  it('caps code guesses at five even when they arrive at once', async () => {
+    const { requestId, devOtp } = await requestAccess()
+
+    const results = await Promise.all(Array.from({ length: 8 }, () => verify(requestId, wrongCode(devOtp))))
+
+    expect(results.filter((r) => r.status === 400)).toHaveLength(5)
+    expect(results.filter((r) => r.status === 429)).toHaveLength(3)
+    expect((await verify(requestId, devOtp)).status).toBe(429)
+  })
+
+  it("in production never shows a real patient's code, even if OTP_MODE is left on demo", async () => {
+    const nodeEnv = env.NODE_ENV
+    env.NODE_ENV = 'production'
+    try {
+      const res = await request(app)
+        .post('/api/consent/request')
+        .set('Authorization', doctor.auth)
+        .send({ uhid: patient.patient.uhid })
+      expect(res.status).toBe(201)
+      expect(res.body.data).not.toHaveProperty('devOtp')
+
+      // A seeded demo patient's made-up number is never texted, so the code is shown.
+      const demo = await createPatient()
+      await prisma.user.update({ where: { id: demo.user.id }, data: { phone: '01810000003' } })
+      const shown = await request(app)
+        .post('/api/consent/request')
+        .set('Authorization', doctor.auth)
+        .send({ uhid: demo.patient.uhid })
+      expect(shown.body.data.devOtp).toMatch(/^\d{6}$/)
+    } finally {
+      env.NODE_ENV = nodeEnv
+    }
   })
 })

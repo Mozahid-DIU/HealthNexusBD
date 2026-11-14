@@ -17,8 +17,8 @@ Legend — 🔓 public · 🔒 auth required · roles in `[ ]`.
 | POST | `/refresh` | 🔓 | Refresh token → new access token. |
 | POST | `/logout` | 🔒 | Invalidate refresh token. |
 | GET | `/me` | 🔒 | Current user + role profile. |
-| POST | `/forgot-password` | 🔓 | Send **email OTP** to registered email. |
-| POST | `/reset-password` | 🔓 | Verify email OTP + set new password. |
+| POST | `/forgot-password` | 🔓 | `{ identifier }`: an email (code by email) or a mobile number, any of `01…`, `+880…`, Bangla digits (code by SMS). Same answer whether or not the account exists. At most 1 code a minute and 5 an hour per account. |
+| POST | `/reset-password` | 🔓 | `{ identifier, code, newPassword }`: verify the code + set the new password (signs out every session). |
 
 **Register body (patient):** `{ fullName, email, phone, password, nid, dateOfBirth?, gender?, bloodGroup? }`
 **Register body (doctor):** `{ fullName, email, phone, password, bmdcNumber, specialization }`
@@ -30,7 +30,7 @@ Legend — 🔓 public · 🔒 auth required · roles in `[ ]`.
 
 | Method | Path | Access | Purpose |
 |--------|------|--------|---------|
-| POST | `/request` | 🔒 [doctor] | Doctor requests access to a patient (by UHID). Creates session + **sends SMS OTP to patient's phone** (BulkSMSBD). |
+| POST | `/request` | 🔒 [doctor] | Doctor requests access to a patient (by UHID). Creates session + **sends SMS OTP to patient's phone** (BulkSMSBD). `devOtp` is returned only when no real SMS went out (demo mode, or a seeded demo patient). `503 SMS_UNAVAILABLE` if the gateway refuses (e.g. no balance); the request is then withdrawn. |
 | POST | `/verify` | 🔒 [doctor] | Doctor submits the OTP the patient shared → grants session. `{ sessionId, otp }` |
 | POST | `/resend` | 🔒 [doctor] | Resend OTP (respects attempt/rate limits). |
 | GET | `/sessions` | 🔒 [doctor] | Doctor's active sessions. |

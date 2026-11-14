@@ -2,7 +2,8 @@ import { prisma } from '../../config/prisma.ts'
 import { env } from '../../config/env.ts'
 import { AppError } from '../../utils/AppError.ts'
 import { generateOtpCode, hashOtp, verifyOtp } from '../../utils/otp.ts'
-import { sendOtpSms } from '../../services/sms.ts'
+import { sendOtpSms, SmsError } from '../../services/sms.ts'
+import { isDemoNumber } from '../../config/demoNumbers.ts'
 import { writeAudit } from '../../utils/audit.ts'
 import type { RequestAccessInput, VerifyOtpInput } from './consent.schema.ts'
 
@@ -17,6 +18,9 @@ import type { RequestAccessInput, VerifyOtpInput } from './consent.schema.ts'
  *
  * The OTP binds consent to the specific doctor who requested it (otpToken.doctorId).
  */
+
+/** A doctor may text the same patient a new code at most once a minute. */
+const REQUEST_COOLDOWN_MS = 60_000
 
 function minutesFromNow(mins: number): Date {
   return new Date(Date.now() + mins * 60_000)
@@ -71,6 +75,13 @@ export async function requestAccess(
   })
   if (existing) throw AppError.conflict('You already have active access to this patient')
 
+  // Each request texts the patient: one a minute per doctor and patient at most.
+  const recent = await prisma.otpToken.findFirst({
+    where: { doctorId: doctor.id, patientId: patient.id, createdAt: { gte: new Date(Date.now() - REQUEST_COOLDOWN_MS) } },
+    select: { id: true },
+  })
+  if (recent) throw AppError.tooMany('A code was just sent to this patient. Please wait a minute before asking again.')
+
   const code = generateOtpCode()
   const codeHash = await hashOtp(code)
 
@@ -91,7 +102,7 @@ export async function requestAccess(
     })
   })
 
-  const delivery = await sendOtpSms(patient.user.phone, code, 'access')
+  const delivery = await deliverConsentCode(patient.user.phone, code, token.id)
 
   await writeAudit({
     actorUserId: userId,
@@ -108,8 +119,26 @@ export async function requestAccess(
     expiresAt: token.expiresAt,
     otpMode: delivery.mode,
     smsSent: delivery.delivered,
-    // Demo affordance only: lets the code be tested without a live SMS gateway.
-    ...(env.OTP_MODE === 'demo' ? { devOtp: code } : {}),
+    // Shown only when no real SMS went out, and only for a seeded demo patient (whose
+    // made-up number is never texted) or outside production. In production a real
+    // patient's code reaches only their phone, so a misset OTP_MODE fails closed.
+    ...(delivery.mode === 'demo' && (isDemoNumber(patient.user.phone) || env.NODE_ENV !== 'production')
+      ? { devOtp: code }
+      : {}),
+  }
+}
+
+/** Text the code to the patient. If the SMS fails, the request is withdrawn (503). */
+async function deliverConsentCode(phone: string, code: string, tokenId: string) {
+  try {
+    return await sendOtpSms(phone, code, 'access')
+  } catch (err) {
+    if (!(err instanceof SmsError)) throw err
+    await prisma.otpToken.update({ where: { id: tokenId }, data: { isUsed: true } })
+    throw AppError.unavailable(
+      "The code could not be sent to the patient's phone. Please try again in a minute.",
+      'SMS_UNAVAILABLE',
+    )
   }
 }
 
@@ -135,16 +164,17 @@ export async function verifyAccess(
   if (token.expiresAt.getTime() < Date.now()) {
     throw AppError.badRequest('This code has expired. Please request access again.')
   }
-  if (token.attempts >= env.OTP_MAX_ATTEMPTS) {
+  // Use up an attempt before checking, atomically, so parallel guesses can't exceed the cap.
+  const claimed = await prisma.otpToken.updateMany({
+    where: { id: token.id, isUsed: false, attempts: { lt: env.OTP_MAX_ATTEMPTS } },
+    data: { attempts: { increment: 1 } },
+  })
+  if (claimed.count === 0) {
     throw AppError.tooMany('Too many incorrect attempts. Please request a new code.')
   }
 
   const ok = await verifyOtp(input.code, token.codeHash)
   if (!ok) {
-    await prisma.otpToken.update({
-      where: { id: token.id },
-      data: { attempts: { increment: 1 } },
-    })
     const remaining = Math.max(0, env.OTP_MAX_ATTEMPTS - (token.attempts + 1))
     throw AppError.badRequest(`Invalid code. ${remaining} attempt(s) remaining.`)
   }
@@ -159,10 +189,12 @@ export async function verifyAccess(
         expiresAt: minutesFromNow(env.SESSION_TTL_MINUTES),
       },
     })
-    await tx.otpToken.update({
-      where: { id: token.id },
+    // A code opens one session, even if two requests use it at the same moment.
+    const used = await tx.otpToken.updateMany({
+      where: { id: token.id, isUsed: false },
       data: { isUsed: true, sessionId: created.id },
     })
+    if (used.count === 0) throw AppError.badRequest('This code has already been used or the request was cancelled')
     return created
   })
 

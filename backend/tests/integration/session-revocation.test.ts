@@ -116,11 +116,11 @@ describe('other session-ending events also kill the access token at once', () =>
   it('password reset', async () => {
     const { user } = await createPatient()
     const { accessToken } = await login(user.email)
-    const { devOtp } = (await request(app).post('/api/auth/forgot-password').send({ email: user.email })).body.data
+    const { devOtp } = (await request(app).post('/api/auth/forgot-password').send({ identifier: user.email })).body.data
 
     await request(app)
       .post('/api/auth/reset-password')
-      .send({ email: user.email, code: devOtp, newPassword: 'Brand@New1' })
+      .send({ identifier: user.email, code: devOtp, newPassword: 'Brand@New1' })
 
     expect((await me(accessToken)).status).toBe(401)
   })

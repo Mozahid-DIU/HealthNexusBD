@@ -12,7 +12,7 @@ describe('i18n runtime', () => {
 
   it('interpolates values', async () => {
     await i18n.changeLanguage('bn')
-    expect(i18n.t('auth.forgot.subtitleReset', { email: 'a@b.bd' })).toContain('a@b.bd')
+    expect(i18n.t('auth.forgot.subtitleResetPhone', { target: '01999123456' })).toContain('01999123456')
   })
 
   it('sets <html lang> and remembers the choice', async () => {
