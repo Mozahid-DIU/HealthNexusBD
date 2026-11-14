@@ -1,62 +1,45 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Logo, ShieldIcon, FingerprintIcon, SparkleIcon } from '@/components/brand/icons'
+import { Logo } from '@/components/brand/icons'
 import { LanguageToggle } from '@/components/i18n/LanguageToggle'
 
-const POINTS = [
-  { icon: <ShieldIcon size={20} />, key: 'auth.layout.pointEncrypted' },
-  { icon: <FingerprintIcon size={20} />, key: 'auth.layout.pointOtp' },
-  { icon: <SparkleIcon size={20} />, key: 'auth.layout.pointAi' },
-] as const
+/** Hairline brand grid, strongest behind the card and fading out toward the edges. */
+const GRID_STYLE = {
+  backgroundImage:
+    'linear-gradient(to right, rgba(11,92,173,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(11,92,173,0.06) 1px, transparent 1px)',
+  backgroundSize: '44px 44px',
+  maskImage: 'radial-gradient(ellipse 55% 50% at 50% 38%, #000 20%, transparent 72%)',
+  WebkitMaskImage: 'radial-gradient(ellipse 55% 50% at 50% 38%, #000 20%, transparent 72%)',
+}
 
-/** Left brand panel — shown on large screens only. */
-function BrandPanel() {
-  const { t } = useTranslation()
+/** Quiet atmosphere: two soft glows, the grid, and a faint heartbeat line behind the card. */
+function Backdrop() {
   return (
-    <div className="relative hidden w-[44%] max-w-[560px] shrink-0 overflow-hidden bg-gradient-to-br from-brand to-navy lg:flex lg:flex-col">
-      {/* mesh texture */}
-      <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.07]">
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(70%_55%_at_50%_-8%,rgba(11,92,173,0.13),transparent_70%)]" />
+      <div className="absolute -bottom-48 -right-40 hidden h-[30rem] w-[30rem] rounded-full bg-teal/10 blur-[110px] sm:block" />
+      <div className="absolute inset-0" style={GRID_STYLE} />
+      <svg className="absolute left-0 top-[46%] hidden h-24 w-full sm:block" viewBox="0 0 1440 96" preserveAspectRatio="none">
         <defs>
-          <pattern id="authmesh" width="44" height="44" patternUnits="userSpaceOnUse">
-            <path d="M44 0H0v44" fill="none" stroke="#fff" strokeWidth="0.8" />
-          </pattern>
+          <linearGradient id="auth-ecg" x1="0" x2="1">
+            <stop offset="0" stopColor="#0b5cad" stopOpacity="0" />
+            <stop offset="0.3" stopColor="#0b5cad" stopOpacity="0.16" />
+            <stop offset="0.7" stopColor="#0fa3a3" stopOpacity="0.16" />
+            <stop offset="1" stopColor="#0fa3a3" stopOpacity="0" />
+          </linearGradient>
         </defs>
-        <rect width="100%" height="100%" fill="url(#authmesh)" />
+        <path
+          className="auth-ecg"
+          d="M0 48 H300 L326 48 L342 22 L358 74 L378 6 L398 90 L414 48 H1026 L1046 48 L1060 32 L1074 64 L1090 48 H1440"
+          fill="none"
+          stroke="url(#auth-ecg)"
+          strokeWidth="2"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        />
       </svg>
-
-      <div className="relative z-10 flex flex-1 flex-col justify-between p-12 text-white">
-        <div className="flex items-center justify-between gap-4">
-          <Link to="/" className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-white/15 text-white">
-              <Logo />
-            </span>
-            <span className="text-[17px] font-extrabold tracking-tight">
-              HealthNexus <span className="text-teal">BD</span>
-            </span>
-          </Link>
-          <LanguageToggle tone="dark" />
-        </div>
-
-        <div>
-          <h2 className="mb-6 text-[2rem] font-black leading-tight tracking-tight">
-            {t('auth.layout.headline')}{' '}
-            <span className="text-teal">{t('auth.layout.headlineHighlight')}</span>
-          </h2>
-          <ul className="space-y-4">
-            {POINTS.map((p) => (
-              <li key={p.key} className="flex items-center gap-3 text-[15px] text-white/90">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-teal">
-                  {p.icon}
-                </span>
-                {t(p.key)}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <p className="text-xs text-white/50">{t('auth.layout.footnote')}</p>
-      </div>
     </div>
   )
 }
@@ -66,42 +49,57 @@ interface AuthLayoutProps {
   subtitle: ReactNode
   children: ReactNode
   footer?: ReactNode
+  /** `wide` gives longer forms (registration) a little more room. */
+  width?: 'default' | 'wide'
 }
 
-export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProps) {
+/** Sign-in, sign-up and password reset: just the form, on one calm, focused card. */
+export function AuthLayout({ title, subtitle, children, footer, width = 'default' }: AuthLayoutProps) {
   const { t } = useTranslation()
   return (
-    <div className="flex min-h-screen bg-surface-soft">
-      <BrandPanel />
+    <div className="relative flex min-h-screen flex-col bg-surface-soft">
+      <Backdrop />
 
-      <div className="flex flex-1 flex-col">
-        {/* Mobile top bar */}
-        <header className="flex items-center justify-between px-6 py-5 lg:hidden">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-brand text-white">
-              <Logo size={18} />
-            </span>
-            <span className="text-[15px] font-extrabold tracking-tight text-brand">
-              HealthNexus <span className="text-teal">BD</span>
-            </span>
+      <header className="relative z-10 flex items-center justify-between gap-4 px-4 py-5 sm:px-8">
+        <Link
+          to="/"
+          className="flex items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+        >
+          <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-gradient-to-br from-brand to-navy text-white shadow-brand">
+            <Logo size={20} />
+          </span>
+          <span className="text-[16px] font-extrabold tracking-tight text-ink">
+            HealthNexus <span className="text-teal">BD</span>
+          </span>
+        </Link>
+        <div className="flex items-center gap-4">
+          <LanguageToggle />
+          <Link to="/" className="hidden text-sm font-medium text-slate transition hover:text-brand sm:inline">
+            {t('common.home')}
           </Link>
-          <div className="flex items-center gap-3">
-            <LanguageToggle />
-            <Link to="/" className="text-sm font-medium text-slate hover:text-brand">
-              {t('common.home')}
-            </Link>
-          </div>
-        </header>
+        </div>
+      </header>
 
-        <main className="flex flex-1 items-center justify-center px-6 pb-12 pt-2 lg:py-10">
-          <div className="w-full max-w-[420px]">
-            <h1 className="text-[26px] font-black tracking-tight text-ink">{title}</h1>
-            <p className="mb-7 mt-1.5 text-sm text-slate">{subtitle}</p>
+      <main id="main-content" className="relative z-10 flex flex-1 items-center justify-center px-4 pb-14 pt-4 sm:pt-6">
+        <div className={`auth-rise w-full ${width === 'wide' ? 'max-w-[480px]' : 'max-w-[440px]'}`}>
+          <div className="relative overflow-hidden rounded-[28px] bg-white px-6 pb-8 pt-9 shadow-[0_1px_2px_rgba(12,26,46,0.04),0_28px_70px_-18px_rgba(11,92,173,0.22)] ring-1 ring-line sm:px-10 sm:pb-10 sm:pt-11">
+            {/* Brand accent along the top edge. */}
+            <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand via-[#1f7fc4] to-teal" />
+
+            <div className="mb-8 text-center">
+              <span className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-teal text-white shadow-[0_10px_26px_-6px_rgba(11,92,173,0.55)]">
+                <Logo size={24} />
+              </span>
+              <h1 className="text-[26px] font-black leading-tight tracking-tight text-ink sm:text-[28px]">{title}</h1>
+              <p className="mx-auto mt-2 max-w-[34ch] text-sm leading-relaxed text-slate">{subtitle}</p>
+            </div>
+
             {children}
-            {footer && <div className="mt-6 text-center text-sm text-slate">{footer}</div>}
           </div>
-        </main>
-      </div>
+
+          {footer && <div className="mt-7 text-center text-sm text-slate">{footer}</div>}
+        </div>
+      </main>
     </div>
   )
 }

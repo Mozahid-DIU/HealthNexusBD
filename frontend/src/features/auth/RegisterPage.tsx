@@ -110,7 +110,7 @@ function RoleTabs({ role, onChange }: { role: RegRole; onChange: (r: RegRole) =>
     <div
       role="group"
       aria-label={t('auth.register.roleTabs')}
-      className="mb-6 grid grid-cols-3 gap-2 rounded-2xl bg-white p-1.5 shadow-card"
+      className="mb-6 grid grid-cols-3 gap-1.5 rounded-2xl bg-surface-soft p-1.5 ring-1 ring-line"
     >
       {ROLES.map((r) => {
         const active = r.key === role
@@ -121,8 +121,8 @@ function RoleTabs({ role, onChange }: { role: RegRole; onChange: (r: RegRole) =>
             aria-pressed={active}
             title={t(r.blurb)}
             onClick={() => onChange(r.key)}
-            className={`rounded-xl px-2 py-2.5 text-center transition ${
-              active ? 'bg-brand text-white shadow-brand' : 'text-slate hover:bg-brand/[0.05]'
+            className={`rounded-xl px-2 py-2.5 text-center transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+              active ? 'bg-brand text-white shadow-brand' : 'text-slate hover:bg-white hover:text-brand'
             }`}
           >
             <span className="block text-sm font-bold">{t(r.label)}</span>
@@ -204,6 +204,7 @@ export function RegisterPage() {
 
   return (
     <AuthLayout
+      width="wide"
       title={t('auth.register.title')}
       subtitle={t('auth.register.subtitle')}
       footer={

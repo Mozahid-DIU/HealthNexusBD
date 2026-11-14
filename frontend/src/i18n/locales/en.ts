@@ -96,14 +96,6 @@ export const en = {
 
 
   auth: {
-    layout: {
-      headline: 'Your health, unified and',
-      headlineHighlight: 'under your control.',
-      pointEncrypted: 'AES-256 encrypted medical records',
-      pointOtp: 'You approve every access with an OTP',
-      pointAi: 'AI-powered clinical summaries',
-      footnote: 'A secure national health-record platform for Bangladesh.',
-    },
     login: {
       title: 'Welcome back',
       subtitle: 'Log in to access your health records.',
