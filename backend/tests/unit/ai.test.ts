@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { env } from '../../src/config/env.ts'
-import { deidentifyNote, generateOverview, generateSummary, type OverviewContext, type SummaryContext } from '../../src/services/ai.ts'
+import { GEMINI_MODELS, deidentifyNote, generateOverview, generateSummary, type OverviewContext, type SummaryContext } from '../../src/services/ai.ts'
 
 const ctx: SummaryContext = {
   diagnosis: 'Community-acquired pneumonia',
@@ -57,7 +57,7 @@ describe('AI summary — Gemini mode', () => {
 
     const r = await generateSummary(ctx)
 
-    expect(r).toMatchObject({ summary: 'AI says hi', model: 'gemini-flash-latest' })
+    expect(r).toMatchObject({ summary: 'AI says hi', model: GEMINI_MODELS[0] })
     expect(r.interactionAlerts).toContain('x') // alongside the rule-based alerts
   })
 
@@ -157,7 +157,7 @@ describe('medicine side effects', () => {
       geminiSays([], { allergyAlerts: [], interactionAlerts: 'not a list' })
       const r = await generateSummary(ctx)
 
-      expect(r.model).toBe('gemini-flash-latest')
+      expect(r.model).toBe(GEMINI_MODELS[0])
       expect(r.allergyAlerts.join(' ')).toMatch(/Amoxicillin.*cross-react/)
       expect(r.interactionAlerts.join(' ')).toContain('Metformin')
     })
@@ -268,5 +268,49 @@ describe('safety rules', () => {
     const [url, init] = fetchMock.mock.calls[0]
     expect(String(url)).not.toContain('test-key')
     expect(init.headers['x-goog-api-key']).toBe('test-key')
+  })
+})
+
+describe('Gemini model fallback', () => {
+  const ok = () =>
+    new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: '{"summary":"from the backup model"}' }] } }] }), { status: 200 })
+
+  it('moves to the next model when the first is busy, and records which one answered', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response('busy', { status: 503 }))
+      .mockResolvedValueOnce(ok())
+    vi.stubGlobal('fetch', fetchMock)
+    env.GEMINI_API_KEY = 'test-key'
+
+    const r = await generateSummary(ctx)
+
+    expect(r.summary).toBe('from the backup model')
+    expect(r.model).toBe(GEMINI_MODELS[1])
+    expect(String(fetchMock.mock.calls[0][0])).toContain(GEMINI_MODELS[0])
+    expect(String(fetchMock.mock.calls[1][0])).toContain(GEMINI_MODELS[1])
+  })
+
+  it('gives every model a time limit, so a hung model never blocks the doctor', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(ok())
+    vi.stubGlobal('fetch', fetchMock)
+    env.GEMINI_API_KEY = 'test-key'
+
+    await generateSummary(ctx)
+
+    expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal)
+  })
+
+  it('falls back to the rules only when every model fails', async () => {
+    const fetchMock = vi.fn().mockRejectedValue(Object.assign(new Error('timed out'), { name: 'TimeoutError' }))
+    vi.stubGlobal('fetch', fetchMock)
+    env.GEMINI_API_KEY = 'test-key'
+
+    const r = await generateOverview({
+      age: null, gender: null, allergies: ['Penicillin'], chronic: [], totalVisits: 1, labTests: [],
+      currentMedications: [], visits: [{ month: '2026-11', diagnosis: 'Flu', symptoms: [], medications: [] }],
+    })
+
+    expect(fetchMock).toHaveBeenCalledTimes(GEMINI_MODELS.length)
+    expect(r.model).toBe('demo-fallback')
   })
 })

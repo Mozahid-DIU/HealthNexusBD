@@ -52,8 +52,14 @@ export interface OverviewResult {
   model: string
 }
 
-// "…-latest" tracks the current stable Flash model, so this won't 404 as models roll over.
-const GEMINI_MODEL = 'gemini-flash-latest'
+/**
+ * Tried in order until one answers. "…-latest" aliases track Google's current models, so
+ * they don't 404 as versions retire. Flash-Lite comes first: on the free tier it answers in
+ * about 1.5 s with good Bangla, while Flash is often overloaded (503) or slow.
+ */
+export const GEMINI_MODELS = ['gemini-flash-lite-latest', 'gemini-flash-latest'] as const
+/** A doctor is waiting on this: give up on a model after this long and try the next. */
+const GEMINI_TIMEOUT_MS = 12_000
 
 // --- Small rule base for the demo mode (and as an always-on safety net) ---
 
@@ -217,10 +223,31 @@ function asStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : []
 }
 
-/** Ask Gemini for a JSON object; throws on any failure so callers can fall back. */
-async function askGemini(prompt: string): Promise<Record<string, unknown>> {
+interface GeminiAnswer {
+  answer: Record<string, unknown>
+  model: string
+}
+
+/**
+ * Ask Gemini for a JSON object, trying each model in turn (busy, retired, slow or
+ * malformed answers move on to the next). Throws the last failure so callers can fall back.
+ */
+async function askGemini(prompt: string): Promise<GeminiAnswer> {
+  let lastError: unknown = new Error('Gemini: no model tried')
+  for (const model of GEMINI_MODELS) {
+    try {
+      return { answer: await askModel(model, prompt), model }
+    } catch (err) {
+      lastError = err
+      logger.warn({ model, reason: failureReason(err) }, 'Gemini model failed; trying the next')
+    }
+  }
+  throw lastError
+}
+
+async function askModel(model: string, prompt: string): Promise<Record<string, unknown>> {
   // The key travels in a header, never the URL, so it can't end up in proxy or access logs.
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
@@ -228,6 +255,7 @@ async function askGemini(prompt: string): Promise<Record<string, unknown>> {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
     }),
+    signal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
   })
   if (!res.ok) throw new Error(`Gemini API error: ${res.status}`)
 
@@ -248,13 +276,14 @@ async function askGemini(prompt: string): Promise<Record<string, unknown>> {
  */
 function failureReason(err: unknown): string {
   if (err instanceof SyntaxError) return 'invalid JSON from Gemini'
+  if (err instanceof Error && err.name === 'TimeoutError') return `Gemini timed out after ${GEMINI_TIMEOUT_MS} ms`
   return err instanceof Error && err.message.startsWith('Gemini') ? err.message : 'request failed'
 }
 
 export async function generateSummary(ctx: SummaryContext): Promise<SummaryResult> {
   if (!env.GEMINI_API_KEY) return buildDemoSummary(ctx)
   try {
-    const answer = await askGemini(buildSummaryPrompt(ctx))
+    const { answer, model } = await askGemini(buildSummaryPrompt(ctx))
     if (typeof answer.summary !== 'string' || answer.summary.trim() === '') throw new Error('Gemini gave no summary')
     // The rule-based checks always run too: they are cheap and must never be missed.
     const rules = buildDemoSummary(ctx)
@@ -263,7 +292,7 @@ export async function generateSummary(ctx: SummaryContext): Promise<SummaryResul
       interactionAlerts: unique([...rules.interactionAlerts, ...asStringArray(answer.interactionAlerts)]),
       allergyAlerts: unique([...rules.allergyAlerts, ...asStringArray(answer.allergyAlerts)]),
       sideEffects: resolveSideEffects(ctx.medications.filter(Boolean), answer.sideEffects),
-      model: GEMINI_MODEL,
+      model,
     }
   } catch (err) {
     // Never fail the request over the AI call — fall back to the rule-based summary.
@@ -276,11 +305,11 @@ export async function generateOverview(ctx: OverviewContext): Promise<OverviewRe
   // Nothing to summarise: answer without spending an AI call.
   if (!env.GEMINI_API_KEY || ctx.visits.length === 0) return buildDemoOverview(ctx)
   try {
-    const answer = await askGemini(buildOverviewPrompt(ctx))
+    const { answer, model } = await askGemini(buildOverviewPrompt(ctx))
     if (typeof answer.summary !== 'string' || answer.summary.trim() === '') throw new Error('Gemini gave no summary')
     // The rule-based checks always run too: they are cheap and must never be missed.
     const alerts = unique([...buildDemoOverview(ctx).alerts, ...asStringArray(answer.alerts)])
-    return { summary: answer.summary, alerts, model: GEMINI_MODEL }
+    return { summary: answer.summary, alerts, model }
   } catch (err) {
     logger.error({ reason: failureReason(err) }, 'Gemini overview failed; using rule-based fallback')
     return { ...buildDemoOverview(ctx), model: 'demo-fallback' }
