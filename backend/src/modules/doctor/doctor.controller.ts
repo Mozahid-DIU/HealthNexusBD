@@ -4,6 +4,7 @@ import { sendPdf, sendSuccess } from '../../utils/apiResponse.ts'
 import { AppError } from '../../utils/AppError.ts'
 import * as doctorService from './doctor.service.ts'
 import type { ListQuery, SearchQuery } from './doctor.schema.ts'
+import { getAiOverview } from './doctor.overview.ts'
 
 function userId(req: Request): string {
   if (!req.user) throw AppError.unauthorized()
@@ -67,6 +68,10 @@ export const patientLabReportFileController = asyncHandler(async (req: Request, 
     req.ip,
   )
   return sendPdf(res, pdf, filename)
+})
+
+export const aiOverviewController = asyncHandler(async (req: Request, res: Response) => {
+  return sendSuccess(res, await getAiOverview(userId(req), req.params.id, req.ip))
 })
 
 export const patientProfileController = asyncHandler(async (req: Request, res: Response) => {

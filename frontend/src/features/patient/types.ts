@@ -30,11 +30,28 @@ export interface Prescription {
   createdAt: string
 }
 
+export interface SideEffectText {
+  common: string[]
+  serious: string[]
+  advice: string
+}
+
+/** Patient-friendly notes on one prescribed medicine, in both languages. */
+export interface SideEffect {
+  drug: string
+  /** `reviewed`: the built-in list; `ai`: written by Gemini and labelled as such. */
+  source?: 'reviewed' | 'ai'
+  en: SideEffectText
+  bn: SideEffectText
+}
+
 export interface AiSummary {
   id: string
   summary: string
   interactionAlerts: string[]
   allergyAlerts: string[]
+  /** Absent on summaries generated before side effects existed. */
+  sideEffects?: SideEffect[]
   model: string
   generatedAt: string
 }

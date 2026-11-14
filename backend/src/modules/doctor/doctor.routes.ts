@@ -13,6 +13,7 @@ import {
 } from './doctor.schema.ts'
 import {
   addPrescriptionController,
+  aiOverviewController,
   aiSummaryController,
   createRecordController,
   myPatientsController,
@@ -31,6 +32,8 @@ doctorRouter.use(authenticate, requireRole('doctor'))
 doctorRouter.get('/search', searchLimiter, validate(searchQuerySchema, 'query'), searchController)
 doctorRouter.get('/patients', myPatientsController)
 doctorRouter.get('/patients/:id', validate(idParamSchema, 'params'), patientProfileController)
+// UC-06: AI briefing on the whole history (consent-gated, audited, cached while unchanged).
+doctorRouter.get('/patients/:id/ai-overview', validate(idParamSchema, 'params'), aiOverviewController)
 doctorRouter.get(
   '/patients/:id/records',
   validate(idParamSchema, 'params'),

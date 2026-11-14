@@ -72,6 +72,20 @@ const ACTIVE: ConsentedPatient[] = [
   { id: 'p1', uhid: 'BD-2026-01240', fullName: 'Nasrin Akter', gender: 'female', bloodGroup: 'A-', consentExpiresAt: inMinutes(25) },
 ]
 
+const OVERVIEW = {
+  summary: '24-year-old female. Known allergies: Penicillin. 1 visit on record; most recent (2026-10): Type 1 Diabetes Mellitus.',
+  alerts: ['Insulin: watch for hypoglycaemia.'],
+  model: 'gemini-flash-latest',
+  visitCount: 1,
+  generatedAt: '2026-11-14T05:00:00Z',
+}
+
+const AMOXICILLIN_EFFECTS = {
+  drug: 'Amoxicillin',
+  en: { common: ['Diarrhoea'], serious: ['Swelling of face or lips'], advice: 'Finish the full course.' },
+  bn: { common: ['পাতলা পায়খানা'], serious: ['মুখ বা ঠোঁট ফুলে যাওয়া'], advice: 'পুরো কোর্স শেষ করুন।' },
+}
+
 function backend(over: Record<string, Parameters<typeof mockApi>[0][string]> = {}) {
   return mockApi({
     'GET /auth/me': { body: envelope(DOCTOR) },
@@ -85,6 +99,7 @@ function backend(over: Record<string, Parameters<typeof mockApi>[0][string]> = {
     'GET /doctor/patients/p1': { body: envelope(PROFILE) },
     'GET /doctor/patients/p1/records': { body: envelope([RECORD], META(1)) },
     'GET /doctor/patients/p1/lab-reports': { body: envelope([], META(0)) },
+    'GET /doctor/patients/p1/ai-overview': { body: envelope(OVERVIEW) },
     'POST /doctor/records': { status: 201, body: envelope({ id: 'r-new', diagnosis: 'Pneumonia', createdAt: new Date().toISOString() }) },
     'POST /doctor/records/r-new/prescription': { status: 201, body: envelope({ id: 'rx-new', recordId: 'r-new', createdAt: '' }) },
     'POST /doctor/records/r-new/ai-summary': {
@@ -94,6 +109,10 @@ function backend(over: Record<string, Parameters<typeof mockApi>[0][string]> = {
         summary: 'Working diagnosis: Pneumonia.',
         interactionAlerts: [],
         allergyAlerts: ['⚠ Amoxicillin may cross-react with a documented Penicillin allergy.'],
+        sideEffects: [
+          { ...AMOXICILLIN_EFFECTS, source: 'reviewed' },
+          { ...AMOXICILLIN_EFFECTS, drug: 'Dapagliflozin', source: 'ai' },
+        ],
         model: 'demo-rule-based',
         generatedAt: new Date().toISOString(),
       }),
@@ -272,6 +291,36 @@ describe('patient chart', () => {
     expect(screen.getByText('HbA1c')).toBeInTheDocument()
   })
 
+  it('opens with an AI overview of the whole history', async () => {
+    backend()
+    renderRoutes(routes, '/doctor/patients/p1')
+
+    const card = (await screen.findByRole('heading', { name: 'AI overview of the history' })).closest('section')!
+    expect(await within(card).findByText(/Known allergies: Penicillin/)).toBeInTheDocument()
+    expect(within(card).getByText('Insulin: watch for hypoglycaemia.')).toBeInTheDocument()
+    expect(within(card).getByText(/Based on 1 visit/)).toBeInTheDocument()
+    expect(within(card).queryByText(/rule-based summary/)).not.toBeInTheDocument()
+  })
+
+  it('says when the overview is rule-based, and lets the doctor retry a failed one', async () => {
+    let fail = true
+    backend({
+      'GET /doctor/patients/p1/ai-overview': () =>
+        fail
+          ? { status: 500, body: { success: false, data: null, error: 'boom' } }
+          : { body: envelope({ ...OVERVIEW, model: 'demo-fallback' }) },
+    })
+    renderRoutes(routes, '/doctor/patients/p1')
+
+    // The chart itself stays usable while the overview fails.
+    expect(await screen.findByText('The AI overview could not be loaded.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Type 1 Diabetes Mellitus/ })).toBeInTheDocument()
+
+    fail = false
+    await userEvent.click(screen.getByRole('button', { name: 'Try again' }))
+    expect(await screen.findByText(/rule-based summary/)).toBeInTheDocument()
+  })
+
   it('locks itself and offers a new request when consent has ended', async () => {
     backend({
       'GET /doctor/patients/p1': {
@@ -318,6 +367,15 @@ describe('new visit', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Generate AI summary' }))
     expect(await screen.findByText(/Amoxicillin may cross-react/)).toBeInTheDocument()
+
+    const effects = screen.getByRole('region', { name: 'Possible side effects of the medicines' })
+    expect(within(effects).getAllByText('Diarrhoea')).toHaveLength(2)
+    expect(within(effects).getAllByText('Swelling of face or lips')).toHaveLength(2)
+    // Only the AI-written entry carries the AI label.
+    expect(within(effects).getAllByText('Written by AI')).toHaveLength(1)
+    expect(within(effects).getByText('Dapagliflozin')).toContainElement(within(effects).getByText('Written by AI'))
+    // Saving the visit refreshed the history overview.
+    expect(calls.filter((c) => c.path === '/doctor/patients/p1/ai-overview').length).toBeGreaterThan(1)
   })
 
   it('retries only the prescription if it failed, never duplicating the visit', async () => {

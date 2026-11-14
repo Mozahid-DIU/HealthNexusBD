@@ -293,6 +293,8 @@ model AiSummary {
   summary           String
   interactionAlerts Json     @default("[]") @map("interaction_alerts")
   allergyAlerts     Json     @default("[]") @map("allergy_alerts")
+  /// Per medicine: { drug, en: { common, serious, advice }, bn: { … } } — advisory only.
+  sideEffects       Json     @default("[]") @map("side_effects")
   model             String   @default("gemini")
   generatedAt       DateTime @default(now()) @map("generated_at") @db.Timestamptz(6)
 

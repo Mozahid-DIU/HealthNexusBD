@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Sparkles } from 'lucide-react'
+import { ArrowLeft, Pill } from 'lucide-react'
 import { PageHeader } from '@/components/layout/dashboard/PageHeader'
 import { Badge } from '@/components/ui/Badge'
 import { Card, CardHeader } from '@/components/ui/Card'
@@ -11,7 +11,7 @@ import { useLanguage } from '@/i18n/useLanguage'
 import { formatDate } from '@/lib/format'
 import { patientApi, patientKeys } from './api'
 import { asList } from './text'
-import { AiSummaryCard, PrescriptionCard } from '@/features/clinical/ClinicalViews'
+import { PrescriptionCard, SideEffectsList, sideEffectEntries } from '@/features/clinical/ClinicalViews'
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -69,6 +69,10 @@ export function RecordDetailPage() {
   const symptoms = asList(r.symptoms)
   const summaries = Array.isArray(r.aiSummaries) ? r.aiSummaries : []
   const latestSummary = [...summaries].sort((a, b) => b.generatedAt.localeCompare(a.generatedAt))[0]
+  // Patients get the plain-language medicine notes only: the clinical summary and its
+  // alerts are written for the doctor and could read as instructions to change a dose.
+  const sideEffects = latestSummary?.sideEffects ?? []
+  const hasSideEffects = sideEffectEntries(sideEffects, lang).length > 0
 
   return (
     <>
@@ -76,7 +80,7 @@ export function RecordDetailPage() {
       <PageHeader title={r.diagnosis ?? t('patient.records.untitled')} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <Card as="section" aria-labelledby="note-heading">
             <CardHeader id="note-heading" title={t('clinical.note')} />
             <p className="whitespace-pre-line text-sm leading-relaxed text-body">{r.content}</p>
@@ -105,18 +109,18 @@ export function RecordDetailPage() {
             )}
           </Card>
 
-          {latestSummary && (
-            <Card as="section" aria-labelledby="ai-heading" className="border-teal/30">
+          {hasSideEffects && (
+            <Card as="section" aria-labelledby="side-effects-heading" className="border-teal/30">
               <CardHeader
-                id="ai-heading"
+                id="side-effects-heading"
                 title={
                   <span className="inline-flex items-center gap-2">
-                    <Sparkles aria-hidden className="h-4 w-4 text-teal" />
-                    {t('clinical.aiTitle')}
+                    <Pill aria-hidden className="h-4 w-4 text-teal" />
+                    {t('clinical.sideEffects.title')}
                   </span>
                 }
               />
-              <AiSummaryCard summary={latestSummary} />
+              <SideEffectsList items={sideEffects} framed={false} />
             </Card>
           )}
         </div>

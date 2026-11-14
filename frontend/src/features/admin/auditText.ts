@@ -14,6 +14,7 @@ const EVENTS: Record<string, EventKey> = {
   'create:medical_record': 'addedRecord',
   'create:prescription': 'addedPrescription',
   'create:ai_summary': 'generatedSummary',
+  'view:ai_overview': 'viewedAiOverview',
   'create:lab_report': 'uploadedReport',
   'create:consent_request': 'requestedAccess',
   'grant:session': 'accessGranted',

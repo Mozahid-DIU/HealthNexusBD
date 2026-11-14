@@ -5,16 +5,16 @@ import { encrypt, safeDecrypt } from '../../utils/crypto.ts'
 import { getPagination } from '../../utils/pagination.ts'
 import { auditPatientSearch, writeAudit } from '../../utils/audit.ts'
 import { getActiveAccessSession } from '../consent/consent.service.ts'
-import { generateSummary } from '../../services/ai.ts'
+import { deidentifyNote, generateSummary } from '../../services/ai.ts'
 import { readReportFile } from '../../services/reportFiles.ts'
 import type { CreateRecordInput, ListQuery, PrescriptionInput, SearchQuery } from './doctor.schema.ts'
 
-function asStringArray(value: unknown): string[] {
+export function asStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : []
 }
 
 /** Resolve the calling doctor and ensure the account is verified/active. */
-async function getActiveDoctor(userId: string) {
+export async function getActiveDoctor(userId: string) {
   const doctor = await prisma.doctor.findUnique({ where: { userId }, include: { user: true } })
   if (!doctor) throw AppError.forbidden('Doctor profile not found')
   if (doctor.user.status !== 'active') {
@@ -24,7 +24,7 @@ async function getActiveDoctor(userId: string) {
 }
 
 /** Gate any patient-data access on a live consent session. */
-async function assertConsent(doctorId: string, patientId: string) {
+export async function assertConsent(doctorId: string, patientId: string) {
   const session = await getActiveAccessSession(doctorId, patientId)
   if (!session) {
     throw AppError.forbidden(
@@ -260,7 +260,7 @@ export async function addAiSummary(userId: string, recordId: string, ip?: string
     where: { id: recordId },
     include: {
       prescriptions: true,
-      patient: { select: { id: true, allergies: true, chronicDiseases: true } },
+      patient: { select: { id: true, fullName: true, allergies: true, chronicDiseases: true } },
     },
   })
   if (!record) throw AppError.notFound('Medical record not found')
@@ -275,7 +275,8 @@ export async function addAiSummary(userId: string, recordId: string, ip?: string
   )
   const result = await generateSummary({
     diagnosis: record.diagnosis,
-    content: safeDecrypt(record.contentEncrypted),
+    // Free text can name the patient or quote an ID: scrub it before it leaves the server.
+    content: deidentifyNote(safeDecrypt(record.contentEncrypted), [record.patient.fullName]),
     symptoms: asStringArray(record.symptoms),
     medications,
     allergies: asStringArray(record.patient.allergies),
@@ -288,6 +289,7 @@ export async function addAiSummary(userId: string, recordId: string, ip?: string
       summary: result.summary,
       interactionAlerts: result.interactionAlerts as Prisma.InputJsonValue,
       allergyAlerts: result.allergyAlerts as Prisma.InputJsonValue,
+      sideEffects: result.sideEffects as unknown as Prisma.InputJsonValue,
       model: result.model,
     },
   })
@@ -305,6 +307,7 @@ export async function addAiSummary(userId: string, recordId: string, ip?: string
     summary: result.summary,
     interactionAlerts: result.interactionAlerts,
     allergyAlerts: result.allergyAlerts,
+    sideEffects: result.sideEffects,
     model: result.model,
     generatedAt: summary.generatedAt,
   }

@@ -2,6 +2,15 @@ import type { AiSummary, LabReport, Prescription, RecordAuthor } from '@/feature
 
 export type { AiSummary, LabReport, Medication, Prescription } from '@/features/patient/types'
 
+/** GET /doctor/patients/:id/ai-overview: an AI briefing on the whole history. */
+export interface AiOverview {
+  summary: string
+  alerts: string[]
+  model: string
+  visitCount: number
+  generatedAt: string
+}
+
 /** GET /doctor/search */
 export interface SearchResult {
   patientId: string

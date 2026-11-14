@@ -1,5 +1,6 @@
 import request from 'supertest'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { env } from '../../src/config/env.ts'
 import { createApp } from '../../src/app.ts'
 import { prisma } from '../../src/config/prisma.ts'
 import { decrypt } from '../../src/utils/crypto.ts'
@@ -212,6 +213,97 @@ describe('medical records (need an active consent session)', () => {
     expect(res.status).toBe(201)
     expect(res.body.data.model).toBe('demo-rule-based')
     expect(res.body.data.allergyAlerts.join(' ')).toMatch(/Amoxicillin.*Penicillin/)
+  })
+
+  it('explains the prescribed medicines’ side effects and keeps them with the summary', async () => {
+    await grantSession(doctor.doctor.id, patient.patient.id)
+    const id = await createRecord()
+    await post(`/api/doctor/records/${id}/prescription`, {
+      medications: [{ name: 'Metformin', dose: '500mg', frequency: 'BD' }],
+    })
+
+    const res = await post(`/api/doctor/records/${id}/ai-summary`, {})
+
+    expect(res.body.data.sideEffects).toHaveLength(1)
+    expect(res.body.data.sideEffects[0]).toMatchObject({ drug: 'Metformin' })
+    const stored = await prisma.aiSummary.findUniqueOrThrow({ where: { id: res.body.data.id } })
+    expect(stored.sideEffects).toEqual(res.body.data.sideEffects)
+  })
+
+  it('never sends the patient’s name or phone in the note to Gemini', async () => {
+    await grantSession(doctor.doctor.id, patient.patient.id)
+    const res = await post('/api/doctor/records', {
+      patientId: patient.patient.id,
+      diagnosis: 'Pneumonia',
+      content: `${patient.patient.fullName} says fever for 3 days; call ${patient.user.phone}.`,
+    })
+    const fetchMock = vi.fn().mockResolvedValue(new Response('quota', { status: 429 }))
+    vi.stubGlobal('fetch', fetchMock)
+    env.GEMINI_API_KEY = 'test-key'
+    try {
+      await post(`/api/doctor/records/${res.body.data.id}/ai-summary`, {})
+    } finally {
+      env.GEMINI_API_KEY = ''
+      vi.unstubAllGlobals()
+    }
+
+    const sent = String(fetchMock.mock.calls[0][1].body)
+    expect(sent).toContain('fever for 3 days')
+    expect(sent).not.toContain(patient.patient.fullName.split(' ')[0])
+    expect(sent).not.toContain(patient.user.phone)
+  })
+
+  describe('AI overview of the whole history', () => {
+    const overview = (auth = doctor.auth) =>
+      request(app).get(`/api/doctor/patients/${patient.patient.id}/ai-overview`).set('Authorization', auth)
+
+    it('needs the patient’s consent', async () => {
+      const res = await overview()
+      expect(res.status).toBe(403)
+      expect(res.body.code).toBe('CONSENT_REQUIRED')
+    })
+
+    it('summarises every visit with allergy warnings, and records the view', async () => {
+      await grantSession(doctor.doctor.id, patient.patient.id)
+      const id = await createRecord()
+      await post(`/api/doctor/records/${id}/prescription`, {
+        medications: [{ name: 'Amoxicillin', dose: '500mg', frequency: 'TDS' }],
+      })
+
+      const res = await overview()
+
+      expect(res.status).toBe(200)
+      expect(res.body.data).toMatchObject({ model: 'demo-rule-based', visitCount: 1 })
+      expect(res.body.data.summary).toContain('Pneumonia')
+      expect(res.body.data.alerts.join(' ')).toMatch(/Amoxicillin.*Penicillin/)
+      const audit = await prisma.auditLog.findFirst({
+        where: { actorUserId: doctor.user.id, patientId: patient.patient.id, resource: 'ai_overview' },
+      })
+      expect(audit?.action).toBe('view')
+    })
+
+    it('never puts the clinical note or the patient’s identity into the overview input', async () => {
+      await grantSession(doctor.doctor.id, patient.patient.id)
+      await createRecord()
+
+      const res = await overview()
+
+      expect(JSON.stringify(res.body.data)).not.toContain('Confidential clinical note')
+      expect(JSON.stringify(res.body.data)).not.toContain(patient.patient.uhid)
+    })
+
+    it('reflects a new visit straight away', async () => {
+      await grantSession(doctor.doctor.id, patient.patient.id)
+      await createRecord()
+      const first = await overview()
+
+      await post('/api/doctor/records', { patientId: patient.patient.id, diagnosis: 'Migraine', content: 'Headache' })
+      const second = await overview()
+
+      expect(first.body.data.visitCount).toBe(1)
+      expect(second.body.data.visitCount).toBe(2)
+      expect(second.body.data.summary).toContain('Migraine')
+    })
   })
 
   it('blocks a pending doctor from all clinical actions', async () => {

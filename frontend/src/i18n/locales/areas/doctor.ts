@@ -53,6 +53,16 @@ export const en = {
     findPatient: 'Find a patient',
     open: 'Open chart',
   },
+  overview: {
+    title: 'AI overview of the history',
+    loading: 'Reading the patient’s history…',
+    failed: 'The AI overview could not be loaded.',
+    retry: 'Try again',
+    visits: 'Based on {{count}} visits',
+    visitsOne: 'Based on 1 visit',
+    watch: 'Watch for',
+    offline: 'AI service unavailable, so this is a rule-based summary.',
+  },
   chart: {
     back: 'My patients',
     age: '{{age}} yrs',
@@ -174,6 +184,16 @@ export const bn: DoctorMessages = {
     emptyBody: 'কোনো রোগী আপনাকে অনুমতির কোড দিলে তিনি এখানে দেখা যাবেন।',
     findPatient: 'রোগী খুঁজুন',
     open: 'চার্ট খুলুন',
+  },
+  overview: {
+    title: 'ইতিহাসের AI সারাংশ',
+    loading: 'রোগীর ইতিহাস পড়া হচ্ছে…',
+    failed: 'AI সারাংশ লোড করা যায়নি।',
+    retry: 'আবার চেষ্টা করুন',
+    visits: '{{count}}টি ভিজিটের ভিত্তিতে',
+    visitsOne: '১টি ভিজিটের ভিত্তিতে',
+    watch: 'খেয়াল রাখুন',
+    offline: 'AI সার্ভিস পাওয়া যায়নি, তাই এটি নিয়মভিত্তিক সারাংশ।',
   },
   chart: {
     back: 'আমার রোগী',

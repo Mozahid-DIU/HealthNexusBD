@@ -15,6 +15,7 @@ import { useNow } from '@/lib/useNow'
 import { doctorApi, doctorKeys } from './api'
 import { ChartLabs } from './ChartLabs'
 import { ChartRecords } from './ChartRecords'
+import { AiOverviewCard } from './AiOverviewCard'
 import { ageFrom } from './helpers'
 import { NewVisitForm } from './NewVisitForm'
 import type { ClinicalProfile } from './types'
@@ -222,6 +223,7 @@ export function PatientChartPage() {
         </p>
       )}
       <ChartHeader profile={profile.data} minutes={minutes} />
+      <AiOverviewCard patientId={patientId} />
       <Tabs
         label={t('doctor.chart.tabsLabel')}
         value={tab}

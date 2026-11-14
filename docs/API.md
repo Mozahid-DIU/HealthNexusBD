@@ -72,11 +72,12 @@ Legend — 🔓 public · 🔒 auth required · roles in `[ ]`.
 | GET | `/search?uhid=` or `?phone=` | Find a patient to request access. |
 | GET | `/patients` | Patients with active sessions. |
 | GET | `/patients/:id/records` | Read patient records **(requires active session)**. Audited as `view`. |
+| GET | `/patients/:id/ai-overview` | UC-06: AI briefing on the whole history → `{ summary, alerts, model, visitCount, generatedAt }` **(requires active session)**. The AI sees only de-identified facts (no name, IDs or clinical notes). Cached while the history is unchanged; audited as `view` (`ai_overview`) at most once per 10 min. |
 | GET | `/patients/:id/lab-reports` | The patient's lab reports, each with a `fileUrl` **(requires active session)**. Audited as `view`. |
 | GET | `/patients/:id/lab-reports/:reportId/file` | Decrypted report PDF **(requires active session)**. Audited as `view`. 404 if the report belongs to a different patient. |
 | POST | `/records` | Create a medical record (diagnosis, symptoms) → AES-256 encrypted. |
 | POST | `/records/:id/prescription` | Add prescription (medications, recommended tests). |
-| POST | `/records/:id/ai-summary` | Generate AI clinical summary (Gemini). |
+| POST | `/records/:id/ai-summary` | Generate AI clinical summary (Gemini), plus `sideEffects`: per prescribed medicine `{ drug, en, bn }` with `common`, `serious` and `advice` for the patient. Falls back to a built-in list when Gemini is unavailable. |
 
 ---
 

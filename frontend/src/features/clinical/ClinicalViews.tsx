@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next'
-import { TriangleAlert } from 'lucide-react'
+import { Lightbulb, Pill, TriangleAlert } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { useLanguage } from '@/i18n/useLanguage'
 import { formatDateTime } from '@/lib/format'
 import { asList } from '@/features/patient/text'
-import type { AiSummary, Medication, Prescription } from '@/features/patient/types'
+import type { AiSummary, Medication, Prescription, SideEffect, SideEffectText } from '@/features/patient/types'
 
 /* Read-only clinical views shared by the patient and doctor dashboards (strings: clinical.*). */
 
@@ -79,6 +79,97 @@ export function AlertList({ title, items }: { title: string; items: string[] }) 
   )
 }
 
+const isTextList = (v: unknown): v is string[] => Array.isArray(v) && v.every((x) => typeof x === 'string')
+
+/** The entry's text in `lang`, or null if the stored JSON isn't the expected shape. */
+function sideEffectText(entry: SideEffect, lang: 'en' | 'bn'): SideEffectText | null {
+  const text = entry?.[lang]
+  return text && isTextList(text.common) && isTextList(text.serious) ? text : null
+}
+
+interface Entry {
+  drug: string
+  ai: boolean
+  text: SideEffectText
+}
+
+/** The usable entries, in the reader's language (malformed stored JSON is skipped). */
+export function sideEffectEntries(items: unknown, lang: 'en' | 'bn'): Entry[] {
+  if (!Array.isArray(items)) return []
+  return (items as SideEffect[])
+    .map((entry) => ({ drug: entry?.drug, ai: entry?.source === 'ai', text: sideEffectText(entry, lang) }))
+    .filter((e): e is Entry => typeof e.drug === 'string' && e.text !== null)
+}
+
+/**
+ * What each prescribed medicine may cause, and which signs need a doctor now.
+ * `framed` (default) draws its own box and title; unframed it sits inside a card that has one.
+ */
+export function SideEffectsList({ items, framed = true }: { items: SideEffect[]; framed?: boolean }) {
+  const { t } = useTranslation()
+  const lang = useLanguage()
+  const entries = sideEffectEntries(items, lang)
+  if (entries.length === 0) return null
+
+  const Wrapper = framed ? 'section' : 'div'
+  return (
+    <Wrapper
+      aria-label={framed ? t('clinical.sideEffects.title') : undefined}
+      className={framed ? 'rounded-xl border border-line p-4' : undefined}
+    >
+      {framed && (
+        <p className="mb-3 flex items-center gap-2 text-sm font-bold text-ink">
+          <Pill aria-hidden className="h-4 w-4 text-brand" />
+          {t('clinical.sideEffects.title')}
+        </p>
+      )}
+      <ul className="space-y-3">
+        {entries.map(({ drug, ai, text }, i) => (
+          <li key={`${drug}-${i}`} className="rounded-xl bg-surface-soft p-3.5">
+            <p className="mb-2.5 flex flex-wrap items-center gap-2 font-bold text-ink">
+              {drug}
+              {ai && <Badge tone="brand">{t('clinical.sideEffects.aiWritten')}</Badge>}
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate [:lang(bn)_&]:normal-case [:lang(bn)_&]:tracking-normal">
+                  {t('clinical.sideEffects.common')}
+                </p>
+                <ul className="list-disc space-y-0.5 pl-4 text-sm text-body">
+                  {text.common.map((c) => (
+                    <li key={c}>{c}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+                <p className="mb-1 flex items-center gap-1.5 text-xs font-bold text-red-700">
+                  <TriangleAlert aria-hidden className="h-3.5 w-3.5" />
+                  {t('clinical.sideEffects.serious')}
+                </p>
+                <ul className="list-disc space-y-0.5 pl-4 text-sm text-red-900">
+                  {text.serious.map((c) => (
+                    <li key={c}>{c}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            {text.advice && (
+              <p className="mt-2.5 flex gap-1.5 text-sm text-body">
+                <Lightbulb aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                <span>
+                  <span className="sr-only">{t('clinical.sideEffects.tip')}: </span>
+                  {text.advice}
+                </span>
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-xs text-slate">{t('clinical.sideEffects.note')}</p>
+    </Wrapper>
+  )
+}
+
 export function AiSummaryCard({ summary }: { summary: AiSummary }) {
   const { t } = useTranslation()
   const lang = useLanguage()
@@ -87,6 +178,7 @@ export function AiSummaryCard({ summary }: { summary: AiSummary }) {
       <p className="whitespace-pre-line text-sm leading-relaxed text-body">{summary.summary}</p>
       <AlertList title={t('clinical.allergyAlerts')} items={asList(summary.allergyAlerts)} />
       <AlertList title={t('clinical.interactionAlerts')} items={asList(summary.interactionAlerts)} />
+      {Array.isArray(summary.sideEffects) && <SideEffectsList items={summary.sideEffects} />}
       <p className="text-xs text-slate">
         {t('clinical.aiDisclaimer')} · {formatDateTime(summary.generatedAt, lang)}
       </p>

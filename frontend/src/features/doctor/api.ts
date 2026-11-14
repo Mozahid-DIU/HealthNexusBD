@@ -2,6 +2,7 @@ import { api } from '@/lib/api'
 import type {
   AccessGrant,
   AccessRequest,
+  AiOverview,
   AiSummary,
   ChartRecord,
   ClinicalProfile,
@@ -27,6 +28,7 @@ export const doctorKeys = {
   profile: (id: string) => ['doctor', 'patient', id, 'profile'] as const,
   records: (id: string, page: number) => ['doctor', 'patient', id, 'records', page] as const,
   labs: (id: string, page: number) => ['doctor', 'patient', id, 'labs', page] as const,
+  aiOverview: (id: string) => ['doctor', 'patient', id, 'ai-overview'] as const,
 }
 
 const q = (params: Record<string, string>) => new URLSearchParams(params).toString()
@@ -50,4 +52,5 @@ export const doctorApi = {
   addPrescription: (recordId: string, body: NewPrescription) =>
     api.post<{ id: string; recordId: string; createdAt: string }>(`/doctor/records/${id(recordId)}/prescription`, body),
   aiSummary: (recordId: string) => api.post<AiSummary>(`/doctor/records/${id(recordId)}/ai-summary`),
+  aiOverview: (patientId: string) => api.get<AiOverview>(`/doctor/patients/${id(patientId)}/ai-overview`),
 }

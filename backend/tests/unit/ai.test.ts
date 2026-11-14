@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { env } from '../../src/config/env.ts'
-import { generateSummary, type SummaryContext } from '../../src/services/ai.ts'
+import { deidentifyNote, generateOverview, generateSummary, type OverviewContext, type SummaryContext } from '../../src/services/ai.ts'
 
 const ctx: SummaryContext = {
   diagnosis: 'Community-acquired pneumonia',
@@ -57,7 +57,8 @@ describe('AI summary — Gemini mode', () => {
 
     const r = await generateSummary(ctx)
 
-    expect(r).toMatchObject({ summary: 'AI says hi', interactionAlerts: ['x'], model: 'gemini-flash-latest' })
+    expect(r).toMatchObject({ summary: 'AI says hi', model: 'gemini-flash-latest' })
+    expect(r.interactionAlerts).toContain('x') // alongside the rule-based alerts
   })
 
   it('sends only clinical fields in the prompt', async () => {
@@ -82,5 +83,190 @@ describe('AI summary — Gemini mode', () => {
   it('falls back when Gemini returns non-JSON text', async () => {
     stubGemini(geminiReply('not json at all'))
     expect((await generateSummary(ctx)).model).toBe('demo-fallback')
+  })
+})
+
+describe('medicine side effects', () => {
+  it('explains each known medicine in English and Bangla, and skips unknown ones', async () => {
+    const r = await generateSummary({ ...ctx, medications: ['Metformin', 'Amlodipine', 'Unknownium'] })
+
+    expect(r.sideEffects.map((s) => s.drug)).toEqual(['Metformin', 'Amlodipine'])
+    for (const s of r.sideEffects) {
+      expect(s.en.common.length).toBeGreaterThan(0)
+      expect(s.en.serious.length).toBeGreaterThan(0)
+      expect(s.bn.common.length).toBeGreaterThan(0)
+      expect(s.bn.advice).toMatch(/[ঀ-৿]/) // Bangla script
+    }
+  })
+
+  it('matches a medicine whatever its case or strength', async () => {
+    const r = await generateSummary({ ...ctx, medications: ['METFORMIN 500mg'] })
+    expect(r.sideEffects).toHaveLength(1)
+    expect(r.sideEffects[0]?.drug).toBe('METFORMIN 500mg')
+  })
+
+  describe('with Gemini', () => {
+    const effect = (drug: string, en: string, bn: string, advice = 'Take with food.') => ({
+      drug,
+      en: { common: [en], serious: ['Facial swelling'], advice },
+      bn: { common: [bn], serious: ['মুখ ফুলে যাওয়া'], advice: 'খাবারের সাথে খান।' },
+    })
+    function geminiSays(sideEffects: unknown[], extra: object = {}) {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify({ summary: 'ok', sideEffects, ...extra }) }] } }] }),
+          { status: 200 },
+        ),
+      ))
+      env.GEMINI_API_KEY = 'test-key'
+    }
+
+    it('keeps the reviewed list for medicines it covers, whatever Gemini says', async () => {
+      geminiSays([effect('Amoxicillin', 'Loose stools', 'পাতলা পায়খানা')])
+      const r = await generateSummary(ctx)
+
+      expect(r.sideEffects[0]).toMatchObject({ drug: 'Amoxicillin 500mg', source: 'reviewed' })
+      expect(r.sideEffects[0]?.en.common).not.toContain('Loose stools')
+    })
+
+    it('uses Gemini only for a medicine the list does not cover, marked as AI-written', async () => {
+      geminiSays([effect('Dapagliflozin', 'Thrush', 'ছত্রাক সংক্রমণ')])
+      const r = await generateSummary({ ...ctx, medications: ['Dapagliflozin 10mg'] })
+
+      expect(r.sideEffects).toEqual([expect.objectContaining({ drug: 'Dapagliflozin 10mg', source: 'ai' })])
+      expect(r.sideEffects[0]?.en.common).toEqual(['Thrush'])
+    })
+
+    it('never attaches an entry to a different medicine ("Iron" is not "Spironolactone")', async () => {
+      geminiSays([effect('Iron', 'Dark stools', 'গাঢ় পায়খানা')])
+      const r = await generateSummary({ ...ctx, medications: ['Spironolactone 25mg'] })
+      expect(r.sideEffects).toEqual([])
+    })
+
+    it('drops AI text that mentions stopping or dosing, or whose Bangla is not Bangla', async () => {
+      geminiSays([
+        effect('Dapagliflozin', 'Thrush', 'ছত্রাক সংক্রমণ', 'Stop it if you feel dizzy.'),
+        { ...effect('Empagliflozin', 'Thrush', 'Thrush'), bn: { common: ['Thrush'], serious: ['Swelling'], advice: 'x' } },
+        { drug: 'Sitagliptin', en: 'not an object' },
+      ])
+      const r = await generateSummary({ ...ctx, medications: ['Dapagliflozin', 'Empagliflozin', 'Sitagliptin'] })
+      expect(r.sideEffects).toEqual([])
+    })
+
+    it('still runs the rule-based allergy and interaction checks', async () => {
+      geminiSays([], { allergyAlerts: [], interactionAlerts: 'not a list' })
+      const r = await generateSummary(ctx)
+
+      expect(r.model).toBe('gemini-flash-latest')
+      expect(r.allergyAlerts.join(' ')).toMatch(/Amoxicillin.*cross-react/)
+      expect(r.interactionAlerts.join(' ')).toContain('Metformin')
+    })
+  })
+
+  it('asks Gemini for side effects in both languages', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: '{"summary":"ok"}' }] } }] }), { status: 200 }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    env.GEMINI_API_KEY = 'test-key'
+
+    await generateSummary(ctx)
+
+    const body = String(fetchMock.mock.calls[0][1].body)
+    expect(body).toContain('sideEffects')
+    expect(body).toMatch(/Bangla/)
+  })
+})
+
+describe('whole-history overview', () => {
+  const history: OverviewContext = {
+    age: 57,
+    gender: 'male',
+    allergies: ['Penicillin'],
+    chronic: ['Type 2 Diabetes', 'Hypertension'],
+    totalVisits: 3,
+    currentMedications: ['Amoxicillin', 'Metformin'],
+    visits: [
+      { month: '2026-10', diagnosis: 'Acute bronchitis', symptoms: ['cough'], medications: ['Amoxicillin', 'Metformin'] },
+      { month: '2026-06', diagnosis: 'Hypertension review', symptoms: [], medications: ['Amlodipine'] },
+      { month: '2026-01', diagnosis: 'Type 2 Diabetes review', symptoms: [], medications: ['Metformin'] },
+    ],
+    labTests: [{ month: '2026-10', test: 'CBC' }],
+  }
+
+  it('summarises the history without AI when there is no key', async () => {
+    const r = await generateOverview(history)
+
+    expect(r.model).toBe('demo-rule-based')
+    expect(r.summary).toContain('Penicillin')
+    expect(r.summary).toContain('Type 2 Diabetes')
+    expect(r.summary).toContain('3 visits')
+    expect(r.summary).toContain('Acute bronchitis')
+    expect(r.summary).toContain('CBC')
+  })
+
+  it('warns when a current medicine clashes with a documented allergy', async () => {
+    const r = await generateOverview(history)
+    expect(r.alerts.join(' ')).toMatch(/Amoxicillin.*Penicillin/)
+  })
+
+  it('says plainly when there is no history yet', async () => {
+    const r = await generateOverview({ ...history, totalVisits: 0, visits: [], labTests: [] })
+    expect(r.summary).toMatch(/No visits/)
+    expect(r.alerts).toEqual([])
+  })
+
+  it('sends Gemini clinical facts only and falls back when it fails', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('quota exceeded', { status: 429 }))
+    vi.stubGlobal('fetch', fetchMock)
+    env.GEMINI_API_KEY = 'test-key'
+
+    const r = await generateOverview(history)
+
+    const body = String(fetchMock.mock.calls[0][1].body)
+    expect(body).toContain('Acute bronchitis')
+    expect(body).not.toMatch(/BD-\d{4}-\d{5}|01\d{9}|\bNID\b|@/)
+    expect(r.model).toBe('demo-fallback')
+    expect(r.summary).toContain('Penicillin')
+  })
+})
+
+describe('safety rules', () => {
+  it('flags any single ACE inhibitor or ARB, not only a pair of them', async () => {
+    const r = await generateSummary({ ...ctx, medications: ['Losartan 50mg'] })
+    expect(r.interactionAlerts.join(' ')).toMatch(/potassium/)
+  })
+
+  it('checks medicines from different recent visits together', async () => {
+    const r = await generateOverview({
+      age: null, gender: null, allergies: [], chronic: [], totalVisits: 2, labTests: [],
+      currentMedications: ['Warfarin', 'Aspirin'],
+      visits: [
+        { month: '2026-11', diagnosis: 'Chest pain', symptoms: [], medications: ['Aspirin'] },
+        { month: '2026-10', diagnosis: 'Atrial fibrillation', symptoms: [], medications: ['Warfarin'] },
+      ],
+    })
+    expect(r.alerts.join(' ')).toMatch(/bleeding/)
+  })
+
+  it('removes the patient name and any identifier from a clinical note', () => {
+    const note = 'Rahim Uddin (BD-2026-01234, NID 1990123456781) called from 01810000001, rahim@hn.bd. Fever 3 days.'
+    const clean = deidentifyNote(note, ['Rahim Uddin'])
+
+    expect(clean).toBe('[patient] [patient] ([id], NID [id]) called from [phone], [email]. Fever 3 days.')
+  })
+
+  it('sends the Gemini key in a header, never in the URL', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: '{"summary":"ok"}' }] } }] }), { status: 200 }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    env.GEMINI_API_KEY = 'test-key'
+
+    await generateSummary(ctx)
+
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(String(url)).not.toContain('test-key')
+    expect(init.headers['x-goog-api-key']).toBe('test-key')
   })
 })

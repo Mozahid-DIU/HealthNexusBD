@@ -51,6 +51,13 @@ const RECORD: MedicalRecordDetail = {
       summary: 'Working diagnosis: Type 1 Diabetes.',
       interactionAlerts: [],
       allergyAlerts: ['Documented allergy: Penicillin'],
+      sideEffects: [
+        {
+          drug: 'Insulin glargine',
+          en: { common: ['Low blood sugar: shaking, sweating, hunger'], serious: ['Confusion or fainting (very low sugar)'], advice: 'Change the injection spot each time.' },
+          bn: { common: ['সুগার কমে যাওয়া: কাঁপুনি, ঘাম, খিদে'], serious: ['বিভ্রান্তি বা অজ্ঞান হওয়া (সুগার খুব কমে গেলে)'], advice: 'প্রতিবার ইনজেকশনের জায়গা বদলান।' },
+        },
+      ],
       model: 'demo-rule-based',
       generatedAt: '2026-11-01T05:20:00Z',
     },
@@ -171,7 +178,7 @@ describe('patient overview', () => {
 })
 
 describe('medical records', () => {
-  it('lists records and opens one with prescription, alerts and AI disclaimer', async () => {
+  it('lists records and opens one with its prescription, keeping doctor-only AI alerts out', async () => {
     backend()
     const { router } = renderRoutes(routes, '/patient/records')
 
@@ -183,9 +190,25 @@ describe('medical records', () => {
     const table = screen.getByRole('table')
     expect(within(table).getByText('Insulin glargine')).toBeInTheDocument()
     expect(screen.getByText('HbA1c')).toBeInTheDocument()
-    expect(screen.getByText('Documented allergy: Penicillin')).toBeInTheDocument()
-    expect(screen.getByText(/It is not a diagnosis/)).toBeInTheDocument()
+    // The clinical summary and its alerts are written for the doctor, not shown here.
+    expect(screen.queryByText('Documented allergy: Penicillin')).not.toBeInTheDocument()
+    expect(screen.queryByText('Working diagnosis: Type 1 Diabetes.')).not.toBeInTheDocument()
     expect(screen.getByText('1 Dec 2026')).toBeInTheDocument() // follow-up, a calendar date
+  })
+
+  it('explains the medicines’ side effects to the patient in their language', async () => {
+    backend()
+    renderRoutes(routes, '/patient/records/r1')
+    const effects = await screen.findByRole('region', { name: 'Possible side effects of the medicines' })
+    expect(within(effects).getByText('Low blood sugar: shaking, sweating, hunger')).toBeInTheDocument()
+    expect(within(effects).getByText(/Do not stop or change a medicine/)).toBeInTheDocument()
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'বাংলা' })[0])
+
+    const bn = await screen.findByRole('region', { name: 'ওষুধগুলোর সম্ভাব্য পার্শ্বপ্রতিক্রিয়া' })
+    expect(within(bn).getByText('সুগার কমে যাওয়া: কাঁপুনি, ঘাম, খিদে')).toBeInTheDocument()
+    expect(within(bn).getByText('বিভ্রান্তি বা অজ্ঞান হওয়া (সুগার খুব কমে গেলে)')).toBeInTheDocument()
+    await i18n.changeLanguage('en')
   })
 
   it('shows a clear message for a record that does not exist', async () => {
