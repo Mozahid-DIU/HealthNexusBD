@@ -273,3 +273,52 @@ describe('client-side emergency check (mirrors the server list)', () => {
     expect(looksLikeEmergency('What should I eat for breakfast?')).toBe(false)
   })
 })
+
+describe('Health Assistant corner button', () => {
+  const openButton = () => screen.findByRole('button', { name: 'Open the Health Assistant' })
+
+  it('opens the assistant over another page and keeps the chat on the full page', async () => {
+    consentGiven()
+    const { calls } = backend(reply('Hello!'))
+    renderRoutes(routes, '/patient/records')
+
+    await userEvent.click(await openButton())
+    const panel = await screen.findByRole('dialog', { name: /Health Assistant/ })
+    const input = await within(panel).findByLabelText('Your question')
+    expect(input).toHaveFocus()
+
+    await userEvent.type(input, 'What is HbA1c?{Enter}')
+    expect(await within(panel).findByText('Hello!')).toBeInTheDocument()
+
+    await userEvent.click(within(panel).getByRole('link', { name: 'Open in full page' }))
+    const log = await screen.findByRole('log')
+    expect(within(log).getByText('What is HbA1c?')).toBeInTheDocument()
+    expect(within(log).getByText('Hello!')).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: /Health Assistant/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Open the Health Assistant' })).not.toBeInTheDocument()
+    expect(chatCalls(calls)).toHaveLength(1)
+  })
+
+  it('asks for agreement inside the panel, and closes with Esc back to the button', async () => {
+    backend()
+    renderRoutes(routes, '/patient/records')
+
+    const button = await openButton()
+    await userEvent.click(button)
+    const panel = await screen.findByRole('dialog', { name: /Health Assistant/ })
+    expect(await within(panel).findByText(/This is an AI helper, not a doctor/)).toBeInTheDocument()
+
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog', { name: /Health Assistant/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open the Health Assistant' })).toHaveFocus()
+  })
+
+  it('is not shown on the Health Assistant page itself', async () => {
+    consentGiven()
+    backend()
+    renderRoutes(routes, '/patient/assistant')
+
+    expect(await screen.findByLabelText('Your question')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Open the Health Assistant' })).not.toBeInTheDocument()
+  })
+})

@@ -192,6 +192,13 @@ export const en = {
       auditLog: 'Audit log',
       waiting: '{{count}} waiting',
     },
+    assistant: {
+      open: 'Open the Health Assistant',
+      close: 'Close the Health Assistant',
+      expand: 'Open in full page',
+      tagline: 'Ask about your health',
+      loading: 'Opening the Health Assistant…',
+    },
     overview: {
       welcome: 'Welcome, {{name}}',
       subtitle: 'Your account at a glance.',

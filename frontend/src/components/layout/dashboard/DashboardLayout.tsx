@@ -17,6 +17,8 @@ import { api } from '@/lib/api'
 import { formatLongDate, formatNumber, initials } from '@/lib/format'
 import { useLanguage } from '@/i18n/useLanguage'
 import { NotificationBell } from '@/features/patient/NotificationBell'
+import { AssistantLauncher } from '@/features/patient/assistant/AssistantLauncher'
+import { AssistantSessionProvider } from '@/features/patient/assistant/AssistantSession'
 import { useAuthStore } from '@/stores/auth'
 import type { AuthUser, Role } from '@/types/api'
 
@@ -210,7 +212,11 @@ export function DashboardLayout() {
   // The route guard guarantees a user; this only covers the instant of sign-out.
   if (!user) return null
 
-  return (
+  const isPatient = user.role === 'patient'
+  // The corner button opens the Health Assistant everywhere except on its own page.
+  const hasLauncher = isPatient && !location.pathname.startsWith('/patient/assistant')
+
+  const shell = (
     <div className="min-h-screen bg-surface-soft">
       <a
         href="#main-content"
@@ -249,12 +255,28 @@ export function DashboardLayout() {
           </div>
         </header>
 
-        <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-[1200px] px-4 py-6 outline-none sm:px-6 lg:px-10 lg:py-8">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          // Room at the bottom so the corner button never covers the last controls.
+          className={`mx-auto w-full max-w-[1200px] px-4 py-6 outline-none sm:px-6 lg:px-10 lg:py-8 ${hasLauncher ? 'pb-28 lg:pb-28' : ''}`}
+        >
           <Suspense fallback={<LoadingBlock lines={4} />}>
             <Outlet />
           </Suspense>
         </main>
       </div>
+
+      {hasLauncher && <AssistantLauncher />}
     </div>
+  )
+
+  // One Health Assistant conversation per signed-in patient, shared by every page.
+  return isPatient ? (
+    <AssistantSessionProvider key={user.id} userId={user.id}>
+      {shell}
+    </AssistantSessionProvider>
+  ) : (
+    shell
   )
 }

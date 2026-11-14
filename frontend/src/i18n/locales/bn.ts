@@ -194,6 +194,13 @@ export const bn: CoreMessages = {
       auditLog: 'অডিট লগ',
       waiting: '{{count}}টি অপেক্ষমাণ',
     },
+    assistant: {
+      open: 'হেলথ অ্যাসিস্ট্যান্ট খুলুন',
+      close: 'হেলথ অ্যাসিস্ট্যান্ট বন্ধ করুন',
+      expand: 'পুরো পেজে খুলুন',
+      tagline: 'আপনার স্বাস্থ্য নিয়ে প্রশ্ন করুন',
+      loading: 'হেলথ অ্যাসিস্ট্যান্ট খুলছে…',
+    },
     overview: {
       welcome: 'স্বাগতম, {{name}}',
       subtitle: 'এক নজরে আপনার অ্যাকাউন্ট।',
