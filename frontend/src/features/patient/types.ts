@@ -148,3 +148,30 @@ export interface ProfileUpdate {
   allergies?: string[]
   chronicDiseases?: string[]
 }
+
+/** One turn of a Health Assistant chat (`model` is the assistant). */
+export interface ChatTurn {
+  role: 'user' | 'model'
+  text: string
+  /** The server's signature on its own answer; sent back with it as history. */
+  sig?: string
+}
+
+/** One of the patient's own visits or lab reports, shared with the assistant to explain. */
+export interface ChatAttachment {
+  kind: 'record' | 'labReport'
+  id: string
+  title: string
+}
+
+/** POST /assistant/chat */
+export interface ChatReply {
+  reply: string
+  sig: string
+  /** The question may describe an emergency: show the 999 call-out first. */
+  emergency: boolean
+  /** The answer mentions doses or stopping a medicine: add an "ask your doctor" reminder. */
+  medicineCaution: boolean
+  model: string
+  attachment: ChatAttachment | null
+}

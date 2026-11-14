@@ -13,6 +13,7 @@ import { adminRouter } from './modules/admin/admin.routes.ts'
 import { doctorRouter } from './modules/doctor/doctor.routes.ts'
 import { patientRouter } from './modules/patient/patient.routes.ts'
 import { labRouter } from './modules/lab/lab.routes.ts'
+import { assistantRouter } from './modules/assistant/assistant.routes.ts'
 
 export function createApp() {
   const app = express()
@@ -36,6 +37,7 @@ export function createApp() {
   app.use('/api/doctor', doctorRouter)
   app.use('/api/patient', patientRouter)
   app.use('/api/lab', labRouter)
+  app.use('/api/assistant', assistantRouter)
 
   // 404 + global error handler (must be last)
   app.use(notFoundHandler)

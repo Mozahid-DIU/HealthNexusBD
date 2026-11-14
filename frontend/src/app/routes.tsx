@@ -84,6 +84,7 @@ const PATIENT_PAGES: RouteObject[] = [
   { path: 'records', lazy: patientPage(() => import('@/features/patient/RecordsPage'), 'RecordsPage') },
   { path: 'records/:recordId', lazy: patientPage(() => import('@/features/patient/RecordDetailPage'), 'RecordDetailPage') },
   { path: 'lab-reports', lazy: patientPage(() => import('@/features/patient/LabReportsPage'), 'LabReportsPage') },
+  { path: 'assistant', lazy: patientPage(() => import('@/features/patient/assistant/AssistantPage'), 'AssistantPage') },
   { path: 'consent', lazy: patientPage(() => import('@/features/patient/ConsentPage'), 'ConsentPage') },
   { path: 'notifications', lazy: patientPage(() => import('@/features/patient/NotificationsPage'), 'NotificationsPage') },
   { path: 'audit', lazy: patientPage(() => import('@/features/patient/AuditPage'), 'AuditPage') },

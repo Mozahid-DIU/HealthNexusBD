@@ -13,6 +13,7 @@ export type ErrorCode =
   | 'FILE_TOO_LARGE' // upload exceeds MAX_UPLOAD_MB
   | 'FILE_REQUIRED' // upload request without a file
   | 'NEEDS_VERIFICATION' // reactivating a doctor/lab that was never verified: use Verifications
+  | 'AI_UNAVAILABLE' // the Health Assistant's AI is down, busy or not configured — try again later
 
 /**
  * Operational error with an HTTP status code (and optionally a stable `code`). Throw

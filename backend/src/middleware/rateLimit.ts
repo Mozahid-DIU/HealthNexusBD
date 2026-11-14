@@ -4,7 +4,7 @@ import { sendError } from '../utils/apiResponse.ts'
 
 // The test suite fires many requests from one IP; limits are not under test there.
 // Both flags are required, so a deploy misconfigured with NODE_ENV=test keeps its limits.
-const skipInTests = () => env.NODE_ENV === 'test' && process.env.VITEST === 'true'
+export const skipInTests = () => env.NODE_ENV === 'test' && process.env.VITEST === 'true'
 
 /** Stricter limiter for sensitive auth/OTP endpoints. */
 export const authLimiter = rateLimit({

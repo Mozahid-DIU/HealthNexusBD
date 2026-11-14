@@ -1,6 +1,9 @@
 import { api } from '@/lib/api'
 import type {
   AuditEntry,
+  ChatAttachment,
+  ChatReply,
+  ChatTurn,
   ConsentActivity,
   LabReport,
   MedicalRecordDetail,
@@ -44,6 +47,13 @@ export const patientApi = {
     api.blob(`/patient/lab-reports/${encodeURIComponent(report.id)}/file`),
 
   audit: (p: number) => api.get<AuditEntry[]>(`/patient/audit?${page(p)}`),
+
+  /** One Health Assistant turn; the conversation lives in the browser and is sent whole. */
+  assistantChat: (body: {
+    lang: 'en' | 'bn'
+    messages: ChatTurn[]
+    attachment?: Pick<ChatAttachment, 'kind' | 'id'>
+  }) => api.post<ChatReply>('/assistant/chat', { consent: true, ...body }),
 
   notifications: (p: number, limit = PAGE_SIZE) =>
     api.get<NotificationInbox>(`/patient/notifications?${page(p, limit)}`),

@@ -1,5 +1,5 @@
-import { env } from '../config/env.ts'
 import { logger } from '../utils/logger.ts'
+import { failureReason, geminiJson, isGeminiConfigured } from './gemini.ts'
 import { resolveSideEffects, type SideEffect } from './sideEffects.ts'
 
 /**
@@ -52,14 +52,7 @@ export interface OverviewResult {
   model: string
 }
 
-/**
- * Tried in order until one answers. "…-latest" aliases track Google's current models, so
- * they don't 404 as versions retire. Flash-Lite comes first: on the free tier it answers in
- * about 1.5 s with good Bangla, while Flash is often overloaded (503) or slow.
- */
-export const GEMINI_MODELS = ['gemini-flash-lite-latest', 'gemini-flash-latest'] as const
-/** A doctor is waiting on this: give up on a model after this long and try the next. */
-const GEMINI_TIMEOUT_MS = 12_000
+export { GEMINI_MODELS } from './gemini.ts'
 
 // --- Small rule base for the demo mode (and as an always-on safety net) ---
 
@@ -156,18 +149,38 @@ function buildDemoOverview(ctx: OverviewContext): OverviewResult {
 
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
+const BANGLA_DIGITS = '০১২৩৪৫৬৭৮৯'
+const toAsciiDigits = (text: string) => text.replace(/[০-৯]/g, (d) => String(BANGLA_DIGITS.indexOf(d)))
+
 /**
- * Strip identifiers a doctor may have typed into a free-text note before it leaves the
- * server: the patient's own name, UHIDs, emails, phone numbers and NID-length digit runs.
+ * A line that exists only to identify the person: the "Name / Mobile / Address / Ref. by /
+ * ID" header of a lab report (in English or Bangla). Such lines are dropped whole, which also
+ * catches names spelled differently from the account (Md./Mohammad, Bangla script).
+ */
+const IDENTITY_LINE =
+  /^[^\S\n]*(?:patient(?:'s)?[^\S\n]*name|name|mobile|phone|cell|contact(?:[^\S\n]*no\.?)?|address|addr\.?|ref(?:\.|erred)?[^\S\n]*by|referred[^\S\n]*by|consultant|uhid|nid|patient[^\S\n]*id|reg(?:istration)?\.?[^\S\n]*(?:no|id)\.?|e-?mail|d\.?o\.?b\.?|date[^\S\n]*of[^\S\n]*birth|রোগীর[^\S\n]*নাম|নাম|মোবাইল|ফোন|ঠিকানা|জন্ম[^\S\n]*তারিখ)[^\S\n]*[:：\-–].*$/gim
+
+/** Letters, marks and digits of any script: a name only matches as a whole word. */
+const WORD_EDGE = '[\\p{L}\\p{M}\\p{N}]'
+
+/**
+ * Strip identifiers before text leaves the server (free text, report PDFs, chat messages):
+ * identity header lines, the patient's own name in any script, UHIDs, emails, phone numbers
+ * and NID-length digit runs, also when written with Bangla digits, spaces or dashes.
  */
 export function deidentifyNote(text: string, names: string[] = []): string {
-  let out = text
+  let out = toAsciiDigits(text.normalize('NFC'))
+    .replace(IDENTITY_LINE, '[identity line removed]')
     .replace(/BD-\d{4}-\d{5}/gi, '[id]')
     .replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, '[email]')
-    .replace(/(?:\+?88)?01\d{9}/g, '[phone]')
-    .replace(/\b\d{10,17}\b/g, '[id]')
-  for (const part of names.flatMap((n) => n.split(/\s+/)).filter((p) => p.length >= 3)) {
-    out = out.replace(new RegExp(`\\b${escapeRegExp(part)}\\b`, 'gi'), '[patient]')
+    // Bangladeshi mobiles: 01X-XXXXXXXX, with or without +88, spaces or dashes.
+    .replace(/(?:\+?88[\s-]?)?0?[\s-]?1[3-9](?:[\s-]?\d){8}(?!\d)/g, '[phone]')
+    // NID and other long ID numbers (10–17 digits), spaces or dashes allowed between.
+    .replace(/(?<!\d)\d(?:[\s-]?\d){9,16}(?!\d)/g, '[id]')
+  // Name parts of at least 3 letters (any script); "Md." and initials are too common to match.
+  const parts = names.flatMap((n) => n.normalize('NFC').split(/\s+/)).filter((p) => (p.match(/[\p{L}\p{N}]/gu) ?? []).length >= 3)
+  for (const part of parts) {
+    out = out.replace(new RegExp(`(?<!${WORD_EDGE})${escapeRegExp(part)}(?!${WORD_EDGE})`, 'giu'), '[patient]')
   }
   return out
 }
@@ -223,67 +236,10 @@ function asStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : []
 }
 
-interface GeminiAnswer {
-  answer: Record<string, unknown>
-  model: string
-}
-
-/**
- * Ask Gemini for a JSON object, trying each model in turn (busy, retired, slow or
- * malformed answers move on to the next). Throws the last failure so callers can fall back.
- */
-async function askGemini(prompt: string): Promise<GeminiAnswer> {
-  let lastError: unknown = new Error('Gemini: no model tried')
-  for (const model of GEMINI_MODELS) {
-    try {
-      return { answer: await askModel(model, prompt), model }
-    } catch (err) {
-      lastError = err
-      logger.warn({ model, reason: failureReason(err) }, 'Gemini model failed; trying the next')
-    }
-  }
-  throw lastError
-}
-
-async function askModel(model: string, prompt: string): Promise<Record<string, unknown>> {
-  // The key travels in a header, never the URL, so it can't end up in proxy or access logs.
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
-    }),
-    signal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
-  })
-  if (!res.ok) throw new Error(`Gemini API error: ${res.status}`)
-
-  const payload = (await res.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>
-  }
-  const text = payload.candidates?.[0]?.content?.parts?.[0]?.text
-  if (!text) throw new Error('Gemini returned no content')
-
-  const parsed: unknown = JSON.parse(text)
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Gemini returned no object')
-  return parsed as Record<string, unknown>
-}
-
-/**
- * Why a Gemini call failed, without its text: a JSON parse error quotes the model's
- * answer, which is clinical content and must not reach the logs.
- */
-function failureReason(err: unknown): string {
-  if (err instanceof SyntaxError) return 'invalid JSON from Gemini'
-  if (err instanceof Error && err.name === 'TimeoutError') return `Gemini timed out after ${GEMINI_TIMEOUT_MS} ms`
-  return err instanceof Error && err.message.startsWith('Gemini') ? err.message : 'request failed'
-}
-
 export async function generateSummary(ctx: SummaryContext): Promise<SummaryResult> {
-  if (!env.GEMINI_API_KEY) return buildDemoSummary(ctx)
+  if (!isGeminiConfigured()) return buildDemoSummary(ctx)
   try {
-    const { answer, model } = await askGemini(buildSummaryPrompt(ctx))
+    const { answer, model } = await geminiJson({ contents: buildSummaryPrompt(ctx) })
     if (typeof answer.summary !== 'string' || answer.summary.trim() === '') throw new Error('Gemini gave no summary')
     // The rule-based checks always run too: they are cheap and must never be missed.
     const rules = buildDemoSummary(ctx)
@@ -303,9 +259,9 @@ export async function generateSummary(ctx: SummaryContext): Promise<SummaryResul
 
 export async function generateOverview(ctx: OverviewContext): Promise<OverviewResult> {
   // Nothing to summarise: answer without spending an AI call.
-  if (!env.GEMINI_API_KEY || ctx.visits.length === 0) return buildDemoOverview(ctx)
+  if (!isGeminiConfigured() || ctx.visits.length === 0) return buildDemoOverview(ctx)
   try {
-    const { answer, model } = await askGemini(buildOverviewPrompt(ctx))
+    const { answer, model } = await geminiJson({ contents: buildOverviewPrompt(ctx) })
     if (typeof answer.summary !== 'string' || answer.summary.trim() === '') throw new Error('Gemini gave no summary')
     // The rule-based checks always run too: they are cheap and must never be missed.
     const alerts = unique([...buildDemoOverview(ctx).alerts, ...asStringArray(answer.alerts)])

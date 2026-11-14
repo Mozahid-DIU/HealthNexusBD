@@ -14,6 +14,7 @@ const BY_CODE: Partial<Record<NonNullable<ApiError['code']>, TranslationKey>> = 
   FILE_TOO_LARGE: 'errors.fileTooLarge',
   FILE_REQUIRED: 'errors.fileRequired',
   NEEDS_VERIFICATION: 'errors.needsVerification',
+  AI_UNAVAILABLE: 'errors.aiUnavailable',
 }
 
 /** Known backend messages → translated text. Anything unmatched is shown as sent. */

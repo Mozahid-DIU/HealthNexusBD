@@ -62,6 +62,7 @@ export const en = {
 
   errors: {
     generic: 'Something went wrong. Please try again.',
+    aiUnavailable: 'The Health Assistant is busy right now. Please try again in a minute.',
     testNotPrescribed: 'This test was not prescribed for this patient, so its report cannot be uploaded.',
     invalidFile: 'This file is not a valid PDF. Save the report as a PDF and try again.',
     fileTooLarge: 'This file is too large. Reports can be up to 10 MB.',
@@ -175,6 +176,7 @@ export const en = {
     },
     nav: {
       overview: 'Overview',
+      assistant: 'Health Assistant',
       records: 'Medical records',
       labReports: 'Lab reports',
       consent: 'Consent center',

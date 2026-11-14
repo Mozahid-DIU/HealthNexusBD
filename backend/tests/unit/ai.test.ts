@@ -314,3 +314,28 @@ describe('Gemini model fallback', () => {
     expect(r.model).toBe('demo-fallback')
   })
 })
+
+describe('de-identifying lab-report text', () => {
+  it('drops identity header lines and catches IDs written with spaces, dashes or Bangla digits', () => {
+    const text = [
+      'Patient Name : Md. Rahim Uddin',
+      'Age: 57 Y   Sex: M',
+      'Mobile: +880 1711-123456',
+      'Ref. by: Dr. Karim',
+      'রোগীর নাম: মোঃ রহিম উদ্দিন',
+      'ফোন: ০১৭১১-১২৩৪৫৬',
+      'NID 1990 1234 56781',
+      'Haemoglobin 13.9 g/dL (13.0 - 17.0)',
+    ].join('\n')
+
+    const clean = deidentifyNote(text, ['Rahim Uddin'])
+
+    expect(clean).not.toMatch(/Rahim|রহিম|1711|১৭১১|Karim|1990 1234/)
+    expect(clean).toContain('Age: 57 Y')
+    expect(clean).toContain('Haemoglobin 13.9 g/dL (13.0 - 17.0)')
+  })
+
+  it('removes a Bangla-script name as a whole word only', () => {
+    expect(deidentifyNote('রহিম উদ্দিন called; Rahimpur road', ['রহিম উদ্দিন', 'Rahim'])).toBe('[patient] [patient] called; Rahimpur road')
+  })
+})

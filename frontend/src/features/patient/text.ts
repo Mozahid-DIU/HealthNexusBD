@@ -43,6 +43,7 @@ const AUDIT_TEXT: Record<string, TranslationKey> = {
   'create:prescription': 'patient.audit.addedPrescription',
   'create:ai_summary': 'patient.audit.generatedSummary',
   'view:ai_overview': 'patient.audit.viewedAiOverview',
+  'view:ai_assistant': 'patient.audit.sharedWithAssistant',
   'create:lab_report': 'patient.audit.uploadedReport',
   'create:consent_request': 'patient.audit.requestedAccess',
   'grant:session': 'patient.audit.accessGranted',

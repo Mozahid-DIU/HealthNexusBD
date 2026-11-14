@@ -65,6 +65,20 @@ Legend — 🔓 public · 🔒 auth required · roles in `[ ]`.
 
 ---
 
+## Health Assistant — `/api/assistant` 🔒 [patient]
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| POST | `/chat` | One AI turn. Body `{ consent: true, lang: 'en' \| 'bn', messages: [{ role: 'user' \| 'model', text }], attachment?: { kind: 'record' \| 'labReport', id } }` → `{ reply, emergency, model, attachment }`. |
+
+- **Stateless.** The conversation lives in the browser and is sent whole, up to 16 turns or 16 000 characters, ending with the patient's turn. Nothing the patient types is stored.
+- **De-identified.** Gemini receives age, sex, allergies and long-term conditions. With an attachment it also receives the visit or the lab-report text (read from the PDF). The name, UHID, NID, phone and email are removed first, including from free text.
+- **Own data only.** Another patient's record or report returns 404 and is never read. Each attachment is audited as `view` with `ai_assistant:<record|lab_report>:<id>`, so it appears in the patient's own access log.
+- **Safety.** The system prompt forbids diagnosing, prescribing and any change to a medicine or its dose. Emergency signs (English, Bangla, Banglish) set `emergency: true`. If the AI is down, emergencies still get the built-in 999 advice (`model: "safety-rule"`).
+- **Errors.** `503 AI_UNAVAILABLE` when Gemini is busy or not configured. Each patient may send 20 messages per 10 minutes.
+
+---
+
 ## Doctor — `/api/doctor` 🔒 [doctor, verified]
 
 | Method | Path | Purpose |
