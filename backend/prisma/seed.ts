@@ -12,29 +12,10 @@ import type { UserStatus } from '@prisma/client'
 import { hashPassword } from '../src/utils/password.ts'
 import { seedClinical } from './seed-clinical.ts'
 import type { SeededDoctor, SeededPatient } from './seed-clinical.ts'
+import { DOCTOR_REGISTRY, LAB_REGISTRY, OPEN_DOCTOR_NUMBERS, OPEN_LAB_NUMBERS, seedRegistries } from './registry.ts'
 
 const prisma = new PrismaClient()
 const DEMO_PASSWORD = 'Demo@1234'
-
-// --- Mock BMDC registry (includes one extra number for a pending doctor) ---
-const DOCTOR_REGISTRY = [
-  { bmdcNumber: 'A-29871', fullName: 'Dr. Ayesha Karim', specialization: 'Cardiologist' },
-  { bmdcNumber: 'A-31245', fullName: 'Dr. Tanvir Ahmed', specialization: 'Internal Medicine' },
-  { bmdcNumber: 'A-28110', fullName: 'Dr. Nusrat Jahan', specialization: 'Endocrinologist' },
-  { bmdcNumber: 'A-33902', fullName: 'Dr. Sabbir Hossain', specialization: 'Nephrologist' },
-  { bmdcNumber: 'A-30567', fullName: 'Dr. Farhana Islam', specialization: 'Pediatrician' },
-  { bmdcNumber: 'A-27654', fullName: 'Dr. Imran Kabir', specialization: 'General Physician' },
-  { bmdcNumber: 'A-40012', fullName: 'Dr. Ritu Barua', specialization: 'Dermatologist' },
-]
-
-// --- Mock DGHS registry (includes one extra for a pending lab) ---
-const LAB_REGISTRY = [
-  { licenseNumber: 'DGHS-LAB-0099', centerName: 'PathCare Diagnostics', address: 'Dhanmondi, Dhaka' },
-  { licenseNumber: 'DGHS-LAB-0142', centerName: 'Popular Diagnostic Center', address: 'Shyamoli, Dhaka' },
-  { licenseNumber: 'DGHS-LAB-0210', centerName: 'Ibn Sina Lab', address: 'Mirpur, Dhaka' },
-  { licenseNumber: 'DGHS-LAB-0301', centerName: 'LabAid Diagnostics', address: 'Chittagong' },
-  { licenseNumber: 'DGHS-LAB-0410', centerName: 'Medinova Diagnostics', address: 'Malibagh, Dhaka' },
-]
 
 const ADMIN = { email: 'admin@healthnexus.bd', phone: '01700000000', fullName: 'System Admin' }
 
@@ -99,23 +80,6 @@ const PATIENTS: PatientSeed[] = [
   { email: 'nasrin@hn.bd', phone: '01810000007', uhid: 'BD-2026-01240', nid: '1990123456787', name: 'Nasrin Akter', blood: 'A-', allergies: [], chronic: ['Type 1 Diabetes'], dob: '2000-03-14', gender: 'female' },
   { email: 'mizan@hn.bd', phone: '01810000008', uhid: 'BD-2026-01241', nid: '1990123456788', name: 'Mizanur Rahman', blood: 'O+', allergies: ['Penicillin'], chronic: ['Dyslipidemia'], dob: '1980-06-08', gender: 'male' },
 ]
-
-async function seedRegistries() {
-  for (const d of DOCTOR_REGISTRY) {
-    await prisma.doctorRegistry.upsert({
-      where: { bmdcNumber: d.bmdcNumber },
-      update: { fullName: d.fullName, specialization: d.specialization },
-      create: d,
-    })
-  }
-  for (const l of LAB_REGISTRY) {
-    await prisma.labRegistry.upsert({
-      where: { licenseNumber: l.licenseNumber },
-      update: { centerName: l.centerName, address: l.address },
-      create: l,
-    })
-  }
-}
 
 async function seedAdmin() {
   const existing = await prisma.user.findUnique({ where: { email: ADMIN.email } })
@@ -192,7 +156,7 @@ async function seedPatient(p: PatientSeed): Promise<SeededPatient> {
 }
 
 async function main() {
-  await seedRegistries()
+  await seedRegistries(prisma)
   await seedAdmin()
 
   const doctors: SeededDoctor[] = []
@@ -209,6 +173,7 @@ async function main() {
 
   console.log('\n✅ Seed complete')
   console.log(`   Registries : ${DOCTOR_REGISTRY.length} BMDC, ${LAB_REGISTRY.length} DGHS`)
+  console.log(`   Free to register live: BMDC ${OPEN_DOCTOR_NUMBERS.map((d) => d.bmdcNumber).join(', ')}; DGHS ${OPEN_LAB_NUMBERS.map((l) => l.licenseNumber).join(', ')}`)
   console.log(`   Accounts   : 1 admin, ${DOCTORS.length} doctors (+1 pending), ${LABS.length} labs (+1 pending), ${PATIENTS.length} patients`)
   console.log(`   Clinical   : ${clinical.records} records, ${clinical.prescriptions} prescriptions, ${clinical.labReports} lab reports, ${clinical.summaries} AI summaries`)
   console.log(`   Login      : any account above with password  ${DEMO_PASSWORD}`)

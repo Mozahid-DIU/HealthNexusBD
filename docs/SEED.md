@@ -33,6 +33,26 @@
 
 > Also seed **1 lab with `status=pending`** for the Admin "Verify Labs" demo.
 
+### Free registry numbers (for a live registration demo)
+These are in the mock BMDC/DGHS registries but no account uses them, so a new doctor
+or lab can register on stage, wait as **pending**, and be approved by the admin. The
+name comes from the registry, not the form. Each number works **once**; it is then
+"already registered" (to reuse it, delete that account and set the registry entry's
+`is_claimed` back to false).
+
+| Role | Number | Name in registry |
+|------|--------|------------------|
+| Doctor | A-45101 | Dr. Shahana Parvin (Gynaecologist) |
+| Doctor | A-45102 | Dr. Mahmudul Hasan (Orthopaedic Surgeon) |
+| Doctor | A-45103 | Dr. Tasnim Chowdhury (Psychiatrist) |
+| Lab | DGHS-LAB-0511 | Prottasha Diagnostics (Uttara, Dhaka) |
+| Lab | DGHS-LAB-0512 | Sebaghor Pathology (Zindabazar, Sylhet) |
+| Lab | DGHS-LAB-0513 | NorthStar Lab & Imaging (Shaheb Bazar, Rajshahi) |
+
+To add them to a database without re-seeding accounts or clinical data:
+`npm run db:seed:registry` (the full `npm run db:seed` adds them too). Both live in
+`prisma/registry.ts`.
+
 ### Patients (8–10, with realistic clinical profiles)
 | Name | UHID | Blood | Allergies | Chronic |
 |------|------|-------|-----------|---------|
