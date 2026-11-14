@@ -66,13 +66,13 @@ export function ApplicationCard({ app, onApprove, onReject }: ApplicationCardPro
       <div className="flex flex-wrap items-start gap-4">
         <span
           aria-hidden
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-teal text-base font-bold text-white"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-brand to-teal text-base font-bold text-white"
         >
           {initials(app.name)}
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="break-words text-lg font-black text-ink">{app.name}</h3>
+            <h3 className="wrap-break-word text-lg font-black text-ink">{app.name}</h3>
             <Badge tone={STATUS_TONE[status]}>{t(`status.${status}`)}</Badge>
           </div>
           <p className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-slate">
@@ -119,7 +119,7 @@ export function ApplicationCard({ app, onApprove, onReject }: ApplicationCardPro
               variant="outline"
               onClick={onReject}
               aria-label={t('admin.verify.actionsFor', { action: t('admin.verify.reject'), name: app.name })}
-              className="!border-red-200 !text-red-700 hover:!bg-red-50"
+              className="border-red-200! text-red-700! hover:bg-red-50!"
             >
               {t('admin.verify.reject')}
             </Button>

@@ -71,9 +71,9 @@ export function Navbar() {
         solid ? 'border-b border-line bg-white/85 shadow-card backdrop-blur-xl' : 'border-b border-transparent'
       }`}
     >
-      <Container className="flex h-[68px] items-center justify-between gap-4">
+      <Container className="flex h-17 items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal">
-          <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-gradient-to-br from-brand to-teal text-white shadow-brand">
+          <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-linear-to-br from-brand to-teal text-white shadow-brand">
             <Logo />
           </span>
           <span className={`text-[17px] font-extrabold tracking-tight transition-colors ${solid ? 'text-brand' : 'text-white'}`}>
@@ -105,14 +105,14 @@ export function Navbar() {
           <Link
             to="/login"
             className={`rounded-xl px-4 py-2 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-teal ${
-              solid ? 'text-brand hover:bg-brand/[0.06]' : 'text-white hover:bg-white/10'
+              solid ? 'text-brand hover:bg-brand/6' : 'text-white hover:bg-white/10'
             }`}
           >
             {t('landing.nav.login')}
           </Link>
           <Link
             to="/register"
-            className="rounded-xl bg-gradient-to-r from-brand to-[#0a7fb0] px-4 py-2 text-sm font-semibold text-white shadow-brand transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal"
+            className="rounded-xl bg-linear-to-r from-brand to-[#0a7fb0] px-4 py-2 text-sm font-semibold text-white shadow-brand transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal"
           >
             {t('landing.nav.registerFree')}
           </Link>
@@ -123,7 +123,7 @@ export function Navbar() {
           <button
             type="button"
             className={`flex h-10 w-10 items-center justify-center rounded-xl transition focus-visible:outline-2 focus-visible:outline-teal ${
-              solid ? 'text-brand hover:bg-brand/[0.06]' : 'text-white hover:bg-white/10'
+              solid ? 'text-brand hover:bg-brand/6' : 'text-white hover:bg-white/10'
             }`}
             aria-label={t('common.toggleMenu')}
             aria-expanded={open}

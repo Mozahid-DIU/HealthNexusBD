@@ -18,7 +18,7 @@ function Backdrop() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(70%_55%_at_50%_-8%,rgba(11,92,173,0.13),transparent_70%)]" />
-      <div className="absolute -bottom-48 -right-40 hidden h-[30rem] w-[30rem] rounded-full bg-teal/10 blur-[110px] sm:block" />
+      <div className="absolute -bottom-48 -right-40 hidden h-120 w-120 rounded-full bg-teal/10 blur-[110px] sm:block" />
       <div className="absolute inset-0" style={GRID_STYLE} />
       <svg className="absolute left-0 top-[46%] hidden h-24 w-full sm:block" viewBox="0 0 1440 96" preserveAspectRatio="none">
         <defs>
@@ -65,7 +65,7 @@ export function AuthLayout({ title, subtitle, children, footer, width = 'default
           to="/"
           className="flex items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-gradient-to-br from-brand to-navy text-white shadow-brand">
+          <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-linear-to-br from-brand to-navy text-white shadow-brand">
             <Logo size={20} />
           </span>
           <span className="text-[16px] font-extrabold tracking-tight text-ink">
@@ -81,13 +81,13 @@ export function AuthLayout({ title, subtitle, children, footer, width = 'default
       </header>
 
       <main id="main-content" className="relative z-10 flex flex-1 items-center justify-center px-4 pb-14 pt-4 sm:pt-6">
-        <div className={`auth-rise w-full ${width === 'wide' ? 'max-w-[480px]' : 'max-w-[440px]'}`}>
+        <div className={`auth-rise w-full ${width === 'wide' ? 'max-w-120' : 'max-w-110'}`}>
           <div className="relative overflow-hidden rounded-[28px] bg-white px-6 pb-8 pt-9 shadow-[0_1px_2px_rgba(12,26,46,0.04),0_28px_70px_-18px_rgba(11,92,173,0.22)] ring-1 ring-line sm:px-10 sm:pb-10 sm:pt-11">
             {/* Brand accent along the top edge. */}
-            <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand via-[#1f7fc4] to-teal" />
+            <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-brand via-[#1f7fc4] to-teal" />
 
             <div className="mb-8 text-center">
-              <span className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-teal text-white shadow-[0_10px_26px_-6px_rgba(11,92,173,0.55)]">
+              <span className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-linear-to-br from-brand to-teal text-white shadow-[0_10px_26px_-6px_rgba(11,92,173,0.55)]">
                 <Logo size={24} />
               </span>
               <h1 className="text-[26px] font-black leading-tight tracking-tight text-ink sm:text-[28px]">{title}</h1>

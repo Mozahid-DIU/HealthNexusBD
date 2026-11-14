@@ -130,12 +130,12 @@ export function PdfDropzone({ file, onChange, disabled = false }: PdfDropzonePro
         }}
         onDrop={onDrop}
         className={`flex cursor-pointer flex-col items-center rounded-2xl border-2 border-dashed px-5 py-8 text-center transition focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/10 ${
-          dragging ? 'border-brand bg-brand/[0.05]' : problem ? 'border-red-300 bg-red-50/40' : 'border-line hover:border-brand/50 hover:bg-surface-soft'
+          dragging ? 'border-brand bg-brand/5' : problem ? 'border-red-300 bg-red-50/40' : 'border-line hover:border-brand/50 hover:bg-surface-soft'
         } ${disabled ? 'pointer-events-none opacity-60' : ''}`}
       >
         <span
           className={`mb-3 flex h-12 w-12 items-center justify-center rounded-2xl transition ${
-            dragging ? 'scale-110 bg-brand text-white' : 'bg-brand/[0.08] text-brand'
+            dragging ? 'scale-110 bg-brand text-white' : 'bg-brand/8 text-brand'
           }`}
         >
           <FileUp aria-hidden className="h-6 w-6" />

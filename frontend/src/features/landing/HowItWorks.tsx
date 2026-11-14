@@ -26,7 +26,7 @@ export function HowItWorks() {
           <span aria-hidden className="absolute left-7 top-7 h-[calc(100%-3.5rem)] w-0.5 bg-line md:left-[12.5%] md:right-[12.5%] md:h-0.5 md:w-auto" />
           <span
             aria-hidden
-            className={`absolute left-7 top-7 h-[calc(100%-3.5rem)] w-0.5 origin-top bg-gradient-to-b from-brand to-teal transition-transform duration-[1600ms] ease-out md:left-[12.5%] md:right-[12.5%] md:h-0.5 md:w-auto md:origin-left md:bg-gradient-to-r ${
+            className={`absolute left-7 top-7 h-[calc(100%-3.5rem)] w-0.5 origin-top bg-linear-to-b from-brand to-teal transition-transform duration-1600 ease-out md:left-[12.5%] md:right-[12.5%] md:h-0.5 md:w-auto md:origin-left md:bg-linear-to-r ${
               inView ? 'scale-100' : 'scale-y-0 md:scale-x-0 md:scale-y-100'
             }`}
           />
@@ -36,7 +36,7 @@ export function HowItWorks() {
               <Reveal delay={i * 180} className="shrink-0">
                 <span className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-brand shadow-[0_10px_30px_rgba(11,92,173,0.14)] ring-1 ring-line">
                   <step.icon aria-hidden className="h-6 w-6" />
-                  <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-brand to-teal text-[11px] font-bold text-white ring-2 ring-surface-soft">
+                  <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-linear-to-br from-brand to-teal text-[11px] font-bold text-white ring-2 ring-surface-soft">
                     {formatNumber(i + 1, lang)}
                   </span>
                 </span>

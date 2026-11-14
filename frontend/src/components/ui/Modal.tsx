@@ -44,7 +44,7 @@ export function Modal({
   if (!open) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-4">
+    <div className="fixed inset-0 z-100 flex items-end justify-center sm:items-center sm:p-4">
       <div
         aria-hidden
         className="absolute inset-0 bg-navy/50 backdrop-blur-[2px]"
@@ -134,7 +134,7 @@ export function ConfirmDialog({
             onClick={onConfirm}
             disabled={busy}
             aria-busy={busy}
-            className={tone === 'danger' ? '!bg-red-600 !shadow-none hover:!bg-red-700' : ''}
+            className={tone === 'danger' ? 'bg-red-600! shadow-none! hover:bg-red-700!' : ''}
           >
             {busy ? t('common.loading') : confirmLabel}
           </Button>

@@ -70,12 +70,12 @@ function ChartHeader({ profile, minutes }: { profile: ClinicalProfile; minutes: 
       <div className="flex flex-wrap items-start gap-4">
         <span
           aria-hidden
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-teal text-lg font-bold text-white"
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-brand to-teal text-lg font-bold text-white"
         >
           {initials(profile.fullName)}
         </span>
         <div className="min-w-0 flex-1">
-          <h1 className="break-words text-[clamp(1.3rem,2.4vw,1.7rem)] font-black leading-tight tracking-tight text-ink">
+          <h1 className="wrap-break-word text-[clamp(1.3rem,2.4vw,1.7rem)] font-black leading-tight tracking-tight text-ink">
             {profile.fullName}
           </h1>
           {/* Each fact stays on one line; the row wraps between facts, never inside one. */}

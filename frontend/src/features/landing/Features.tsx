@@ -27,7 +27,7 @@ function Tile({
     <Reveal delay={delay} className={className}>
       <article
         className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(11,92,173,0.14)] sm:p-7 ${
-          tone === 'tint' ? 'border-brand/10 bg-gradient-to-br from-[#eef5ff] to-[#f2fbfb]' : 'border-line bg-surface-soft'
+          tone === 'tint' ? 'border-brand/10 bg-linear-to-br from-[#eef5ff] to-[#f2fbfb]' : 'border-line bg-surface-soft'
         }`}
       >
         <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-brand shadow-card ring-1 ring-line transition group-hover:scale-110 group-hover:bg-brand group-hover:text-white">
@@ -47,7 +47,7 @@ export function Features() {
   const icon = 'h-5 w-5'
   return (
     <section id="features" className="relative scroll-mt-20 bg-white py-24 sm:py-32">
-      <div aria-hidden className="lp-grid-light pointer-events-none absolute inset-x-0 top-0 h-[28rem]" />
+      <div aria-hidden className="lp-grid-light pointer-events-none absolute inset-x-0 top-0 h-112" />
       <Container className="relative">
         <SectionHeading eyebrow={t('landing.features.eyebrow')} title={t('landing.features.title')} subtitle={t('landing.features.subtitle')} />
 

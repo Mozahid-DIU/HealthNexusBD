@@ -47,7 +47,7 @@ function Section({
               <button
                 type="button"
                 onClick={() => onPick(attachment)}
-                className="flex w-full items-center justify-between gap-3 rounded-xl border border-line px-4 py-2.5 text-left transition hover:border-brand/40 hover:bg-brand/[0.04] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className="flex w-full items-center justify-between gap-3 rounded-xl border border-line px-4 py-2.5 text-left transition hover:border-brand/40 hover:bg-brand/4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
                 <span className="min-w-0 truncate text-sm font-semibold text-ink">{attachment.title}</span>
                 <span className="shrink-0 text-xs text-slate">{detail}</span>

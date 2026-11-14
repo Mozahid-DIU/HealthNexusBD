@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 export function UhidCard({ uhid, holder, bloodGroup }: { uhid: string; holder: string; bloodGroup?: string | null }) {
   const { t } = useTranslation()
   return (
-    <div className="relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-2xl bg-gradient-to-br from-brand to-[#0a4f99] p-6 text-white shadow-[0_18px_48px_rgba(11,92,173,0.3)]">
+    <div className="relative flex min-h-55 flex-col justify-between overflow-hidden rounded-2xl bg-linear-to-br from-brand to-brand-dark p-6 text-white shadow-[0_18px_48px_rgba(11,92,173,0.3)]">
       <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.08]">
         <defs>
           <pattern id="uhidmesh" width="36" height="36" patternUnits="userSpaceOnUse">

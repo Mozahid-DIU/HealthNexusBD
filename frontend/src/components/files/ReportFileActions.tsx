@@ -102,7 +102,7 @@ export function ReportFileActions({ fetchFile, title }: ReportFileActionsProps) 
             <a
               href={viewUrl}
               download={safeFileName(title)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-brand ring-1 ring-brand/30 hover:bg-brand/[0.05] focus-visible:outline-2 focus-visible:outline-brand"
+              className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-brand ring-1 ring-brand/30 hover:bg-brand/5 focus-visible:outline-2 focus-visible:outline-brand"
             >
               <Download aria-hidden className="h-4 w-4" />
               {t('files.download')}

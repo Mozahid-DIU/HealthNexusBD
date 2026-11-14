@@ -127,7 +127,7 @@ export function AuditLogPage() {
                         <When at={row.createdAt} />
                       </td>
                       <td className="px-4 py-3">
-                        <p className="max-w-[15rem] truncate text-body">{row.actor.email}</p>
+                        <p className="max-w-60 truncate text-body">{row.actor.email}</p>
                         <p className="text-xs text-slate">{t(`roles.${row.actor.role}`)}</p>
                       </td>
                       <td className="px-4 py-3">

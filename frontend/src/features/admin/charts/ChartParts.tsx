@@ -29,7 +29,7 @@ export function Legend({ series, mark }: { series: Series[]; mark: 'line' | 'rec
         <li key={s.key} className="flex items-center gap-2">
           <span
             aria-hidden
-            className={mark === 'line' ? 'h-[3px] w-3.5 rounded-full' : 'h-2.5 w-2.5 rounded-[3px]'}
+            className={mark === 'line' ? 'h-0.75 w-3.5 rounded-full' : 'h-2.5 w-2.5 rounded-[3px]'}
             style={{ background: s.color }}
           />
           <span className="text-slate">{s.label}</span>
@@ -71,14 +71,14 @@ export function Tooltip({
     <div
       ref={ref}
       role="presentation"
-      className="pointer-events-none absolute top-2 z-10 min-w-[10rem] max-w-[calc(100%-8px)] rounded-xl bg-white px-3.5 py-2.5 text-sm shadow-[0_10px_30px_rgba(15,27,45,0.16)] ring-1 ring-line"
+      className="pointer-events-none absolute top-2 z-10 min-w-40 max-w-[calc(100%-8px)] rounded-xl bg-white px-3.5 py-2.5 text-sm shadow-[0_10px_30px_rgba(15,27,45,0.16)] ring-1 ring-line"
       style={{ left }}
     >
       <p className="mb-1.5 text-xs font-semibold text-faint">{formatDay(date, lang)}</p>
       <ul className="space-y-1">
         {rows.map((r) => (
           <li key={r.key} className="flex items-center gap-2">
-            <span aria-hidden className="h-[3px] w-3 rounded-full" style={{ background: r.color }} />
+            <span aria-hidden className="h-0.75 w-3 rounded-full" style={{ background: r.color }} />
             <span className="font-bold tabular-nums text-ink">{formatNumber(r.value, lang)}</span>
             <span className="text-slate">{r.label}</span>
           </li>

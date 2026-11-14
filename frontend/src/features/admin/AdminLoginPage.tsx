@@ -52,8 +52,8 @@ export function AdminLoginPage() {
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#06142a] text-white">
       <div aria-hidden className="pointer-events-none absolute inset-0" style={GRID_STYLE} />
-      <div aria-hidden className="pointer-events-none absolute -left-40 -top-40 h-[28rem] w-[28rem] rounded-full bg-brand/40 blur-[120px]" />
-      <div aria-hidden className="pointer-events-none absolute -bottom-40 -right-32 hidden h-[24rem] w-[24rem] rounded-full bg-teal/25 blur-[120px] sm:block" />
+      <div aria-hidden className="pointer-events-none absolute -left-40 -top-40 h-112 w-md rounded-full bg-brand/40 blur-[120px]" />
+      <div aria-hidden className="pointer-events-none absolute -bottom-40 -right-32 hidden h-96 w-[24rem] rounded-full bg-teal/25 blur-[120px] sm:block" />
 
       <header className="relative z-10 flex items-center justify-between gap-4 px-4 py-5 sm:px-8">
         <Link
@@ -67,9 +67,9 @@ export function AdminLoginPage() {
       </header>
 
       <main id="main-content" className="relative z-10 flex flex-1 items-center justify-center px-4 pb-16 pt-2">
-        <div className="w-full max-w-[420px]">
+        <div className="w-full max-w-105">
           <div className="mb-7 flex flex-col items-center text-center">
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-teal shadow-[0_12px_40px_rgba(11,92,173,0.55)] ring-1 ring-white/20">
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-brand to-teal shadow-[0_12px_40px_rgba(11,92,173,0.55)] ring-1 ring-white/20">
               <ShieldCheck aria-hidden className="h-7 w-7" />
             </span>
             <p className="mt-4 text-lg font-extrabold tracking-tight">

@@ -33,7 +33,7 @@ export function AssistantPage() {
 
       <section
         aria-label={t('patient.assistant.title')}
-        className="flex h-[calc(100dvh-14rem)] min-h-[540px] flex-col overflow-hidden rounded-3xl border border-line bg-gradient-to-b from-white via-white to-surface-soft shadow-card"
+        className="flex h-[calc(100dvh-14rem)] min-h-135 flex-col overflow-hidden rounded-3xl border border-line bg-linear-to-b from-white via-white to-surface-soft shadow-card"
       >
         <AssistantConversation />
       </section>

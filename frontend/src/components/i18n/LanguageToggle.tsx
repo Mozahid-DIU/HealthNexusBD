@@ -40,7 +40,7 @@ export function LanguageToggle({ tone = 'light', className = '' }: LanguageToggl
             onClick={() => {
               if (!isActive) void i18n.changeLanguage(lang)
             }}
-            className={`min-w-[38px] rounded-md px-2.5 py-1 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand ${
+            className={`min-w-9.5 rounded-md px-2.5 py-1 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand ${
               isActive ? selected : idle
             }`}
           >

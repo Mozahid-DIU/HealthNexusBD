@@ -56,7 +56,7 @@ function PatientCard({ patient }: { patient: SearchResult }) {
   const gender = patient.gender === 'male' || patient.gender === 'female' || patient.gender === 'other' ? t(`clinical.${patient.gender}`) : null
   return (
     <div className="flex items-center gap-4">
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand/[0.08] text-brand">
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand/8 text-brand">
         <UserRound aria-hidden className="h-6 w-6" />
       </span>
       <div className="min-w-0">
@@ -108,7 +108,7 @@ function CodeStep({
 
   return (
     <div className="space-y-5 text-center">
-      <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/[0.08] text-brand">
+      <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/8 text-brand">
         <KeyRound aria-hidden className="h-7 w-7" />
       </span>
       <div>
@@ -117,7 +117,7 @@ function CodeStep({
       </div>
 
       {request.devOtp && (
-        <div className="mx-auto flex max-w-md flex-wrap items-center justify-center gap-3 rounded-xl border border-dashed border-teal/40 bg-teal/[0.06] px-4 py-3 text-sm">
+        <div className="mx-auto flex max-w-md flex-wrap items-center justify-center gap-3 rounded-xl border border-dashed border-teal/40 bg-teal/6 px-4 py-3 text-sm">
           <FlaskConical aria-hidden className="h-4 w-4 text-teal" />
           <span>
             <strong className="text-teal">{t('doctor.find.demoTitle')}:</strong> {t('doctor.find.demoBody', { code: request.devOtp })}

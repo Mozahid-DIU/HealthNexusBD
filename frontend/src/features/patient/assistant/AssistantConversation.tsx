@@ -28,7 +28,7 @@ function Welcome({ compact, onSuggest }: { compact: boolean; onSuggest: (key: Tr
   return (
     <div className={`mx-auto flex max-w-xl flex-col items-center text-center ${compact ? 'pt-1' : 'pt-4 sm:pt-10'}`}>
       <span
-        className={`relative flex items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-teal text-white shadow-[0_14px_34px_-10px_rgba(11,92,173,0.65)] ${
+        className={`relative flex items-center justify-center rounded-2xl bg-linear-to-br from-brand to-teal text-white shadow-[0_14px_34px_-10px_rgba(11,92,173,0.65)] ${
           compact ? 'mb-4 h-12 w-12' : 'mb-5 h-14 w-14'
         }`}
       >
@@ -173,7 +173,7 @@ export function AssistantConversation({ compact = false, autoFocus = false }: { 
         <div className="mx-auto max-w-3xl">
           {chat.trimmed && <p className="mb-2 text-xs text-slate">{t('patient.assistant.trimmed')}</p>}
           {attachment && (
-            <span className="mb-2 inline-flex max-w-full items-center gap-1.5 rounded-full bg-brand/[0.08] py-1 pl-3 pr-1 text-xs font-semibold text-brand">
+            <span className="mb-2 inline-flex max-w-full items-center gap-1.5 rounded-full bg-brand/8 py-1 pl-3 pr-1 text-xs font-semibold text-brand">
               <Paperclip aria-hidden className="h-3 w-3 shrink-0" />
               <span className="truncate">{t('patient.assistant.attached', { title: attachment.title })}</span>
               <button
@@ -192,7 +192,7 @@ export function AssistantConversation({ compact = false, autoFocus = false }: { 
               onClick={() => setPickerOpen(true)}
               aria-label={t('patient.assistant.attach')}
               title={t('patient.assistant.attach')}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate transition hover:bg-brand/[0.06] hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate transition hover:bg-brand/6 hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"
             >
               <Paperclip aria-hidden className="h-5 w-5" />
             </button>

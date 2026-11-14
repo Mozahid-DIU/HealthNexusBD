@@ -25,7 +25,7 @@ export function HeroTile({ dashboard, trends }: { dashboard: Dashboard; trends: 
   return (
     <section
       aria-label={t('admin.hero.title')}
-      className="relative flex flex-col overflow-hidden rounded-2xl bg-gradient-to-br from-navy via-[#0e2c52] to-brand-dark p-6 text-white shadow-soft sm:col-span-2 sm:p-7 lg:row-span-2"
+      className="relative flex flex-col overflow-hidden rounded-2xl bg-linear-to-br from-navy via-[#0e2c52] to-brand-dark p-6 text-white shadow-soft sm:col-span-2 sm:p-7 lg:row-span-2"
     >
       {/* Soft light from the top right: depth without decoration noise. */}
       <span aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-teal/25 blur-3xl" />

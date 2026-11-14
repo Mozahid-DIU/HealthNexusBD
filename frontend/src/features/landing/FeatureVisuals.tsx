@@ -13,7 +13,7 @@ export function TimelineVisual() {
     { kind: t('landing.features.idKind3'), text: t('landing.features.idEvent3'), dot: 'bg-[#eb6834]' },
   ]
   return (
-    <ol aria-hidden className="relative mt-6 space-y-3 before:absolute before:bottom-3 before:left-[46px] before:top-3 before:w-px before:bg-line">
+    <ol aria-hidden className="relative mt-6 space-y-3 before:absolute before:bottom-3 before:left-11.5 before:top-3 before:w-px before:bg-line">
       {events.map((e) => (
         <li key={e.text} className="relative flex items-center gap-3">
           <span className="w-9 shrink-0 text-right text-xs font-bold text-slate">{e.kind}</span>
@@ -93,7 +93,7 @@ export function LabVisual() {
           {t('landing.features.labUploading')}
         </p>
         <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-slate-100">
-          <span className="lp-progress block h-full rounded-full bg-gradient-to-r from-brand to-teal" />
+          <span className="lp-progress block h-full rounded-full bg-linear-to-r from-brand to-teal" />
         </span>
         <p className="mt-1.5 font-mono text-[11px] text-slate">AES-256-GCM</p>
       </div>
@@ -153,7 +153,7 @@ export function ReminderVisual() {
   const { t } = useTranslation()
   return (
     <div aria-hidden className="mt-6 space-y-2.5">
-      <p className="flex max-w-[22rem] gap-2.5 rounded-2xl rounded-tl-md bg-white px-3.5 py-2.5 text-[13px] leading-snug text-body shadow-card ring-1 ring-line">
+      <p className="flex max-w-88 gap-2.5 rounded-2xl rounded-tl-md bg-white px-3.5 py-2.5 text-[13px] leading-snug text-body shadow-card ring-1 ring-line">
         <MessageSquareText className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
         {t('landing.features.remindSms')}
       </p>

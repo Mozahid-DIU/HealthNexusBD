@@ -15,7 +15,7 @@ const FEED_SIZE = 6
 const FEED = { page: 1, limit: FEED_SIZE, exclude: 'login' } as const
 
 const ICONS: Record<AuditRow['action'], { icon: LucideIcon; tint: string }> = {
-  view: { icon: Eye, tint: 'bg-brand/[0.08] text-brand' },
+  view: { icon: Eye, tint: 'bg-brand/8 text-brand' },
   create: { icon: FilePlus2, tint: 'bg-teal/10 text-teal' },
   update: { icon: ShieldCheck, tint: 'bg-violet-50 text-violet-600' },
   grant: { icon: KeyRound, tint: 'bg-emerald-50 text-emerald-600' },
@@ -52,7 +52,7 @@ export function RecentActivity() {
       ) : feed.data.data.length === 0 ? (
         <p className="text-sm text-slate">{t('admin.activity.empty')}</p>
       ) : (
-        <ol className="relative space-y-4 before:absolute before:bottom-2 before:left-[15px] before:top-2 before:w-px before:bg-line">
+        <ol className="relative space-y-4 before:absolute before:bottom-2 before:left-3.75 before:top-2 before:w-px before:bg-line">
           {feed.data.data.map((row) => {
             const { icon: Icon, tint } = ICONS[row.action]
             const { text } = describeAudit(row, t)

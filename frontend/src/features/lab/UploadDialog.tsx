@@ -76,7 +76,7 @@ export function UploadDialog({ patient, testName, onClose, onUploaded }: UploadD
           }}
           disabled={upload.isPending}
         />
-        <p className="flex gap-2 rounded-xl bg-teal/[0.06] px-3.5 py-2.5 text-xs leading-relaxed text-body">
+        <p className="flex gap-2 rounded-xl bg-teal/6 px-3.5 py-2.5 text-xs leading-relaxed text-body">
           <Lock aria-hidden className="mt-0.5 h-3.5 w-3.5 shrink-0 text-teal" />
           {t('lab.upload.secureNote', { name: patient.fullName })}
         </p>

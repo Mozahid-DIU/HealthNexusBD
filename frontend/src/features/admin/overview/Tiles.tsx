@@ -48,7 +48,7 @@ export function StatTile({ label, value, sub, delta, trend, color, icon, action,
     <section
       aria-label={label}
       className={`group relative flex flex-col overflow-hidden rounded-2xl border p-5 shadow-card transition hover:-translate-y-0.5 hover:shadow-soft ${
-        tone === 'attention' ? 'border-amber-200 bg-gradient-to-br from-amber-50 to-white' : 'border-line bg-white'
+        tone === 'attention' ? 'border-amber-200 bg-linear-to-br from-amber-50 to-white' : 'border-line bg-white'
       }`}
     >
       <div className="flex items-start justify-between gap-3">

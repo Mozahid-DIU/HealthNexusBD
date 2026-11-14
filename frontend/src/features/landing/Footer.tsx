@@ -40,7 +40,7 @@ export function Footer() {
       <Container className="grid gap-12 py-16 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div>
           <Link to="/" className="inline-flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-gradient-to-br from-brand to-teal">
+            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-linear-to-br from-brand to-teal">
               <Logo />
             </span>
             <span className="text-[17px] font-extrabold tracking-tight">

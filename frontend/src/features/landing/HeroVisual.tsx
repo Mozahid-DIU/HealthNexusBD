@@ -56,7 +56,7 @@ export function HeroVisual() {
   }
 
   return (
-    <div className="relative mx-auto aspect-[1/1.3] w-full max-w-[520px] sm:aspect-[1/0.92]" onPointerMove={tilt} onPointerLeave={settle} aria-hidden>
+    <div className="relative mx-auto aspect-[1/1.3] w-full max-w-130 sm:aspect-[1/0.92]" onPointerMove={tilt} onPointerLeave={settle} aria-hidden>
       {/* Orbit and glow behind the card. */}
       <div className="absolute inset-[6%] rounded-full border border-dashed border-white/15 lp-spin-slow" />
       <div className="absolute inset-[22%] rounded-full bg-teal/30 blur-[70px]" />
@@ -65,7 +65,7 @@ export function HeroVisual() {
         <div className="lp-rise w-[78%]" style={{ animationDelay: '250ms' }}>
           <div
             ref={card}
-            className="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-[#1670d0] via-brand to-[#083d7a] p-6 text-white shadow-[0_40px_80px_rgba(2,12,27,0.55)] ring-1 ring-white/20 transition-transform duration-300 ease-out sm:p-7"
+            className="relative overflow-hidden rounded-[22px] bg-linear-to-br from-[#1670d0] via-brand to-[#083d7a] p-6 text-white shadow-[0_40px_80px_rgba(2,12,27,0.55)] ring-1 ring-white/20 transition-transform duration-300 ease-out sm:p-7"
           >
             <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10" />
             <span className="pointer-events-none absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-teal/25 blur-2xl" />
@@ -77,7 +77,7 @@ export function HeroVisual() {
               <span className="rounded-md bg-white/15 px-2 py-0.5 text-[10px] font-bold tracking-wider">BD</span>
             </div>
             {/* A contact chip, like a real ID card. */}
-            <span className="relative mt-6 block h-9 w-12 rounded-md bg-gradient-to-br from-amber-200 to-amber-400/80 shadow-inner" />
+            <span className="relative mt-6 block h-9 w-12 rounded-md bg-linear-to-br from-amber-200 to-amber-400/80 shadow-inner" />
             <p className="relative mt-5 text-[10px] uppercase tracking-[0.2em] text-white/80">{t('landing.hero.cardFormat')}</p>
             <p className="relative mt-1 font-mono text-[clamp(1.25rem,2.6vw,1.75rem)] font-bold tracking-[0.08em]">BD-YYYY-XXXXX</p>
             <div className="relative mt-6 flex items-end justify-between gap-4">
@@ -98,15 +98,15 @@ export function HeroVisual() {
         className="left-0 top-[1%] sm:-left-4 sm:top-[9%]"
         delay={700}
         tint="bg-emerald-50 text-emerald-600"
-        icon={<KeyRound className="h-[18px] w-[18px]" />}
+        icon={<KeyRound className="h-4.5 w-4.5" />}
         title={t('landing.hero.chipConsent')}
         sub={t('landing.hero.chipConsentSub')}
       />
       <Chip
-        className="right-0 top-[14%] sm:-right-6 sm:-top-[2%]"
+        className="right-0 top-[14%] sm:-right-6 sm:top-[-2%]"
         delay={1000}
         tint="bg-red-50 text-red-600"
-        icon={<ShieldAlert className="h-[18px] w-[18px]" />}
+        icon={<ShieldAlert className="h-4.5 w-4.5" />}
         title={t('landing.hero.chipAllergy')}
         sub={t('landing.hero.chipAllergySub')}
       />
@@ -114,7 +114,7 @@ export function HeroVisual() {
         className="bottom-[1%] left-[4%] sm:bottom-[4%]"
         delay={1300}
         tint="bg-teal/10 text-teal"
-        icon={<FileCheck2 className="h-[18px] w-[18px]" />}
+        icon={<FileCheck2 className="h-4.5 w-4.5" />}
         title={t('landing.hero.chipLab')}
         sub={t('landing.hero.chipLabSub')}
       />

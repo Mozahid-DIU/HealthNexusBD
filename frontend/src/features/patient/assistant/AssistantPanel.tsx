@@ -40,11 +40,11 @@ export function AssistantPanel({ onClose }: { onClose: () => void }) {
       aria-labelledby={titleId}
       tabIndex={-1}
       onKeyDown={onKeyDown}
-      className="assistant-pop fixed inset-0 z-[80] flex flex-col overflow-hidden bg-gradient-to-b from-white via-white to-surface-soft outline-none sm:inset-auto sm:bottom-24 sm:right-6 sm:h-[min(680px,calc(100dvh-8rem))] sm:w-[400px] sm:rounded-3xl sm:border sm:border-line sm:shadow-[0_28px_70px_-18px_rgba(15,27,45,0.45)]"
+      className="assistant-pop fixed inset-0 z-80 flex flex-col overflow-hidden bg-linear-to-b from-white via-white to-surface-soft outline-none sm:inset-auto sm:bottom-24 sm:right-6 sm:h-[min(680px,calc(100dvh-8rem))] sm:w-100 sm:rounded-3xl sm:border sm:border-line sm:shadow-[0_28px_70px_-18px_rgba(15,27,45,0.45)]"
     >
-      <header className="relative flex items-center gap-3 overflow-hidden bg-gradient-to-br from-brand to-teal px-4 py-3.5 text-white">
+      <header className="relative flex items-center gap-3 overflow-hidden bg-linear-to-br from-brand to-teal px-4 py-3.5 text-white">
         <span aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full bg-white/10" />
-        <span aria-hidden className="pointer-events-none absolute -bottom-16 right-16 h-28 w-28 rounded-full bg-white/[0.06]" />
+        <span aria-hidden className="pointer-events-none absolute -bottom-16 right-16 h-28 w-28 rounded-full bg-white/6" />
         <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/25">
           <Sparkles aria-hidden className="h-5 w-5" />
         </span>
@@ -58,7 +58,7 @@ export function AssistantPanel({ onClose }: { onClose: () => void }) {
         <div className="relative flex shrink-0 items-center">
           {consented && chat.entries.length > 0 && (
             <button type="button" onClick={newChat} aria-label={t('patient.assistant.newChat')} title={t('patient.assistant.newChat')} className={HEADER_BUTTON}>
-              <Plus aria-hidden className="h-[18px] w-[18px]" />
+              <Plus aria-hidden className="h-4.5 w-4.5" />
             </button>
           )}
           <Link

@@ -57,14 +57,14 @@ export function TagInput({
     }
   }
 
-  const chip = tone === 'danger' ? 'bg-red-50 text-red-700 ring-red-200' : 'bg-brand/[0.08] text-brand ring-brand/15'
+  const chip = tone === 'danger' ? 'bg-red-50 text-red-700 ring-red-200' : 'bg-brand/8 text-brand ring-brand/15'
 
   return (
     <div>
       <label htmlFor={id} className="mb-1.5 block text-[13px] font-semibold text-body">
         {label}
       </label>
-      <div className="flex min-h-[48px] flex-wrap items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 transition focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/10">
+      <div className="flex min-h-12 flex-wrap items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 transition focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/10">
         {value.map((tag) => (
           <span key={tag} className={`inline-flex items-center gap-1 rounded-lg py-1 pl-2.5 pr-1 text-xs font-semibold ring-1 ring-inset ${chip}`}>
             {tag}
@@ -91,7 +91,7 @@ export function TagInput({
           onBlur={() => draft.trim() && add(draft)}
           placeholder={value.length === 0 ? placeholder : undefined}
           aria-describedby={hint ? `${id}-hint` : undefined}
-          className="min-w-[8rem] flex-1 bg-transparent py-1 text-sm text-body outline-none placeholder:text-faint"
+          className="min-w-32 flex-1 bg-transparent py-1 text-sm text-body outline-none placeholder:text-faint"
         />
       </div>
       {hint && (

@@ -22,7 +22,7 @@ import { AssistantSessionProvider } from '@/features/patient/assistant/Assistant
 import { useAuthStore } from '@/stores/auth'
 import type { AuthUser, Role } from '@/types/api'
 
-const SIDEBAR_WIDTH = 'lg:w-[264px]'
+const SIDEBAR_WIDTH = 'lg:w-66'
 
 function Brand({ user }: { user: AuthUser }) {
   const { t } = useTranslation()
@@ -73,18 +73,18 @@ function NavList({ user, onNavigate }: { user: AuthUser; onNavigate?: () => void
               onClick={onNavigate}
               className={({ isActive }) =>
                 `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-brand ${
-                  isActive ? 'bg-brand/[0.08] text-brand' : 'text-slate hover:bg-surface-soft hover:text-ink'
+                  isActive ? 'bg-brand/8 text-brand' : 'text-slate hover:bg-surface-soft hover:text-ink'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
                   {isActive && <span aria-hidden className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-brand" />}
-                  <Icon aria-hidden className="h-[18px] w-[18px] shrink-0" />
+                  <Icon aria-hidden className="h-4.5 w-4.5 shrink-0" />
                   {t(label)}
                   {count > 0 && (
                     <>
-                      <span aria-hidden className="ml-auto min-w-[1.375rem] rounded-full bg-amber-500 px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-white">
+                      <span aria-hidden className="ml-auto min-w-5.5 rounded-full bg-amber-500 px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-white">
                         {formatNumber(count, lang)}
                       </span>
                       <span className="sr-only">, {t('dashboard.nav.waiting', { count: formatNumber(count, lang) })}</span>
@@ -110,7 +110,7 @@ function UserCard({ user }: { user: AuthUser }) {
       <div className="flex items-center gap-3 rounded-xl px-2 py-2">
         <span
           aria-hidden
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand to-teal text-xs font-bold text-white"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-brand to-teal text-xs font-bold text-white"
         >
           {initials(name)}
         </span>
@@ -129,7 +129,7 @@ function UserCard({ user }: { user: AuthUser }) {
         disabled={logout.isPending}
         className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate transition hover:bg-red-50 hover:text-red-600 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-brand"
       >
-        <LogOut aria-hidden className="h-[18px] w-[18px]" />
+        <LogOut aria-hidden className="h-4.5 w-4.5" />
         {logout.isPending ? t('common.loggingOut') : t('common.logout')}
       </button>
     </div>
@@ -139,7 +139,7 @@ function UserCard({ user }: { user: AuthUser }) {
 function SidebarContent({ user, onNavigate }: { user: AuthUser; onNavigate?: () => void }) {
   return (
     <>
-      <div className="flex h-[68px] items-center border-b border-line px-5">
+      <div className="flex h-17 items-center border-b border-line px-5">
         <Brand user={user} />
       </div>
       <NavList user={user} onNavigate={onNavigate} />
@@ -154,7 +154,7 @@ function MobileDrawer({ user, onClose }: { user: AuthUser; onClose: () => void }
   useDialogFocus(panelRef, true, onClose)
 
   return createPortal(
-    <div className="fixed inset-0 z-[90] lg:hidden">
+    <div className="fixed inset-0 z-90 lg:hidden">
       <div aria-hidden className="absolute inset-0 bg-navy/40 backdrop-blur-[2px]" onClick={onClose} />
       <div
         ref={panelRef}
@@ -162,7 +162,7 @@ function MobileDrawer({ user, onClose }: { user: AuthUser; onClose: () => void }
         aria-modal="true"
         aria-label={t('dashboard.navLabel')}
         tabIndex={-1}
-        className="relative flex h-full w-[82%] max-w-[300px] flex-col bg-white shadow-[0_0_48px_rgba(15,27,45,0.25)] outline-none"
+        className="relative flex h-full w-[82%] max-w-75 flex-col bg-white shadow-[0_0_48px_rgba(15,27,45,0.25)] outline-none"
       >
         <button
           type="button"
@@ -220,7 +220,7 @@ export function DashboardLayout() {
     <div className="min-h-screen bg-surface-soft">
       <a
         href="#main-content"
-        className="sr-only z-[120] rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        className="sr-only z-120 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
       >
         {t('common.skipToContent')}
       </a>
@@ -231,8 +231,8 @@ export function DashboardLayout() {
 
       {drawerOpen && <MobileDrawer user={user} onClose={() => setDrawerOpen(false)} />}
 
-      <div className="lg:pl-[264px]">
-        <header className="sticky top-0 z-20 flex h-[68px] items-center justify-between gap-3 border-b border-line bg-white/90 px-4 backdrop-blur-md sm:px-6 lg:px-10">
+      <div className="lg:pl-66">
+        <header className="sticky top-0 z-20 flex h-17 items-center justify-between gap-3 border-b border-line bg-white/90 px-4 backdrop-blur-md sm:px-6 lg:px-10">
           <div className="flex min-w-0 items-center gap-2 lg:hidden">
             <button
               type="button"
@@ -259,7 +259,7 @@ export function DashboardLayout() {
           id="main-content"
           tabIndex={-1}
           // Room at the bottom so the corner button never covers the last controls.
-          className={`mx-auto w-full max-w-[1200px] px-4 py-6 outline-none sm:px-6 lg:px-10 lg:py-8 ${hasLauncher ? 'pb-28 lg:pb-28' : ''}`}
+          className={`mx-auto w-full max-w-300 px-4 py-6 outline-none sm:px-6 lg:px-10 lg:py-8 ${hasLauncher ? 'pb-28 lg:pb-28' : ''}`}
         >
           <Suspense fallback={<LoadingBlock lines={4} />}>
             <Outlet />

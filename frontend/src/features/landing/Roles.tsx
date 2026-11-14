@@ -35,7 +35,7 @@ export function Roles() {
             tabs={ROLES.map((r) => ({ id: r.id, label: t(`landing.roles.${r.id}`) }))}
           >
             <div key={role} className="lp-rise grid overflow-hidden rounded-3xl border border-line bg-surface-soft md:grid-cols-[0.9fr_1.1fr]">
-              <div className={`relative flex flex-col justify-between gap-8 overflow-hidden bg-gradient-to-br p-8 text-white ${current.accent}`}>
+              <div className={`relative flex flex-col justify-between gap-8 overflow-hidden bg-linear-to-br p-8 text-white ${current.accent}`}>
                 <span aria-hidden className="absolute -bottom-16 -right-16 h-56 w-56 rounded-full bg-white/10" />
                 <span className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/25 backdrop-blur">
                   <current.icon aria-hidden className="h-7 w-7" />

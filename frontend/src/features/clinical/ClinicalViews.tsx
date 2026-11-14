@@ -20,7 +20,7 @@ export function PrescriptionCard({ prescription }: { prescription: Prescription 
     <div className="space-y-4">
       {meds.length > 0 && (
         <div className="overflow-x-auto rounded-xl border border-line">
-          <table className="w-full min-w-[440px] text-left text-sm">
+          <table className="w-full min-w-110 text-left text-sm">
             <thead className="bg-surface-soft text-xs uppercase tracking-wide text-slate">
               <tr>
                 <th scope="col" className="px-4 py-2.5 font-semibold">{t('clinical.medicine')}</th>

@@ -40,7 +40,7 @@ function Action({ user, onToggle }: { user: AdminUser; onToggle: (user: AdminUse
       <Link
         to={`/admin/verifications?${type}status=suspended`}
         aria-label={`${t('admin.users.verifyFirst')}: ${name}`}
-        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-brand transition hover:bg-brand/[0.06] focus-visible:outline-2 focus-visible:outline-brand"
+        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-brand transition hover:bg-brand/6 focus-visible:outline-2 focus-visible:outline-brand"
       >
         <BadgeCheck aria-hidden className="h-3.5 w-3.5" />
         {t('admin.users.verifyFirst')}
@@ -64,7 +64,7 @@ function Action({ user, onToggle }: { user: AdminUser; onToggle: (user: AdminUse
 
 function Avatar({ name }: { name: string }) {
   return (
-    <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand/[0.08] text-xs font-bold text-brand">
+    <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand/8 text-xs font-bold text-brand">
       {initials(name)}
     </span>
   )

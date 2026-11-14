@@ -49,7 +49,7 @@ export function LabHome() {
     <>
       <PageHeader title={t('lab.home.title', { name: user ? displayName(user) : '' })} description={t('lab.home.subtitle')} />
 
-      <Card padding="lg" className="mb-6 bg-gradient-to-br from-white to-teal/[0.05]">
+      <Card padding="lg" className="mb-6 bg-linear-to-br from-white to-teal/5">
         <PatientSearchForm autoFocus onSearch={(value) => navigate(`/lab/upload?q=${encodeURIComponent(value)}`)} />
       </Card>
 

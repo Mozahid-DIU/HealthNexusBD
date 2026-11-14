@@ -31,7 +31,7 @@ function PatientSummary({ patient }: { patient: LabSearchResult }) {
         <UserRound aria-hidden className="h-6 w-6" />
       </span>
       <div className="min-w-0">
-        <h2 className="break-words text-lg font-black text-ink">{patient.fullName}</h2>
+        <h2 className="wrap-break-word text-lg font-black text-ink">{patient.fullName}</h2>
         <p className="flex flex-wrap gap-x-3 text-sm text-slate">
           <span className="whitespace-nowrap font-mono">{patient.uhid}</span>
           {gender && <span>{gender}</span>}
@@ -64,7 +64,7 @@ function TestRow({ test, fresh, onUpload }: { test: PrescribedTest; fresh: boole
       </span>
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-2">
-          <span className="break-words text-[15px] font-bold text-ink">{test.name}</span>
+          <span className="wrap-break-word text-[15px] font-bold text-ink">{test.name}</span>
           {pending ? (
             <Badge tone="warning">
               <Clock aria-hidden className="h-3 w-3" />

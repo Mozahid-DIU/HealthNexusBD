@@ -42,15 +42,15 @@ export function Hero() {
     <section id="home" className="lp-grain relative isolate overflow-hidden bg-[#06142a] text-white">
       {/* Atmosphere: drifting light, a fading grid, and the heartbeat. */}
       <div aria-hidden className="absolute inset-0 -z-10">
-        <div className="lp-drift absolute -left-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-brand/45 blur-[120px]" />
-        <div className="lp-drift absolute -right-32 top-24 hidden h-[30rem] w-[30rem] rounded-full bg-teal/30 blur-[120px] sm:block" style={{ animationDelay: '-6s' }} />
+        <div className="lp-drift absolute -left-40 -top-40 h-136 w-136 rounded-full bg-brand/45 blur-[120px]" />
+        <div className="lp-drift absolute -right-32 top-24 hidden h-120 w-120 rounded-full bg-teal/30 blur-[120px] sm:block" style={{ animationDelay: '-6s' }} />
         <div className="lp-grid absolute inset-0" />
       </div>
       <Heartbeat />
 
       <Container className="relative grid items-center gap-12 pb-40 pt-24 sm:pt-28 lg:grid-cols-[1.08fr_0.92fr] lg:pb-48 lg:pt-28">
         <div>
-          <p className="lp-rise mb-6 inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 backdrop-blur" style={{ animationDelay: '0ms' }}>
+          <p className="lp-rise mb-6 inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/6 px-3.5 py-1.5 backdrop-blur" style={{ animationDelay: '0ms' }}>
             <span className="lp-pulse relative h-2 w-2 rounded-full text-teal">
               <span className="absolute inset-0 rounded-full bg-teal" />
             </span>
@@ -69,7 +69,7 @@ export function Hero() {
             </span>
           </h1>
 
-          <p className="lp-rise mt-7 max-w-[34rem] text-[17px] leading-[1.75] text-white/70" style={{ animationDelay: '400ms' }}>
+          <p className="lp-rise mt-7 max-w-136 text-[17px] leading-[1.75] text-white/70" style={{ animationDelay: '400ms' }}>
             {t('landing.hero.body')}
           </p>
 
@@ -83,7 +83,7 @@ export function Hero() {
             </Link>
             <Link
               to="/login"
-              className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/[0.04] px-7 py-4 text-[15px] font-semibold text-white backdrop-blur transition hover:border-white/40 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal"
+              className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/4 px-7 py-4 text-[15px] font-semibold text-white backdrop-blur transition hover:border-white/40 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal"
             >
               {t('landing.hero.ctaSecondary')}
             </Link>

@@ -27,11 +27,11 @@ export function AiOverviewCard({ patientId }: { patientId: string }) {
     <section
       aria-labelledby="ai-overview-title"
       aria-busy={overview.isPending}
-      className="relative mb-6 overflow-hidden rounded-2xl border border-brand/15 bg-gradient-to-br from-[#f2f8ff] via-white to-[#effaf9] p-5 shadow-card sm:p-6"
+      className="relative mb-6 overflow-hidden rounded-2xl border border-brand/15 bg-linear-to-br from-[#f2f8ff] via-white to-[#effaf9] p-5 shadow-card sm:p-6"
     >
-      <span aria-hidden className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-brand to-teal" />
+      <span aria-hidden className="absolute inset-y-0 left-0 w-1 bg-linear-to-b from-brand to-teal" />
       <div className="mb-3 flex items-center gap-2.5">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand to-teal text-white">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-brand to-teal text-white">
           <Sparkles aria-hidden className="h-4 w-4" />
         </span>
         <h2 id="ai-overview-title" className="text-base font-bold text-ink">

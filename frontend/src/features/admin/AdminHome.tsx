@@ -35,7 +35,7 @@ function Attention({ doctors, labs }: { doctors: number; labs: number }) {
   const { t } = useTranslation()
   const lang = useLanguage()
   return (
-    <div role="status" className="mb-6 flex flex-col gap-4 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-white px-5 py-4 sm:flex-row sm:items-center">
+    <div role="status" className="mb-6 flex flex-col gap-4 rounded-2xl border border-amber-200 bg-linear-to-r from-amber-50 to-white px-5 py-4 sm:flex-row sm:items-center">
       <div className="flex min-w-0 flex-1 gap-4">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
           <ShieldAlert aria-hidden className="h-5 w-5" />
@@ -141,7 +141,7 @@ export function AdminHome() {
           delta={now && before && <DeltaLine current={now.records} previous={before.records} days={span} />}
           trend={pick(tr, 'records')}
           color={SERIES_COLORS[0]}
-          icon={<Stethoscope aria-hidden className="h-[18px] w-[18px]" />}
+          icon={<Stethoscope aria-hidden className="h-4.5 w-4.5" />}
         />
         <StatTile
           label={t('admin.stats.labReports')}
@@ -150,7 +150,7 @@ export function AdminHome() {
           delta={now && before && <DeltaLine current={now.labReports} previous={before.labReports} days={span} />}
           trend={pick(tr, 'labReports')}
           color={SERIES_COLORS[2]}
-          icon={<FlaskConical aria-hidden className="h-[18px] w-[18px]" />}
+          icon={<FlaskConical aria-hidden className="h-4.5 w-4.5" />}
         />
         <StatTile
           label={t('admin.stats.sessions')}
@@ -159,7 +159,7 @@ export function AdminHome() {
           delta={now && before && <DeltaLine current={now.consents} previous={before.consents} days={span} />}
           trend={pick(tr, 'consents')}
           color={SERIES_COLORS[1]}
-          icon={<UserCheck aria-hidden className="h-[18px] w-[18px]" />}
+          icon={<UserCheck aria-hidden className="h-4.5 w-4.5" />}
         />
         <StatTile
           label={t('admin.stats.pending')}
@@ -167,7 +167,7 @@ export function AdminHome() {
           sub={t('admin.stats.suspended', { count: n(d.suspended) })}
           color="#b45309"
           tone={pending > 0 ? 'attention' : 'default'}
-          icon={<UsersRound aria-hidden className="h-[18px] w-[18px]" />}
+          icon={<UsersRound aria-hidden className="h-4.5 w-4.5" />}
           action={
             <Link to="/admin/verifications" className="inline-flex items-center gap-1 text-sm font-semibold text-brand hover:underline">
               {t('admin.stats.review')}

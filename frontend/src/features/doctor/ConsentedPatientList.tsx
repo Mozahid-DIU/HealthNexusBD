@@ -27,7 +27,7 @@ export function ConsentedPatientList({ patients }: { patients: ConsentedPatient[
             >
               <span
                 aria-hidden
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand to-teal text-sm font-bold text-white"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-brand to-teal text-sm font-bold text-white"
               >
                 {initials(p.fullName)}
               </span>

@@ -24,7 +24,7 @@ export function DoctorHome() {
     <>
       <PageHeader title={t('doctor.home.title', { name: user ? displayName(user) : '' })} description={t('doctor.home.subtitle')} />
 
-      <Card padding="lg" className="mb-6 bg-gradient-to-br from-white to-brand/[0.04]">
+      <Card padding="lg" className="mb-6 bg-linear-to-br from-white to-brand/4">
         <PatientSearchForm autoFocus onSearch={(q) => navigate(`/doctor/find?q=${encodeURIComponent(q)}`)} />
       </Card>
 

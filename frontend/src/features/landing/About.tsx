@@ -39,12 +39,12 @@ export function About() {
         </div>
 
         <Reveal className="mt-24">
-          <div className="relative isolate overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand via-[#0a6fb8] to-teal px-8 py-14 text-center text-white shadow-[0_30px_80px_rgba(11,92,173,0.35)] sm:px-16 sm:py-20">
+          <div className="relative isolate overflow-hidden rounded-4xl bg-linear-to-br from-brand via-[#0a6fb8] to-teal px-8 py-14 text-center text-white shadow-[0_30px_80px_rgba(11,92,173,0.35)] sm:px-16 sm:py-20">
             <div aria-hidden className="absolute inset-0 -z-10">
               <span className="lp-drift absolute -left-20 -top-24 h-72 w-72 rounded-full bg-white/15 blur-3xl" />
               <span className="lp-drift absolute -bottom-24 -right-10 h-72 w-72 rounded-full bg-navy/30 blur-3xl" style={{ animationDelay: '-8s' }} />
             </div>
-            <h2 className="mx-auto max-w-2xl text-[clamp(1.8rem,4vw,2.9rem)] font-black leading-[1.1] tracking-[-0.025em]">{t('landing.cta.title')}</h2>
+            <h2 className="mx-auto max-w-2xl text-[clamp(1.8rem,4vw,2.9rem)] font-black leading-[1.1] tracking-tight">{t('landing.cta.title')}</h2>
             <p className="mx-auto mt-4 max-w-xl text-lg text-white/80">{t('landing.cta.body')}</p>
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
               <Link

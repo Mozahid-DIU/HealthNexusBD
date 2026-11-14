@@ -24,7 +24,7 @@ function DoctorLine({ doctor }: { doctor: ConsentDoctor }) {
   const { t } = useTranslation()
   return (
     <div className="flex min-w-0 items-center gap-3">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand/[0.08] text-brand">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand/8 text-brand">
         <UserRound aria-hidden className="h-5 w-5" />
       </span>
       <div className="min-w-0">
@@ -79,7 +79,7 @@ export function ConsentPage() {
     <>
       <PageHeader title={t('patient.consent.title')} description={t('patient.consent.subtitle')} />
 
-      <div className="mb-6 flex gap-3 rounded-2xl border border-brand/15 bg-brand/[0.04] px-5 py-4 text-sm text-body">
+      <div className="mb-6 flex gap-3 rounded-2xl border border-brand/15 bg-brand/4 px-5 py-4 text-sm text-body">
         <Info aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
         <p>{t('patient.consent.howItWorks')}</p>
       </div>
@@ -163,7 +163,7 @@ export function ConsentPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="!border-red-300 !text-red-600 hover:!bg-red-50"
+                          className="border-red-300! text-red-600! hover:bg-red-50!"
                           aria-label={`${t('patient.consent.revoke')}: ${session.doctor.fullName}`}
                           onClick={() => setConfirming({ kind: 'revoke', item: session })}
                         >

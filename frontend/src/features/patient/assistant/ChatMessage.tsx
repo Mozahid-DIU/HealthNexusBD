@@ -27,7 +27,7 @@ function EmergencyCallout({ className = '' }: { className?: string }) {
 function AttachmentTag({ title, label }: { title: string; label: 'attached' | 'shared' }) {
   const { t } = useTranslation()
   return (
-    <span className="mb-2 inline-flex max-w-full items-center gap-1.5 rounded-full bg-black/[0.06] px-2.5 py-1 text-xs font-semibold">
+    <span className="mb-2 inline-flex max-w-full items-center gap-1.5 rounded-full bg-black/6 px-2.5 py-1 text-xs font-semibold">
       <Paperclip aria-hidden className="h-3 w-3 shrink-0" />
       <span className="truncate">{t(label === 'attached' ? 'patient.assistant.attached' : 'patient.assistant.shared', { title })}</span>
     </span>
@@ -56,7 +56,7 @@ export function ChatMessage({
         <div className="max-w-[85%] rounded-2xl rounded-br-md bg-brand px-4 py-2.5 text-[15px] leading-relaxed text-white shadow-[0_6px_18px_-8px_rgba(11,92,173,0.6)] sm:max-w-[75%]">
           <span className="sr-only">{t('patient.assistant.you')}: </span>
           {entry.attachment && <AttachmentTag title={entry.attachment.title} label="attached" />}
-          <p className="whitespace-pre-line break-words">{entry.text}</p>
+          <p className="whitespace-pre-line wrap-break-word">{entry.text}</p>
         </div>
         {entry.failed && (
           <p role="alert" className="mt-1.5 flex items-center gap-2 text-xs font-semibold text-red-600">
@@ -82,7 +82,7 @@ export function ChatMessage({
 
   return (
     <li className="flex gap-3">
-      <span aria-hidden className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-teal text-white">
+      <span aria-hidden className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-brand to-teal text-white">
         <Sparkles className="h-4 w-4" />
       </span>
       <div className="min-w-0 max-w-[85%] sm:max-w-[80%]">
@@ -109,7 +109,7 @@ export function ThinkingBubble() {
   return (
     <li className="flex gap-3">
       <span className="sr-only">{t('patient.assistant.thinking')}</span>
-      <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-teal text-white">
+      <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-brand to-teal text-white">
         <Sparkles className="h-4 w-4" />
       </span>
       <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-md border border-line bg-white px-4 py-3.5 shadow-card">

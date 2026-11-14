@@ -10,7 +10,7 @@ function Stat({ value, unit, label, start, delay }: { value: number; unit: strin
   const lang = useLanguage()
   const shown = useCountUp(value, start)
   return (
-    <Reveal delay={delay} className="relative rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur">
+    <Reveal delay={delay} className="relative rounded-3xl border border-white/10 bg-white/4 p-6 backdrop-blur">
       <p className="text-[clamp(2.6rem,5vw,3.6rem)] font-black leading-none tracking-tight">
         {/* The final value is what assistive tech reads; the counting is visual only. */}
         <span aria-hidden>{formatNumber(shown, lang)}</span>
@@ -30,7 +30,7 @@ export function Security() {
   return (
     <section id="security" className="lp-grain relative isolate scroll-mt-20 overflow-hidden bg-[#06142a] py-24 text-white sm:py-32">
       <div aria-hidden className="absolute inset-0 -z-10">
-        <div className="lp-drift absolute -right-40 top-0 hidden h-[30rem] w-[30rem] rounded-full bg-brand/35 blur-[120px] sm:block" />
+        <div className="lp-drift absolute -right-40 top-0 hidden h-120 w-120 rounded-full bg-brand/35 blur-[120px] sm:block" />
         <div className="lp-grid absolute inset-0" />
       </div>
       <Container className="relative">

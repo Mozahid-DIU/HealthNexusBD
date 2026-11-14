@@ -56,7 +56,7 @@ export function Toaster() {
   const errors = toasts.filter((item) => item.tone === 'error')
   const others = toasts.filter((item) => item.tone !== 'error')
   return (
-    <div className="pointer-events-none fixed inset-x-4 bottom-4 z-[110] flex flex-col gap-2 sm:left-auto sm:right-6 sm:w-[380px]">
+    <div className="pointer-events-none fixed inset-x-4 bottom-4 z-110 flex flex-col gap-2 sm:left-auto sm:right-6 sm:w-95">
       <ol role="alert" className="flex flex-col gap-2">
         {errors.map((item) => (
           <ToastItem key={item.id} toast={item} />

@@ -40,7 +40,7 @@ export function RejectDialog({ name, busy, error, onConfirm, onCancel }: RejectD
           <Button variant="ghost" onClick={onCancel} disabled={busy}>
             {t('admin.verify.cancel')}
           </Button>
-          <Button onClick={submit} disabled={busy} className="!bg-red-600 !shadow-none hover:!bg-red-700">
+          <Button onClick={submit} disabled={busy} className="bg-red-600! shadow-none! hover:bg-red-700!">
             {busy ? t('admin.verify.rejecting') : t('admin.verify.reject')}
           </Button>
         </div>
