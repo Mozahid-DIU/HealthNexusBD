@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
 import type { Language, TranslationKey } from '@/i18n'
-import { formatDate } from '@/lib/format'
+import { formatDate, formatDateTime } from '@/lib/format'
 import type { AuditEntry, PatientNotification } from './types'
 
 /**
@@ -29,7 +29,43 @@ export function notificationText(
         : t('patient.notifications.followUpBody', { date }),
     }
   }
+  if (n.type === 'consent_request' && p.doctorName) {
+    return {
+      title: t('patient.notifications.consentRequestTitle'),
+      body: t('patient.notifications.consentRequestBody', { doctorName: p.doctorName }),
+    }
+  }
+  if (n.type === 'access_granted' && p.doctorName && p.expiresAt) {
+    return {
+      title: t('patient.notifications.accessGrantedTitle'),
+      body: t('patient.notifications.accessGrantedBody', {
+        doctorName: p.doctorName,
+        time: formatDateTime(p.expiresAt, lang),
+      }),
+    }
+  }
+  if (n.type === 'new_record' && p.doctorName && p.diagnosis) {
+    return {
+      title: t('patient.notifications.newRecordTitle'),
+      body: t('patient.notifications.newRecordBody', { doctorName: p.doctorName, diagnosis: p.diagnosis }),
+    }
+  }
   return { title: n.title, body: n.body }
+}
+
+/** Where a notification leads: the page that lets the patient act on it. */
+export function notificationLink(n: PatientNotification): string {
+  switch (n.type) {
+    case 'lab_report':
+      return '/patient/lab-reports'
+    case 'consent_request':
+    case 'access_granted':
+      return '/patient/consent'
+    case 'new_record':
+      return n.params?.recordId ? `/patient/records/${encodeURIComponent(n.params.recordId)}` : '/patient/records'
+    case 'follow_up':
+      return '/patient/records'
+  }
 }
 
 /** Specific (action, resource-prefix) pairs written by the backend's audit log. */

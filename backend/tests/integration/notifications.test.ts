@@ -57,23 +57,10 @@ describe('new lab report notification', () => {
     expect(res.body.data.notifications[0].params).toEqual({ testName: 'HIV Antibody', labName: expect.any(String) })
   })
 
-  it('texts the patient without revealing the test name', async () => {
+  it('is in-app only: no SMS (SMS is only for codes)', async () => {
     await uploadReport()
 
-    expect(smsMock).toHaveBeenCalledTimes(1)
-    const [phone, message] = smsMock.mock.calls[0]
-    expect(phone).toBe(patient.user.phone)
-    expect(message).toMatch(/new lab report/i)
-    expect(message).not.toContain('HIV')
-  })
-
-  it('still accepts the upload when the SMS gateway fails', async () => {
-    smsMock.mockRejectedValue(new Error('gateway down'))
-
-    const res = await uploadReport()
-
-    expect(res.status).toBe(201)
-    expect((await notifications()).body.data.unreadCount).toBe(1)
+    expect(smsMock).not.toHaveBeenCalled()
   })
 })
 
@@ -146,17 +133,16 @@ describe('follow-up reminders', () => {
     const sent = await sendFollowUpReminders(dhaka('2026-03-10T08:59:00'))
 
     expect(sent).toBe(0)
-    expect(smsMock).not.toHaveBeenCalled()
+    expect(await prisma.notification.count()).toBe(0)
   })
 
-  it('reminds the patient by SMS and in-app after 9am the day before', async () => {
+  it('reminds the patient in-app (no SMS) after 9am the day before', async () => {
     await recordWithFollowUp('2026-03-11')
 
     const sent = await sendFollowUpReminders(dhaka('2026-03-10T09:00:00'))
 
     expect(sent).toBe(1)
-    expect(smsMock).toHaveBeenCalledTimes(1)
-    expect(smsMock.mock.calls[0][1]).toContain('11 Mar 2026')
+    expect(smsMock).not.toHaveBeenCalled()
     const inbox = (await notifications()).body.data.notifications
     expect(inbox).toHaveLength(1)
     expect(inbox[0].type).toBe('follow_up')
@@ -170,7 +156,7 @@ describe('follow-up reminders', () => {
     await sendFollowUpReminders(dhaka('2026-03-10T10:00:00'))
     await sendFollowUpReminders(dhaka('2026-03-10T23:00:00'))
 
-    expect(smsMock).toHaveBeenCalledTimes(1)
+    expect(await prisma.notification.count()).toBe(1)
   })
 
   it('sends each reminder only once when two runs overlap', async () => {
@@ -199,16 +185,67 @@ describe('follow-up reminders', () => {
     await recordWithFollowUp('2026-03-12')
 
     expect(await sendFollowUpReminders(dhaka('2026-03-11T10:00:00'))).toBe(1)
-    expect(smsMock.mock.calls[0][1]).toContain('12 Mar 2026')
+    const inbox = (await notifications()).body.data.notifications
+    expect(inbox[0].params.date).toBe('2026-03-12')
+  })
+})
+
+describe('doctor activity notifications', () => {
+  async function doctorWithAccess() {
+    const doc = await createDoctor()
+    const asked = await request(app)
+      .post('/api/consent/request')
+      .set('Authorization', doc.auth)
+      .send({ uhid: patient.patient.uhid, reason: 'Check-up' })
+    expect(asked.status).toBe(201)
+    return { ...doc, requestId: asked.body.data.requestId as string, code: asked.body.data.devOtp as string }
+  }
+
+  it('tells the patient in-app when a doctor asks for access, without the code', async () => {
+    const doc = await doctorWithAccess()
+
+    const [n] = (await notifications()).body.data.notifications
+    expect(n).toMatchObject({ type: 'consent_request', readAt: null })
+    expect(n.params).toEqual({ doctorName: doc.doctor.fullName })
+    expect(JSON.stringify(n)).not.toContain(doc.code)
   })
 
-  it('keeps going when one SMS fails, and still records the in-app reminder', async () => {
-    await recordWithFollowUp('2026-03-11')
-    smsMock.mockRejectedValue(new Error('gateway down'))
+  it('tells the patient when the doctor got access', async () => {
+    const doc = await doctorWithAccess()
+    const ok = await request(app)
+      .post('/api/consent/verify')
+      .set('Authorization', doc.auth)
+      .send({ requestId: doc.requestId, code: doc.code })
+    expect(ok.status).toBe(201)
 
-    const sent = await sendFollowUpReminders(dhaka('2026-03-10T09:30:00'))
+    const [n] = (await notifications()).body.data.notifications
+    expect(n.type).toBe('access_granted')
+    expect(n.params).toEqual({ doctorName: doc.doctor.fullName, expiresAt: ok.body.data.expiresAt })
+  })
 
-    expect(sent).toBe(1)
-    expect((await notifications()).body.data.unreadCount).toBe(1)
+  it('tells the patient when a doctor records a new visit', async () => {
+    const doc = await doctorWithAccess()
+    await request(app)
+      .post('/api/consent/verify')
+      .set('Authorization', doc.auth)
+      .send({ requestId: doc.requestId, code: doc.code })
+
+    const visit = await request(app)
+      .post('/api/doctor/records')
+      .set('Authorization', doc.auth)
+      .send({ patientId: patient.patient.id, diagnosis: 'Migraine', content: 'Headache for 3 days' })
+    expect(visit.status).toBe(201)
+
+    const [n] = (await notifications()).body.data.notifications
+    expect(n.type).toBe('new_record')
+    expect(n.params).toEqual({ doctorName: doc.doctor.fullName, diagnosis: 'Migraine', recordId: visit.body.data.id })
+    // The clinical note itself never goes into a notification.
+    expect(JSON.stringify(n)).not.toContain('Headache')
+  })
+
+  it('never texts the patient for these (SMS is only for the code itself)', async () => {
+    await doctorWithAccess()
+
+    expect(smsMock).not.toHaveBeenCalled()
   })
 })

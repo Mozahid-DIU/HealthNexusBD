@@ -4,6 +4,7 @@ import { AppError } from '../../utils/AppError.ts'
 import { generateOtpCode, hashOtp, verifyOtp } from '../../utils/otp.ts'
 import { sendOtpSms, SmsError } from '../../services/sms.ts'
 import { isDemoNumber } from '../../config/demoNumbers.ts'
+import { notifyAccessGranted, notifyAccessRequested } from '../../services/notifications.ts'
 import { writeAudit } from '../../utils/audit.ts'
 import type { RequestAccessInput, VerifyOtpInput } from './consent.schema.ts'
 
@@ -103,6 +104,8 @@ export async function requestAccess(
   })
 
   const delivery = await deliverConsentCode(patient.user.phone, code, token.id)
+  // So the patient sees every request in the app too, and can deny one they didn't expect.
+  await notifyAccessRequested({ patientId: patient.id, doctorName: doctor.fullName })
 
   await writeAudit({
     actorUserId: userId,
@@ -197,6 +200,8 @@ export async function verifyAccess(
     if (used.count === 0) throw AppError.badRequest('This code has already been used or the request was cancelled')
     return created
   })
+
+  await notifyAccessGranted({ patientId: token.patientId, doctorName: doctor.fullName, expiresAt: session.expiresAt })
 
   await writeAudit({
     actorUserId: userId,

@@ -96,7 +96,7 @@ export interface AuditEntry {
   at: string
 }
 
-export type NotificationType = 'lab_report' | 'follow_up'
+export type NotificationType = 'lab_report' | 'follow_up' | 'consent_request' | 'access_granted' | 'new_record'
 
 export interface PatientNotification {
   id: string

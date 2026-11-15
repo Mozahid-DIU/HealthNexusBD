@@ -137,7 +137,6 @@ function backend(over: Record<string, Parameters<typeof mockApi>[0][string]> = {
     'GET /patient/profile': { body: envelope(PROFILE) },
     'POST /consent/requests/req1/deny': { body: envelope({ requestId: 'req1', status: 'denied' }) },
     'POST /consent/sessions/s1/revoke': { body: envelope({ sessionId: 's1', status: 'revoked' }) },
-    'POST /patient/notifications/n1/read': { body: envelope({ id: 'n1', read: true }) },
     'POST /patient/notifications/read-all': { body: envelope({ updated: 1 }) },
     'PATCH /patient/profile': { body: envelope({}) },
     ...over,
@@ -341,18 +340,65 @@ describe('pagination edge', () => {
 })
 
 describe('notifications', () => {
-  it('renders the message from params in the active language, and marks it read', async () => {
-    const { calls } = backend()
+  /** A stateful inbox: read-all really marks everything read, like the server. */
+  function inbox(list: PatientNotification[]) {
+    let items = list
+    return {
+      'GET /patient/notifications': () => ({
+        body: envelope({ notifications: items, unreadCount: items.filter((n) => !n.readAt).length }, META(items.length)),
+      }),
+      'POST /patient/notifications/read-all': () => {
+        items = items.map((n) => ({ ...n, readAt: n.readAt ?? '2026-11-16T06:00:00Z' }))
+        return { body: envelope({ updated: 1 }) }
+      },
+    }
+  }
+
+  it('renders the message from params in the active language', async () => {
+    backend(inbox([NOTICE]))
     renderRoutes(routes, '/patient/notifications')
 
     expect(await screen.findByText('Your HbA1c report from PathCare Diagnostics is ready to view.')).toBeInTheDocument()
     expect(screen.queryByText('stored english body')).not.toBeInTheDocument()
+  })
 
-    await userEvent.click(screen.getByRole('button', { name: /^Mark as read: / }))
-    await waitFor(() => expect(calls.some((c) => c.path === '/patient/notifications/n1/read')).toBe(true))
+  it('marks everything read on opening (the bell clears) but keeps new ones highlighted', async () => {
+    const { calls } = backend(inbox([NOTICE]))
+    renderRoutes(routes, '/patient/notifications')
 
-    await userEvent.click(screen.getByRole('button', { name: 'Mark all as read' }))
-    await waitFor(() => expect(calls.some((c) => c.path === '/patient/notifications/read-all')).toBe(true))
+    await screen.findByText('Your HbA1c report from PathCare Diagnostics is ready to view.')
+    await waitFor(() => expect(screen.getByRole('link', { name: 'Notifications, 0 unread' })).toBeInTheDocument())
+    expect(calls.filter((c) => c.path === '/patient/notifications/read-all')).toHaveLength(1)
+    expect(screen.getByText('New')).toBeInTheDocument()
+  })
+
+  it('does not call read-all when nothing is unread', async () => {
+    const { calls } = backend(inbox([{ ...NOTICE, readAt: '2026-11-03T06:00:00Z' }]))
+    renderRoutes(routes, '/patient/notifications')
+
+    await screen.findByText('Your HbA1c report from PathCare Diagnostics is ready to view.')
+    expect(calls.some((c) => c.path === '/patient/notifications/read-all')).toBe(false)
+    expect(screen.queryByText('New')).not.toBeInTheDocument()
+  })
+
+  it('explains doctor activity and links each notice to where the patient can act', async () => {
+    const base = { title: 'x', body: 'x', readAt: '2026-11-03T06:00:00Z', createdAt: '2026-11-03T06:00:00Z' }
+    backend(
+      inbox([
+        { ...base, id: 'c1', type: 'consent_request', params: { doctorName: 'Dr. Ayesha Karim' } },
+        { ...base, id: 'g1', type: 'access_granted', params: { doctorName: 'Dr. Ayesha Karim', expiresAt: '2026-11-03T06:30:00Z' } },
+        { ...base, id: 'v1', type: 'new_record', params: { doctorName: 'Dr. Ayesha Karim', diagnosis: 'Migraine', recordId: 'r1' } },
+      ]),
+    )
+    renderRoutes(routes, '/patient/notifications')
+
+    const request = await screen.findByRole('link', { name: /A doctor asked to see your records/ })
+    expect(request).toHaveAttribute('href', '/patient/consent')
+    expect(request).toHaveTextContent('Dr. Ayesha Karim asked to see your records.')
+    expect(screen.getByRole('link', { name: /A doctor can now see your records/ })).toHaveAttribute('href', '/patient/consent')
+    const visit = screen.getByRole('link', { name: /New visit recorded/ })
+    expect(visit).toHaveAttribute('href', '/patient/records/r1')
+    expect(visit).toHaveTextContent('Dr. Ayesha Karim recorded a new visit: Migraine.')
   })
 })
 

@@ -1,36 +1,29 @@
 import type { NotificationType } from '@prisma/client'
 import { prisma } from '../config/prisma.ts'
 import { logger } from '../utils/logger.ts'
-import { sendSms } from './sms.ts'
 
 /**
- * Patient notifications (SRS FR-21): new lab reports and follow-up reminders.
+ * Patient notifications (SRS FR-21), shown in the patient's in-app inbox: new lab
+ * reports, follow-up reminders, and doctor activity (an access request, access
+ * granted, a new visit).
  *
- * Each one is stored in-app (the patient's inbox) and also sent by SMS. Delivery is
- * best-effort: a failed SMS is logged and never fails the action that triggered it,
- * and the in-app copy is written first so the patient always has it.
+ * In-app only: SMS carries nothing but one-time codes (consent and password reset).
+ * Delivery is best-effort and never fails the action that triggered it.
  *
- * Privacy: SMS text is generic. Test names and diagnoses stay inside the app, since an
- * SMS can be read by anyone holding the phone.
+ * Privacy: a notification names who did what, never clinical notes or codes.
  */
 
 interface PatientNotice {
   patientId: string
   type: NotificationType
+  /** English fallback text (clients render `params` in the user's language instead). */
   title: string
   body: string
   /** The values in `body`, so clients can show the message in the user's language. */
   params: Record<string, string>
-  sms: string
 }
 
 async function notifyPatient(notice: PatientNotice): Promise<void> {
-  const patient = await prisma.patient.findUnique({
-    where: { id: notice.patientId },
-    select: { user: { select: { phone: true } } },
-  })
-  if (!patient) return
-
   await prisma.notification.create({
     data: {
       patientId: notice.patientId,
@@ -40,11 +33,14 @@ async function notifyPatient(notice: PatientNotice): Promise<void> {
       params: notice.params,
     },
   })
+}
 
+/** Record a notification; a failure is logged and never reaches the caller. */
+async function notifySafely(notice: PatientNotice): Promise<void> {
   try {
-    await sendSms(patient.user.phone, notice.sms, `${notice.type} notification`)
+    await notifyPatient(notice)
   } catch (err) {
-    logger.error({ err, patientId: notice.patientId, type: notice.type }, 'Notification SMS failed')
+    logger.error({ err, patientId: notice.patientId, type: notice.type }, 'Failed to record patient notification')
   }
 }
 
@@ -56,18 +52,57 @@ export async function notifyLabReportReady(input: {
   testName: string
   labName: string
 }): Promise<void> {
-  try {
-    await notifyPatient({
-      patientId: input.patientId,
-      type: 'lab_report',
-      title: 'New lab report available',
-      body: `Your ${input.testName} report from ${input.labName} is ready to view.`,
-      params: { testName: input.testName, labName: input.labName },
-      sms: 'HealthNexus BD: A new lab report is available in your account. Log in to view it.',
-    })
-  } catch (err) {
-    logger.error({ err, patientId: input.patientId }, 'Failed to record lab report notification')
-  }
+  await notifySafely({
+    patientId: input.patientId,
+    type: 'lab_report',
+    title: 'New lab report available',
+    body: `Your ${input.testName} report from ${input.labName} is ready to view.`,
+    params: { testName: input.testName, labName: input.labName },
+  })
+}
+
+// ---------------------------------------------------------------- doctor activity
+
+/** A doctor asked to see the records (the code itself goes only by SMS). */
+export async function notifyAccessRequested(input: { patientId: string; doctorName: string }): Promise<void> {
+  await notifySafely({
+    patientId: input.patientId,
+    type: 'consent_request',
+    title: 'A doctor asked to see your records',
+    body: `${input.doctorName} asked to see your records. Share the code from your SMS only if you are with this doctor.`,
+    params: { doctorName: input.doctorName },
+  })
+}
+
+/** The doctor entered the right code: their access is open until `expiresAt`. */
+export async function notifyAccessGranted(input: {
+  patientId: string
+  doctorName: string
+  expiresAt: Date
+}): Promise<void> {
+  await notifySafely({
+    patientId: input.patientId,
+    type: 'access_granted',
+    title: 'A doctor can now see your records',
+    body: `${input.doctorName} can see your records until ${input.expiresAt.toISOString()}. You can end this access at any time.`,
+    params: { doctorName: input.doctorName, expiresAt: input.expiresAt.toISOString() },
+  })
+}
+
+/** A doctor recorded a new visit (its note stays in the record, not the notification). */
+export async function notifyNewRecord(input: {
+  patientId: string
+  doctorName: string
+  diagnosis: string
+  recordId: string
+}): Promise<void> {
+  await notifySafely({
+    patientId: input.patientId,
+    type: 'new_record',
+    title: 'New visit recorded',
+    body: `${input.doctorName} recorded a new visit: ${input.diagnosis}.`,
+    params: { doctorName: input.doctorName, diagnosis: input.diagnosis, recordId: input.recordId },
+  })
 }
 
 // ---------------------------------------------------------------- follow-up reminders
@@ -124,7 +159,6 @@ export async function sendFollowUpReminders(now: Date = new Date()): Promise<num
           date: tomorrow.toISOString().slice(0, 10),
           ...(record.diagnosis ? { diagnosis: record.diagnosis } : {}),
         },
-        sms: `HealthNexus BD: Reminder - you have a follow-up visit on ${when}. Log in for details.`,
       })
       sent += 1
     } catch (err) {

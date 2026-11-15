@@ -4,6 +4,7 @@ import { AppError } from '../../utils/AppError.ts'
 import { encrypt, safeDecrypt } from '../../utils/crypto.ts'
 import { getPagination } from '../../utils/pagination.ts'
 import { auditPatientSearch, writeAudit } from '../../utils/audit.ts'
+import { notifyNewRecord } from '../../services/notifications.ts'
 import { getActiveAccessSession } from '../consent/consent.service.ts'
 import { deidentifyNote, generateSummary } from '../../services/ai.ts'
 import { readReportFile } from '../../services/reportFiles.ts'
@@ -205,6 +206,12 @@ export async function createRecord(userId: string, input: CreateRecordInput, ip?
     patientId: patient.id,
     resource: `medical_record:${record.id}`,
     ipAddress: ip ?? null,
+  })
+  await notifyNewRecord({
+    patientId: patient.id,
+    doctorName: doctor.fullName,
+    diagnosis: record.diagnosis ?? input.diagnosis,
+    recordId: record.id,
   })
 
   return {
