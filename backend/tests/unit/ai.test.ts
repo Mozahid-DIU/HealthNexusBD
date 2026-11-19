@@ -339,3 +339,18 @@ describe('de-identifying lab-report text', () => {
     expect(deidentifyNote('রহিম উদ্দিন called; Rahimpur road', ['রহিম উদ্দিন', 'Rahim'])).toBe('[patient] [patient] called; Rahimpur road')
   })
 })
+
+describe('Gemini model list', () => {
+  it('reads a comma-separated override and ignores junk', async () => {
+    const { parseModels } = await import('../../src/services/gemini.ts')
+    expect(parseModels(' gemini-a , gemini-b.1 ')).toEqual(['gemini-a', 'gemini-b.1'])
+    expect(parseModels('')).toBeNull()
+    expect(parseModels(undefined)).toBeNull()
+    expect(parseModels('bad model/../x')).toBeNull()
+  })
+
+  it('starts with the fastest free-tier model by default', async () => {
+    const { DEFAULT_GEMINI_MODELS } = await import('../../src/services/gemini.ts')
+    expect(DEFAULT_GEMINI_MODELS[0]).toBe('gemini-3.1-flash-lite')
+  })
+})

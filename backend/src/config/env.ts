@@ -41,6 +41,8 @@ export const envSchema = z.object({
 
   // External services — optional until their step; validated when used.
   GEMINI_API_KEY: z.string().optional().default(''),
+  // Optional: models to try in order, comma-separated (see services/gemini.ts).
+  GEMINI_MODELS: z.string().optional(),
   SMS_API_KEY: z.string().optional().default(''),
   SMS_SENDER_ID: z.string().optional().default(''),
   SMS_API_URL: z.string().optional().default('https://bulksmsbd.net/api/smsapi'),

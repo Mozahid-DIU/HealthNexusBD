@@ -1,0 +1,20 @@
+# Keeps the free Render backend awake (it sleeps after 15 idle minutes, and the first
+# request after that takes ~50 s). Pings the health check every 5 minutes from 08:00 to
+# 01:00 Bangladesh time, which keeps the account inside Render's 750 free hours a month.
+# For round-the-clock: change the hours field below to '*'.
+name: Keep backend awake
+
+on:
+  schedule:
+    - cron: '*/5 2-18 * * *' # UTC; Bangladesh is UTC+6 → 08:00–00:55
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping the health check
+        run: curl -fsS --retry 3 --retry-delay 10 --max-time 90 -o /dev/null https://healthnexus-bd-api.onrender.com/api/health

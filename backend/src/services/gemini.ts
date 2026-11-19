@@ -8,11 +8,19 @@ import { logger } from '../utils/logger.ts'
  */
 
 /**
- * Tried in order until one answers. "…-latest" aliases track Google's current models, so
- * they don't 404 as versions retire. Flash-Lite comes first: on the free tier it answers in
- * about 1.5 s with good Bangla, while Flash is often overloaded (503) or slow.
+ * Tried in order until one answers. The free tier's speed changes from day to day, so the
+ * list can be replaced without a code change: GEMINI_MODELS="model-a,model-b" in the env.
+ * Default: 3.1 Flash-Lite (about 3–4 s with good Bangla), then the "…-latest" aliases,
+ * which track Google's current models so they don't 404 as versions retire.
  */
-export const GEMINI_MODELS = ['gemini-flash-lite-latest', 'gemini-flash-latest'] as const
+export const DEFAULT_GEMINI_MODELS = ['gemini-3.1-flash-lite', 'gemini-flash-lite-latest', 'gemini-flash-latest']
+export const GEMINI_MODELS: readonly string[] = parseModels(env.GEMINI_MODELS) ?? DEFAULT_GEMINI_MODELS
+
+/** "a, b ,c" → ['a','b','c']; null when nothing usable is set. */
+export function parseModels(raw: string | undefined): string[] | null {
+  const models = (raw ?? '').split(',').map((m) => m.trim()).filter((m) => /^[a-z0-9.-]+$/i.test(m))
+  return models.length > 0 ? models : null
+}
 /** Someone is waiting on this: give up on a model after this long and try the next. */
 export const GEMINI_TIMEOUT_MS = 12_000
 

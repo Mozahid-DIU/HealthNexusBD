@@ -16,6 +16,7 @@
 | `REFRESH_TOKEN_TTL` | Refresh token lifetime | `7d` |
 | `AES_SECRET_KEY` | AES-256 record/file encryption key | 64 hex chars — `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `GEMINI_API_KEY` | AI clinical summaries | ai.google.dev → Get API key |
+| `GEMINI_MODELS` | Optional: Gemini models to try in order, comma-separated (switch models without a code change when one is slow) | `gemini-3.1-flash-lite,gemini-flash-lite-latest,gemini-flash-latest` |
 | `OTP_MODE` | `real` or `demo` (defense fallback) | `real` normally; `demo` logs instead of sending. Governs **all** SMS: consent OTPs, password-reset codes and patient notifications (new lab report, follow-up reminder). Seeded demo numbers (`src/config/demoNumbers.ts`) are never texted, even in `real` mode. |
 | `OTP_TTL_MINUTES` | OTP validity window | `5` |
 | `OTP_MAX_ATTEMPTS` | Wrong-OTP lockout | `5` |
