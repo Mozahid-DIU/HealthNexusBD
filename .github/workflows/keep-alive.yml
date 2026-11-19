@@ -1,12 +1,13 @@
 # Keeps the free Render backend awake (it sleeps after 15 idle minutes, and the first
-# request after that takes ~50 s). Pings the health check every 5 minutes from 08:00 to
-# 01:00 Bangladesh time, which keeps the account inside Render's 750 free hours a month.
-# For round-the-clock: change the hours field below to '*'.
+# request after that takes ~50 s). Pings the health check every 5 minutes, all day:
+# one always-on service uses ~720 of Render's 750 free hours a month, so it must be the
+# only running free service on the account (JourneyEasy is suspended).
+# To save hours instead, ping only 08:00–01:00 Bangladesh time: '*/5 2-18 * * *'.
 name: Keep backend awake
 
 on:
   schedule:
-    - cron: '*/5 2-18 * * *' # UTC; Bangladesh is UTC+6 → 08:00–00:55
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 permissions: {}
