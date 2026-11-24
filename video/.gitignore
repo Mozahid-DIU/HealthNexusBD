@@ -1,0 +1,5 @@
+# Installed packages and rendered output (re-create with npm install / npm run render)
+node_modules/
+out/
+# Background music: its licence isn't recorded, so it stays out of the public repo
+public/music.mp3
