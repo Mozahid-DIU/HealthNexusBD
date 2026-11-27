@@ -1,0 +1,369 @@
+ABSTRACT
+In Bangladesh medical documents of patients are spread over the paper report, hospitals, clinics and diagnostic centres. Past diagnoses, allergies and medications often are unknown by a new doctor, resulting in re-testing and receiving incorrect medication.
+HealthNexus BD is a platform for a patient-centric Unified Patient Health Record (UPHR) that will give each patient a single patient ID called a Unified Health ID (UHID) assigned for his whole life. The doctors are enrolled in a BMDC register while the laboratories in a DGHS register, both with the approval of the admin. After an SMS OTP has been sent by a doctor, the doctor can only view the patient health record upon sharing of the SMS OTP by the patient and only for a 30 minute session or less if desired by the patient. AES-256-GCM is used to encrypt lab files and clinical notes, while all accesses are logged to an append-only log. Doctors are given an overview of past health records and Google Gemini warns doctors of potential allergy sensitivities, and a health assistant is bilingual. Where Gemini is not available, summaries/alerts are done on a rule basis. Technologies used: Frontend (React), Backend (Node.js, Express, Prisma, PostgreSQL), Deployed on Vercel and Render, 744 automated tests passed and 96.66% of the Backend was covered.
+Keywords: Gemini AI, OTP consent, audit log, Bangladesh, electronic health record, unified health ID, AES-256 encryption.
+
+CHAPTER 1  INTRODUCTION
+
+1.1 Background
+
+1.1.1 Context and Relevance
+In Bangladesh with most of the records on paper there is no common register directory system between the hospital, clinic, diagnostic centre and private chamber in managing the records. It’s the patient who makes the connections; they need to bring all their prescriptions with them and talk to any new physicians. GSM mobiles are carried by nearly all adults and a web-based record – in addition to being possible – is useful and something the patient should have control over; and, from the point of view of patient care, WHO recommend that a record should travel with the patient from provider to provider [1].
+HealthNexus BD is a one-stop solution that enables a patient, physician, diagnostic laboratory and the administrator to be connected. Every patient gets his/her Unified Health ID (UHID), for ever and no doctor can access a patient’s record without his/her consent.
+
+1.1.2 Problem Identification
+The existing mechanisms to manage patient information result in the following issues:
+1. Notes, visits, prescriptions and reports are lost in the shuffle and no one doctor has a complete picture of the patient making decisions based on partial information.
+2. Unknown allergies and medicines: The new doctor may think that a patient is not allergic to a medicine, or the patient may be on another medicine which the new doctor may not know about, and this could lead to an unsafe prescription.
+3. Redo-testing: If the patient forgets to bring an old test report home to the clinic or if there is a test report that is lost, it may be repeated, costing patients time and money.
+4. No patient control: Patient can’t choose who opens up their digital file, if there is one, let alone does the patient know if there is a one, and patient is not even aware of others who have opened and read that file.
+5. Unverified provider – there is no easy way of ensuring verification that the reader or writer of a record is a registered doctor or a licensed lab.
+6. Limited amount of time in the chamber – doctor only has a few minutes to spend per patient, cannot spend too much time reading through a thick folder, must be concise but informative.
+
+1.1.3 Purpose and Justification
+The project will work to:
+Provide each patient with a lifetime UHID (BD-YYYY-NNNNN) with secure history;
+Make sure that the system verifies the doctor with his BMDC number and the lab with its licence from DGHS before proceeding with anything;
+Provide access to doctors only for a limited period of time and on the basis of an SMS (one-time password) OTP that patients can give to their doctors;
+encrypt patient data and log all access to it in a patient-readable log;
+summarise the history and alert about allergies with the use of artificial intelligence, but don’t make decisions;
+Work on cheap mobile phones in Bangla & English as well.
+
+1.1.4 Scope
+Included in scope:
+4 Roles – Patient, Doctor, Diagnostic Lab and Admin.
+UHID creation, Provider verification & Search of Patient on UHID/mobile.
+Consent sessions (deny/revoke) about OTP.
+Visit records, prescriptions, lab report (PDF) upload and AI visit feature using a rule based fallback.
+Encryption, audit log, notifications, reminders and an admin dashboard.
+Responsive Web Interface in two languages (bangla and english).
+Excluded from scope:
+Native mobile app, video consultation, payment and insurance.
+A live connection with the official BMDC, DGHS or NID databases (seeding the database tables is done instead).
+AI Powered Autodiagnosis or AI Powered treatment.
+
+1.2 Feasibility Study
+
+1.2.1 Technical Feasibility
+Assessment: Highly feasible
+We are using all the mature and free tools such as React 19, Node.js and Express 4.21, PostgreSQL (Neon) with Prisma 6.2, the Gemini API, BulkSMSBD and Gmail SMTP along with Cloudinary. Through courses the developer gained knowledge of JavaScript, React and SQL.
+
+1.2.2 Operational Feasibility
+Assessment: Feasible
+Only actions in the user’s browser are performed. Access is approved by a normal SMS sent to the patient (no need of the fancy cell phone) and each role will only have specific tasks.
+
+1.2.3 Economic Feasibility
+Assessment: Highly feasible
+Free hosting, database, storage and AI. Running cost is SMS, which costs less than one taka per SMS, and no licence fees involved.
+
+1.2.4 Schedule Feasibility
+Assessment: Feasible
+The work was done within approximately five months starting from the proposal in June 2026 to the end of November 2026 when submitted (Section 1.6).
+
+1.2.5 Legal Feasibility
+Assessment: Feasible
+Only demo data is used, the official registries are simulated, all libraries are open source and design works are based on the privacy practice of HIPAA Security Rule [2].
+
+1.3 Profile of the Target Users and the Elicitation Process
+
+1.3.1 Target Users
+Patients are citizens who are looking for one record in their control, that’s it.
+Doctors: Registered doctor of the BMDC which needs the history during a doctor visit.
+Diagnostic labs: A diagnostic lab that is licensed by the DGHS and that generates a report.
+Administrator is the first person to check providers, and handle the account.
+
+1.3.2 User Profile
+
+1.3.3 Elicitation Process
+Five methods were used for collecting the requirements:
+1. Observation – patients’ way of carrying prescriptions/reports, and how they were read in the as-brief-as-it-could-be consultation by the doctor.
+2. Study of existing systems: Health App’s and e-Health initiatives studied, here it was found that in the case of these system, there is only record keeping in one health provider and also no record of consent & accesses log for the patient.
+3. Document review. The BMDC registration and DGHS licensing process, HIPAA Security Rule [2] and OWASP Top 10 [3] documents had an impact on the verification and security requirements.
+4. Scenario analysis: Realistic stories, e.g. a patient with diabetes and a penicillin allergy becomes ill in another city were translated to use cases.
+5. Supervisor feedback: requirements as set with the supervisor building on the mid defence.
+
+1.4 Project Block Diagram
+As can be seen in Figure 1.1, there are 4 main blocks: the React web app that will be available for all roles, the Node.js server containing the business modules, data (PostgreSQL and Cloudinary), and externally-mounted services (Gemini, SMS and e-mail).
+
+1.5 System Requirements
+
+1.5.1 Hardware Requirements
+User: Any sort of mobile or computer that can run a modern web browser and patients must also have a mobile that supports SMS.
+Development: dual core CPU 2.0 GHz, 8 GB of RAM, 10 GB free disk space.
+The hosting of those is through no own server – managed cloud services.
+
+1.5.2 Software Requirements
+
+1.5.3 Constraints and Dependencies
+The free Render server is auto-sleeping when idle, meaning that a scheduled health check is needed to ensure it’s awake.
+Lab reports should be in PDF format that is ≤ 10 MB.
+AI output will be ‘advisory’ only; fallback to every AI feature.
+External services: Gmail SMTP, Cloudinary, Neon, Gemini and BulkSMSBD.
+
+1.6 Project Scheduling
+
+1.6.1 Development Timeline
+
+1.6.2 Milestones
+1. M1 (1 Jul 2026): proposal accepted.
+2. M2 (25 Jul 2026): mid-defense completed.
+3. M3 (30 Aug 2026): backend API complete.
+4. M4 (19 Nov 2026): system live on the internet.
+5. M5 (30 Nov 2026): project report submitted.
+
+SUMMARY
+This chapter presented the problems for example, the scattering of medical records, purpose, scope of HealthNexus BD, feasibility, its users, block diagram, requirements and the schedule. The design and implementation will be discussed in the next chapter.
+
+CHAPTER 2  DESIGN AND IMPLEMENTATION
+
+2.1 Introduction
+This chapter explains all these and uses UML and an ER diagram to model the system, then covers the architecture and describes the implementation including sample code.
+
+2.2 Functional Requirements
+Table 2.1 shows the 22 functional requirements, and the users that each requirement supports.
+
+2.3 Non-Functional Requirements
+
+2.3.1 Performance
+The page-by-page lists are provided, key lookups happen through indexes and the pages are loaded on-demand.
+After 12 seconds AI timeout - plus a slow AI will never block the page.
+
+2.3.2 Reliability
+In case of failure of Gemini, rule based summary and alerts.
+Multi-step operations are performed as set of database transactions and a health check is conducted every 5 minutes.
+
+2.3.3 Security
+Passwords and codes are now bcrypt and clinical content is now AES-256-GCM and rate limits have been added to sensitive routes.
+All routes are validated by token, role and input and the audit log can only be added to.
+
+2.3.4 Usability
+Easy-to-understand role dashboards that are optimized for mobile devices up to desktop, with two different languages — Bangla and English!
+
+2.3.5 Portability
+Uses only modern browser and provides all the settings through environment variables.
+
+2.3.6 Maintainability
+The modules are structured into routes, controller, service and schema, using TypeScript with tests.
+
+2.4 System Design
+
+2.4.1 Use Case Diagram
+Figure 2.1 shows the four actors and their uses. The patient is registered when a UHID is created and allergy check is part of the procedure of writing a prescription.
+
+2.4.2 Use Case Descriptions
+
+2.4.3 Activity Diagrams
+
+2.4.4 Sequence Diagrams
+
+2.4.5 ER Diagram
+The Prisma schema is shown as a database with 16 tables, 121 columns and 20 foreign keys as shown in Figure 2.11.
+
+2.5 Implementation
+
+2.5.1 System Architecture
+To store encrypted lab files, a Cloudinary service is used, along with a three-tiered system consisting of a React app on Vercel and a REST API designed with Express on Render [8] and a PostgreSQL database on Neon. The API doesn’t maintain any sessions in memory, so more API instances can be dynamically added at a later point in time, without redesign.
+All secure requests go through the same chain in the same sequence:
+1. Rate limiting is to avoid abusive callers.
+2. The token is verified and the user is read again from the database, so a suspended user is blocked when he tries to make a request again.
+3. The role is verified either with the patient, or with the doctor or the lab/admin.
+4. Body, query & parameters are validated with Zod.
+5. A thin controller sends the input to a service which has the business logic, reads and writes to a database, writes the audit log.
+6. All errors are converted to a safe JSON message, without any internal details.
+
+2.5.2 Technology Stack
+
+2.5.3 Backend Modules
+
+2.5.4 Security Implementation
+The bcrypt (cost 12) hashing algorithm is used to store passwords [6] and OTPs and reset codes are stored as a hash.
+One 15 minute access token and one 7 day refresh token [7] – sign out, reset and suspension – log them out anywhere.
+Every session has a 6 digit OTP (valid for 5 mins and 5 attempts).
+AES 256 GCM [4, 5] is used to encrypt all clinical notes and lab PDFs which are only served from authenticated-endpoints.
+Admin View only metadata and labs view only tests that they were told to perform(or examine).
+Helmet, CORS, Zod and rate limits help to mitigate the OWASP risks; database triggers make the audit log append only.
+
+2.5.5 AI Implementation
+A server makes direct requests to the Gemini API [13] using https. It keeps an up-to-date list of all fast models, and will switch to the next one if the model in use is not available, or if it does not respond within 12 seconds. AI is used only as an assistant: it never changes what the doctor writes.
+To maintain the highest possible level of privacy, names, UHIDs, NIDs, phone numbers and e-mail addresses are stripped from any text before it leaves the server, and visit dates are limited to the month.
+Clinical summary: At the end of the visit, Gemini will offer a concise, easily understood summary in brief simple json format, as well as warnings about allergies and drug interactions.
+Rule based Safety Net: Stateless rules which are evaluated every time and used with the result of the AI. An alert is, for example, always raised when the doctor prescribes Amoxicillin to a patient with a known penicillin allergy. If Gemini is offline, the rule-based summary will be shown to always provide the doctor with a warning.
+Doctor overview: 1-screen overview of all the history, kept cached for 30 minutes as long as the history does not change.
+Healthcare assistant: The healthcare assistant will engage the patient in a conversation as the patient query in either Bangla or English, with a consent notice (present and accepted) by the patient. The 999 advice is displayed separately in the emergency detector in case of AI failure and the assistant never diagnoses, prescribes or changes the dose. Chats are not saved in the server.
+
+2.5.6 Frontend Implementation
+The frontend is arranged by feature and then access to the features grouped by a protected route per role. The server data is managed by TanStack Query, the translations are done via i18next and the layout is responsive using Tailwind CSS. Admin Charts are just simple SVG.
+
+2.6 Coding: Appendix A
+Below is a moderately short sample of the actual source code (with some of the lines being shortened):
+
+A.1 Express Routes with Guards (Consent Module)
+
+A.2 OTP Verification Service
+
+A.3 AES-256-GCM Encryption Utility
+
+A.4 Prisma Model (Access Session)
+
+A.5 React Code (OTP Entry)
+
+SUMMARY
+In this chapter, the requirements have been described using UML and ER patterns, and for the architecture, security, AI and frontend, the descriptions have been provided, along with code samples. Testing is addressed in next chapter.
+
+CHAPTER 3  SOFTWARE TESTING
+
+3.1 Introduction
+Testing throughout the development process was conducted to see the private data is not exposed due to a bug in consent / encryption. The tests that were performed, testing methods, and results are discussed in this chapter.
+
+3.2 Testing Features
+
+3.2.1 Elements to be Tested
+Critical features:
+1. Registration, login, logout, token refresh and password reset.
+2. Role Based Access Control (RBAC): access management based off the route.
+3. OTP consent (Request, Verify, Attempt limit, Expire, Deny & Revoke).
+4. Lab files and clinical notes to be encrypted.
+5. Rules for appending-only audit log and uploading labs.
+Important features:
+1. Removing personal identifiers (de-identification), Allergy Alerts, AI Summary.
+2. Health assistant safety rules.
+3. Admin Dashboard along with verifications, user management and notifications.
+4. Frontend pages, forms and language switch.
+
+3.2.2 Features Not Tested Automatically
+There were three things that were not part of automated tests. Tests did not include real SMS and e-mail sending since the test is performed with the demo mode of the gateways, so no real SMS or e-mail is sent. Tests with the live Gemini answers have been skipped, as the tests are conducted with the AI-based stubbed out and hence repeatable. This project was not concerned with any load testing on a national scale.
+
+3.3 Testing Strategies
+
+3.3.1 Test Approach
+Unit Testing: Vitest 3.2 for encryption, OTP, AI rules, SMS and storage and scheduler.
+Tests integration with a freshly run embedded PostgreSQL along with all migrations, real Express app and fake external services using Vitest and Supertest.
+Frontend Testing: Pages, forms and routing with Vitest, jsdom and React Testing Library.
+System testing: Manual walk through of all roles – desktop and mobile – in both languages.
+Security testing – tampered tokens, user enumeration, parallel OTP guessing, cross patient access and tampered files.
+
+3.3.2 Pass/Fail Criteria
+Pass criteria:
+All cases return the desired output and result.
+Responses do not include private data and there is no logs or AI input that leaks private data.
+90% at least (lines, statements, functions) & 75% (branches) backend coverage.
+Fail criteria:
+All crashes, incorrect status code or access to unauthorized data.
+Values below thresholds – automatic test run failure.
+
+3.4 System Testing (Test Cases with Report)
+Automated tests have been provided for all test cases in Table 3.1 and these tests pass.
+
+3.4.1 Test Summary
+
+3.5 Summary
+100% success with all 744 automated tests, with back end line-coverage performed at 96.66% and 100% manual walk through on all workflows. Deployment and maintenance are the subjects of the next chapter.
+
+CHAPTER 4  DEPLOYMENT AND MAINTENANCE
+
+4.1 Introduction
+This chapter describes how the system was released, how production is set up and how it is maintained.
+
+4.2 Following Software Release Life Cycle (SRLC)
+
+4.2.1 Alpha Release
+The alpha version was installed on the developer’s computer, and was populated with a local database with demo logins for all of the roles. First developed the backend, then each dashboard and each change was inspected by running the tests.
+
+4.2.2 Beta Release
+A demo deployment of the beta version was made on Vercel, Render and Neon. English and Bangla workflow was showcased on Laptop and Phone to all the actors right from the beginning of the workflow. Any problems which have been detected here (such as the free server going to sleep when idle) have been fixed before being released.
+
+4.2.3 Release Candidate
+At this time only bugs were accepted, changes of the features were not. All 744 automated tests are passed and the security settings are checked: secrets are stored only in environment variables, demo OTP mode is only used with predefined and seeded demo numbers and CORS is only enabled for the frontend address.
+
+4.2.4 Production Release
+
+4.3 Deployment Architecture
+The browser accesses the Vercel-hosted React app, calls the Render-hosted API over HTTPS (Figure 4.1). When pushed to the main branch, it will deploy automatically and GitHub actions invoke the health endpoint every 5 mins to keep the server alive.
+
+4.3.1 Configuration
+The secrets are all environment variables and are checked at startup using Zod.
+
+4.3.2 Deployment Steps
+1. To create Neon database and run Prisma migrations.
+2. Seed both registries and admin account.
+3. Create the Render service and set the environment variables.
+4. Set up the Vercel project and configure the VITE_API_URL and the property CORS_ORIGIN.
+5. setup keep alive workflow and test health endpoint.
+
+4.4 Maintenance Procedures
+Review the health check and logs, check for pending doctor/lab applications to be reviewed daily.
+Weekly: conduct weekly review of audit log, review SMS balance, conduct weekly Gemini review, fix bugs with a new test for each.
+Monthly: Update for any dependencies, inspect storage space, test database restores and rotate any exposed secrets.
+
+4.5 Summary
+Tested during the alpha, beta and RC phases before going into production in November 2026—following easy routines keeps it healthy. The next chapter is named the user manual.
+
+CHAPTER 5  USER MANUAL
+
+5.1 Introduction
+This chapter is a short description for each of the roles along with screenshots of the application live. All screens are supported by English, Bangla & mobile.
+
+5.2 Project Functionalities
+
+5.2.1 Registration and Login
+1. Click Register, select Patient, Doctor or Lab and fill out the form (Enter BMDC number or DGHS licence for providers).
+2. Doctors/labs would wait for approval by the admin and UHIDs would be given to the patient immediately.
+3. Log in with e-mail or mobile number; reset with a 6 digit code by using “Forgot password?”.
+
+5.2.2 Patient Tasks
+1. Read Records & Lab Reports; update Allergies and other information in My profile.
+2. If you don’t agree: Deny access to SMS code in Consent center.
+3. Who has been accessing my data? Check on each of them and ask the Health Assistant in Bangla / English.
+
+5.2.3 Doctor Tasks
+1. Search for the patient on UHID and/or mobile and send a consent code to them.
+2. Type in the code that the patient reads and press Verify and open chart.
+3. Read AI overview, visit and prescription added and read allergy alert. After 30 minutes access will be terminated.
+
+5.2.4 Lab Tasks
+1. Search patient and select a test prescribed, upload the pdf (max size 10MB).
+2. See your earlier uploads on Upload history.
+
+5.2.5 Admin Tasks
+1. Login in the admin login page and see the Dashboard.
+2. Review doctors, labs and approve/reject in the Verifications; suspend/activate a user’s access; see the Audit log.
+
+5.3 Screens of the System
+Common pages
+Patient
+Doctor
+Lab
+Admin
+Mobile view in Bangla
+
+5.4 Summary
+Throughout this chapter, all the roles were shown using the system, via examples of screenshots. Very simple interface, with English & Bangla support – little training required.
+
+CHAPTER 6  PROJECT SUMMARY
+
+6.1 Introduction
+This chapter encapsulates the work of the project its achievements, limitations and future work.
+
+6.2 Project Achievements
+One UHID, One Secure history – One for every patient!
+Registered Doctors with BMDC number and Lab registered with DGHS licence and admin approved.
+Use patient’s SMS OTP to access for 30 minutes – deny / revoke anytime.
+AES-256-GCM encryption, hashed secrets, instant sign out and append-only audit log.
+AI summary and allergy alerts with rule based fall-back, and bilingual health assistant.
+744 passing tests, a backend line coverage of 96.66% and a live deployment.
+
+6.3 Project Limitations
+1. The BMDC and DGHS checks are not from official databases but from so-called seeded tables.
+2. Free Render server – Not yet designed to work with national traffic loads.
+3. Only frequently used drug interactions are reviewed.
+4. No offline or mobile app(s).
+5. Emergency access is not allowed if the Patient is unable to give an OTP.
+6. Not yet used in a real clinic.
+
+6.4 Future Work Opportunities
+Medium term: integration of the official registry and complete database of the interaction between drugs, upload of old reports, marked as unverified, by patients and a controlled emergency access mode.
+Towards the long-term, offline mobile apps, embedding the national health ID, data exchange via HL7 FHIR and risk prediction and verifiable e-prescriptions.
+
+6.5 Conclusion
+We can achieve a patient-owned, unified health record in today’s reality, as part of achieving that vision, HealthNexus BD will help realize the vision in the context of Bangladesh. It brings all the records into one place, so that it is centralized and helps in safeguarding the patient as nothing would be able to be read without the patient’s OTP and any access will be visible to the patient.
+Plus it had been built from scratch; from requirements to deployment it’s been a learning curve for me, teaching me secure API design, data modelling, testing and integrating AI and deployment on the cloud. When it’s got some genuine registry ties, field trials can turn it into a vital tool towards a safer, well connected health care.
