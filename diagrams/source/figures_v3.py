@@ -115,8 +115,8 @@ def gantt():
     tasks = [
         ('Proposal & requirements', date(2026, 6, 22), date(2026, 7, 1)),
         ('SRS, UML & DB design', date(2026, 7, 1), date(2026, 7, 12)),
-        ('Mid-defense preparation', date(2026, 7, 13), date(2026, 7, 25)),
-        ('UI/UX design (Figma)', date(2026, 7, 26), date(2026, 8, 12)),
+        ('Mid-defense preparation', date(2026, 7, 13), date(2026, 7, 23)),
+        ('UI/UX design (Figma)', date(2026, 7, 24), date(2026, 8, 12)),
         ('Backend core', date(2026, 8, 12), date(2026, 8, 30)),
         ('Security & testing', date(2026, 9, 1), date(2026, 10, 19)),
         ('Frontend setup', date(2026, 10, 19), date(2026, 10, 25)),
@@ -140,7 +140,7 @@ def gantt():
         d.text(30, y, X0 - 40, RH, name, 'align=left;')
         x1 = px(a)
         d.box(x1, y + 10, max(px(b) - x1, 8), RH - 20, '', 'fillColor=#dae8fc;strokeColor=#6c8ebf;')
-    milestones = [('Proposal', date(2026, 7, 1)), ('Mid-defense', date(2026, 7, 25)), ('Backend done', date(2026, 8, 30)),
+    milestones = [('Proposal', date(2026, 7, 1)), ('Mid-defense', date(2026, 7, 23)), ('Backend done', date(2026, 8, 30)),
                   ('Live', date(2026, 11, 19)), ('Submission', date(2026, 11, 30))]
     my = bottom + 30
     d.text(30, my - 10, X0 - 40, 40, 'Milestones', 'align=left;fontStyle=1;')

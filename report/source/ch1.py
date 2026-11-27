@@ -165,8 +165,8 @@ def build(r):
     r.table(['Phase', 'Duration', 'Activities', 'Deliverables'], [
         ['1. Planning', '22 Jun – 12 Jul 2026', 'Proposal, requirement analysis, SRS, UML and database design',
          'Approved proposal, SRS, UML and ER diagrams'],
-        ['2. Mid-defense', '13 – 25 Jul 2026', 'Presentation and design review', 'Mid-defense slides'],
-        ['3. UI/UX design', '26 Jul – 12 Aug 2026', 'Wireframes and screens in Figma', 'Figma design'],
+        ['2. Mid-defense', '13 – 23 Jul 2026', 'Presentation and design review', 'Mid-defense slides'],
+        ['3. UI/UX design', '24 Jul – 12 Aug 2026', 'Wireframes and screens in Figma', 'Figma design'],
         ['4. Backend', '12 Aug – 30 Aug 2026', 'REST API, authentication, consent, records, lab, admin',
          'Working, tested API'],
         ['5. Security and testing', '1 Sep – 19 Oct 2026', 'Encryption, audit log, rate limits, automated tests',
@@ -180,7 +180,7 @@ def build(r):
     r.h3('1.6.2 Milestones')
     r.numbered([
         'M1 (1 Jul 2026): proposal accepted.',
-        'M2 (25 Jul 2026): mid-defense completed.',
+        'M2 (23 Jul 2026): mid-defense completed.',
         'M3 (30 Aug 2026): backend API complete.',
         'M4 (19 Nov 2026): system live on the internet.',
         'M5 (30 Nov 2026): project report submitted.',
